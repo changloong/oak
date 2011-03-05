@@ -77,7 +77,7 @@ void main() {
 	auto u2 = new .User ;
 	tpl.assign!("user", __FILE__, __LINE__)(u2);
 	
-	tpl.assign!("j", __FILE__, __LINE__)(i);
+	tpl.assign!("import", __FILE__, __LINE__)(i);
 	
 	auto fn1	= tpl.render!("test.jade", __FILE__, __LINE__)();
 	

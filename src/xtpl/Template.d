@@ -10,8 +10,21 @@ class XTpl {
 	
 	alias  typeof(this)	This ;
 	static __gshared This[string]	tpl_instances ;
+	static __gshared string[] inner_vars	= ["ob"];
+	static __gshared string[] inner_type	= ["ob"];
+	static __gshared string[] buildin_type	= ctfe_split("void byte bool ubyte short ushort int uint long ulong cent ucent float double real ifloat idouble ireal cfloat cdouble creal char wchar dchar body asm bool true false function delegate",' ') ;
+	static __gshared string[] key_words	= ctfe_split(
+					"public private protected with extern "
+					"final abstract override const debug version pragma public private deprecated protected volatile"
+					"class struct interface enum new this null delete invariant super union template"
+					"if for foreach while do assert return unittest try catch else throw switch case break continue default finally goto synchronized"
+					"is import module alias typedef with cast package typeof typeid classinfo mixin"
+					"in out const static inout lazy ref extern export auto align scope pure"
+					"__gshared __traits tupleof stringof sizeof offsetof "
+					,' ') ;
 	
 	static char[] Invoke(char[] _argument){
+
 		if( _argument is null || _argument.length < _tpl_protocol.length || _argument[0.._tpl_protocol.length] != _tpl_protocol ){
 			return null ;
 		}
@@ -99,9 +112,6 @@ class XTpl {
 		foreach(ref c;args[2]) if(c is ':') c = 0;
 		
 		auto var	= _this.getVar( _args ) ;
-		if( var is null ) {
-			return null ;
-		}
 		
 		return cast(char[]) var.index_message() ;
 	}
@@ -113,6 +123,41 @@ class XTpl {
 		return cast(char[]) _this.getStruct( _args[1])  ;
 	}
 	
+	static void check_var_name(char[] var, char[] loc){
+		
+		if( var is null || var.length is 0 ){
+			tpl_error("var name can't be empty", 0);
+		}
+		
+		if( !(var[0] is '_' || var[0] >='a' && var[0] <='z' ||var[0] >='A' && var[0] <='Z')  ){
+			tpl_error("var name `%s` on loc(%s) first char must be [_a-zA-Z] ", var, loc);
+		}
+		
+		foreach(int i, c; var[1..$] ) {
+			if( !(c is '_' || c >='a' && c <='z' || c >='A' && c <='Z'|| c >='0' && c <='9')  ){
+				tpl_error("var name `%s` on loc(%s) must be [_a-zA-Z0-9]+ ", var, loc);
+			}
+		}
+		
+		if( std.algorithm.indexOf(buildin_type , cast(string) var) >= 0 ){
+			tpl_error("var name `%s` on loc:(%s) is a buildin type", var, loc );
+		}
+		
+		if( std.algorithm.indexOf(inner_type, cast(string) var) >= 0 ){
+			tpl_error("var name `%s` on loc:(%s) is a type", var, loc );
+		}
+		
+		if( std.algorithm.indexOf(inner_vars, cast(string) var) >= 0 ){
+			tpl_error("var name `%s` on loc:(%s) is already been used as inner var, please use other name", var, loc );
+		}
+		
+		if( std.algorithm.indexOf(key_words, cast(string) var) >= 0 ){
+			tpl_error("var name `%s` on loc:(%s) is a key word, please use other name", var, loc );
+		}
+		
+	}
+	
+	
 	string 		_name ;
 	string 		_loc ;
 	XTpl_Var[string]	_vars ;
@@ -123,26 +168,26 @@ class XTpl {
 	size_t		_tuple_len ;
 	
 	public this(char[] name, char[] loc) {
-		_name	= cstring_dup( name.ptr ) ;
+		check_var_name(name, loc);
+		_name		= cstring_dup( name.ptr ) ;
 		_loc		= cstring_dup( loc.ptr ) ;
 		_tuple_bu	= new XTpl_Buffer(1024, 1024);
 	}
 	
 	private XTpl_Var getVar(char[][] args){
-		XTpl_Var var	= null ;
-		foreach( _var; this._vars){
-			if( _var.name == args[0] ) {
-				var	= _var;
-				break ;
-			}
-		}
-
-		if( var is null ) {
+		
+		string _name = cast(string) args[0] ;
+		
+		auto _pvar	= _name in _vars ;
+		XTpl_Var var 	= null ;
+		if( _pvar is null ) {
 			if( _tuple_len ) {
 				tpl_error("%s.assign at (%s) , but already build tuple at %s", this, args[XTpl_Var.Index.Loc], _tuple_loc) ;
 			}
+			check_var_name(args[0], args[1]);
 			var		= new XTpl_Var(this, args) ;
 		} else {
+			var	= *_pvar ;
 			if( var.name != args[ XTpl_Var.Index.Name ] ) {
 				tpl_error("tpl:assign (%s) inner error ln:%d ",  this);
 			}

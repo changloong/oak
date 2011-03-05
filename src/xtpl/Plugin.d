@@ -77,6 +77,7 @@ void tpl_print(string _file = __FILE__, size_t _line = __LINE__, T...)(string fm
 	_G.fflush(_G.stdout);
 	_tpl_global_buffer[0]	= 0 ;
 }
+alias tpl_print log ;
 
 void tpl_error(string _file = __FILE__, size_t _line = __LINE__, T...)(string fmt, T t) {
 	scope bu =  new XTpl_Buffer(_tpl_global_buffer) ;
