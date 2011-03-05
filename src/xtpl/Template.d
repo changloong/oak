@@ -18,7 +18,7 @@ class XTpl {
 	alias  typeof(this)	This ;
 	static __gshared This[string]	tpl_instances ;
 	static __gshared string[] inner_vars	= ["ob"];
-	static __gshared string[] inner_type	= ["ob"];
+	static __gshared string[] inner_type	= ["render"];
 	static __gshared string[] buildin_type	= ctfe_split("void byte bool ubyte short ushort int uint long ulong cent ucent float double real ifloat idouble ireal cfloat cdouble creal char wchar dchar body asm bool true false function delegate",' ') ;
 	static __gshared string[] key_words	= ctfe_split(
 					"public private protected with extern "
@@ -280,7 +280,7 @@ class XTpl {
 			;
 		}
 		
-		_tuple_bu("\n\t void xtpl_tuple_")(_name)("_function_render(Buffer ob){\n");
+		_tuple_bu("\n\t void render(Buffer ob){\n assert(ob !is null); ");
 	
 		jade.compile ;
 		
@@ -288,8 +288,8 @@ class XTpl {
 		
 		_tuple_bu("\t}\n");
 		_tuple_bu("} \n");
+		_tuple_bu("private alias xtpl_tuple_")(_name)(" _tpl_struct ;\n");
 		
-		_tuple_bu("return & ( (cast(xtpl_tuple_")(_name)("*)  this._tpl_tuple). xtpl_tuple_")(_name)("_function_render );\n");
 		return _tuple_bu.toString ;
 	}
 	

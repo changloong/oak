@@ -291,7 +291,7 @@ final class vBuffer {
 		for(int i = 0; i < len; i++){
 			if( inp[i] is '\\' ){
 				opCall("\\\\");
-			} else if( inp[i] is '\'' ){
+			} else if( inp[i] is '\"' ){
 				opCall('\\')(inp[i]);
 			} else if( inp[i] is '\n'){
 				opCall('\\')('n');

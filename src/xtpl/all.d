@@ -62,7 +62,8 @@ string[] ctfe_split(string s, char c){
 	while(s.length >0 && s[0] is c ) s = s[1..$];
 	while(s.length >0 && s[$-1] is c ) s = s[0..$-1];
 	
-	for(int i, j =0, len = s.length; i < len ;i++){
+	int i, j =0, len = s.length;
+	while(i < len ){
 		while( i < len && s[i] !is c ){
 			i++ ;
 		}
@@ -71,7 +72,10 @@ string[] ctfe_split(string s, char c){
 			i++ ;
 		}
 		j	= i ;
-	}		
+	}
+	if( j != i ) {
+		ret	~= s[j..$] ;
+	}
 
 	return ret ;
 }

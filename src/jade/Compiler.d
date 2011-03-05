@@ -62,7 +62,7 @@ struct Compiler {
 	void FinishLastOut(){
 		switch(outype){
 			case OutType.String:
-				_bu("`");
+				_bu('"');
 			case OutType.Var:
 				break;
 			case OutType.None:
@@ -78,9 +78,9 @@ struct Compiler {
 		if( outype !is OutType.String  ){
 			FinishLastOut() ;
 			if( outype is OutType.Code || outype is OutType.None ) {
-				_bu("\n  ob(`");
+				_bu("\n  ob(\"");
 			} else if( outype is OutType.Var ){
-				_bu("\n\t(`");
+				_bu("\n\t(\"");
 			}
 		}
 		if( unstrip ) {
