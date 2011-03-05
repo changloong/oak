@@ -55,7 +55,6 @@ struct Compiler {
 		FinishLastOut;
 		if( outype !is OutType.None && outype !is OutType.Code ) {
 			assert(_bu.length > 0 );
-			_bu.move(-1);
 			_bu(");\n");
 		}
 	}		

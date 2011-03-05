@@ -2,11 +2,18 @@
 module xtpl.Template ;
 
 import 
+	std.file,
+	jade.Jade,
 	xtpl.all;
+
+pragma(lib, "pcre");
+
+alias  xtpl.Plugin.log log;
 
 class XTpl {
 	static __gshared _tpl_protocol	= "tpl://" ;
 	static __gshared _OK_message	= cast(char[]) "tpl::ok" ;
+	static __gshared Compiler	jade ;
 	
 	alias  typeof(this)	This ;
 	static __gshared This[string]	tpl_instances ;
@@ -119,8 +126,10 @@ class XTpl {
 	static char[] Tpl_Render(char[][] args ){
 		This _this	= Tpl_New(args);
 		auto _args	= cast(char[][]) std.array.split(args[2], ":" ) ;
-		
-		return cast(char[]) _this.getStruct( _args[1])  ;
+		if( _args.length !is 2 ){
+			tpl_error("tpl:render invalid argument `%s`", args);
+		}
+		return cast(char[]) _this.getRender(_args[0],  _args[1])  ;
 	}
 	
 	static void check_var_name(char[] var, char[] loc){
@@ -189,10 +198,10 @@ class XTpl {
 			foreach(ref __var; _vars) {
 				// check the var.name is used as type 
 				if( __var.name == cast(string) args[XTpl_Var.Index.Type] ){
-					tpl_error("var `%s` at loc(%s) is use type %s (%s) as name", __var.name, __var.loc, args[XTpl_Var.Index.Type], args[XTpl_Var.Index.Loc]);
+					tpl_error("var `%s` (%s) is use type %s (%s) as name", __var.name, __var.loc, args[XTpl_Var.Index.Type], args[XTpl_Var.Index.Loc]);
 				} 
 				if( __var.type == cast(string) args[XTpl_Var.Index.Name] ){
-					tpl_error("var `%s` at loc(%s) is use type %s (%s) as name", args[XTpl_Var.Index.Type], args[XTpl_Var.Index.Loc], __var.type, __var.loc);
+					tpl_error("var `%s` (%s) is use type %s (%s) as name", args[XTpl_Var.Index.Type], args[XTpl_Var.Index.Loc], __var.type, __var.loc);
 				}
 			}
 			var		= new XTpl_Var(this, args) ;
@@ -218,7 +227,23 @@ class XTpl {
 		return var ;
 	}
 	
-	public string getStruct(char[] loc) {
+	public string getRender(char[] file, char[] loc) {
+		
+		char[]  _file_path = null ;
+		foreach( _dir; project_paths ){
+			char[] __file__path = _dir ~ file  ;
+			if( std.file.exists( __file__path ) ) {
+				_file_path	= __file__path ;
+				break ;
+			}
+		}
+		if( _file_path is null ) {
+			tpl_error("temmplate source file `%s` can't be find in %s", file, project_paths);
+		}
+		
+		auto _file_data	= cast(string) std.file.read(_file_path);
+		jade.Init( cast(string) _file_path, _file_data);
+		
 		if( _tuple_len ) {
 			if( _tuple_len != _vars.length ){
 				tpl_error("%s build tuple error ( %s != %s ) ", this, loc, _tuple_loc) ;
@@ -255,8 +280,12 @@ class XTpl {
 			;
 		}
 		
-		_tuple_bu("\n\t void xtpl_tuple_")(_name)("_function_render(Buffer bu){\n");
+		_tuple_bu("\n\t void xtpl_tuple_")(_name)("_function_render(Buffer ob){\n");
 	
+		jade.compile ;
+		
+		_tuple_bu(jade.js);
+		
 		_tuple_bu("\t}\n");
 		_tuple_bu("} \n");
 		

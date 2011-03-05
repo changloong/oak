@@ -25,12 +25,6 @@ package import
 	std.traits,
 	std.stdio;
 
-version(JADE_TEST){
-	
-} else {
-	public import jade.tpl.Template , jade.tpl.Factory ;
-}
-
 public void log( string file= __FILE__, int line = __LINE__, T...)(T t){//
 	std.stdio.write(file, "(", line, ") ",  t, "\n");
 }

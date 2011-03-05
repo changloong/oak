@@ -82,9 +82,10 @@ class Tpl(string TplName, string _file = __FILE__, size_t _line = __LINE__ ) {
 }
 
 class User {
-	int i = 9;
-	int j = 9;
-	pragma(msg, typeid(typeof(i)).stringof ~ "\n\n");
+	bool login ;
+	bool admin ;
+	int	id  = 3 ;
+	string name = "Chang Long" ;
 }
 
 void main() {
@@ -92,18 +93,14 @@ void main() {
 	auto tpl = new Tpl!("UserList", __FILE__, __LINE__) ;
 	
 	
-	int i = 10 ;
 	auto u = new User ;
-	
 	tpl.assign!("user", __FILE__, __LINE__)(u);
 	
-	auto u2 = new .User ;
-	tpl.assign!("User1", __FILE__, __LINE__)(u2);
+	tpl.assign!("page_title", __FILE__, __LINE__)( "test page"[] );
 	
-	tpl.assign!("import1", __FILE__, __LINE__)(i);
 	
-	auto fn1	= tpl.render!("test.jade", __FILE__, __LINE__)();
+	auto fn1	= tpl.render!("../src/jade/example.jade", __FILE__, __LINE__)();
 	
-	fn1(&fn1);
+	
 	
 }
