@@ -24,9 +24,9 @@ struct Tok {
 	Type		tp ;
 	size_t	ln ;
 	string		val ;
-	bool		buffer ;
 	bool		escape ;
 	bool		isVar ;
+	bool		isPublic ;
 	string		key ;
 	string		code ;
 	Attrs		attrs ;

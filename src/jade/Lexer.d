@@ -105,7 +105,7 @@ struct Lexer {
 		Tok* tok = null ;
 		comment_re1.each(input, (string[] ms) {
 			tok = token(Tok.Type.Comment, ms[2]);
-			tok.buffer	= ms[1] != `-`;
+			tok.isPublic	= ms[1] != `-`;
 			consume(ms[0].length) ;
 			return false ;
 		}) ;
@@ -149,7 +149,7 @@ struct Lexer {
 			
 			tok	= this.token(Tok.Type.Each) ;
 			
-			tok.buffer	= captures[1].length > 1 ;
+			// tok.buffer	= captures[1].length > 1 ;
 			tok.val		= captures[2] ;
 		    	tok.key		= captures[3] .length ? captures[3] : captures[2]  ~ `_index` ;
 			tok.code	= captures[4] ;
@@ -170,13 +170,13 @@ struct Lexer {
 			tok = this.token(Tok.Type.Code, captures[2]) ;
 			if(  flags[0] is '-' ){
 				if( flags.length > 1 ) {
-					tok.buffer	= true ;
+					// tok.buffer	= true ;
 				}
 			} else {
 				tok.isVar	= true ;
 				if( flags.length > 1 ) {
 					tok.escape	= flags[0] is '='  ;
-					tok.buffer	= flags[0] is '=' || flags[1] is '=';
+					// tok.buffer	= flags[0] is '=' || flags[1] is '=';
 				}
 			}
 			consume(captures[0].length);

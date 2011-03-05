@@ -34,7 +34,6 @@ struct Node {
 
 	Type	tp = Type.None ;
 	string	val ;
-	bool	buffer ;
 	bool	escape ;
 	size_t	ln ;
 	

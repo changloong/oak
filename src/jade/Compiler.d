@@ -9,8 +9,6 @@ private {
 		None,
 		Code ,
 		String ,
-		UnStripString ,
-		CodeString ,
 		Var ,
 	}
 
@@ -64,12 +62,9 @@ struct Compiler {
 	
 	void FinishLastOut(){
 		switch(outype){
-			case OutType.CodeString:
 			case OutType.String:
-			case OutType.UnStripString:
-				_bu("'");
+				_bu("`");
 			case OutType.Var:
-				_bu(" ,");
 				break;
 			case OutType.None:
 				break;
@@ -81,80 +76,53 @@ struct Compiler {
 	}
 	
 	pThis asString(string val, bool unstrip = true ) {
-		OutType _type	= unstrip ? OutType.UnStripString : OutType.String ;
-		if( outype !is _type ){
+		if( outype !is OutType.String  ){
 			FinishLastOut() ;
 			if( outype is OutType.Code || outype is OutType.None ) {
-				_bu("\n$(");
+				_bu("\n  ob(`");
+			} else if( outype is OutType.Var ){
+				_bu("\n\t(`");
 			}
 		}
 		if( unstrip ) {
-			if( outype !is _type ){
-				_bu("\n\t1, '");
-			}
-			_bu.unstrip( val) ;
+			_bu.unstrip( val);
 		} else {
-			if( outype !is _type ){
-				_bu("\n\t0, '");
-			}
 			_bu( val) ;
 		}
-		
-		outype	= _type ;
+		outype	=  OutType.String ;
 		return &this;
 	}
 	
-	pThis asVar(string val, bool buffer = false , bool unstrip = false ) {
+	pThis asVar(string val, bool unstrip = false ) {
 		if( outype !is OutType.Var ) {
 			FinishLastOut ;
 			if( outype is OutType.Code || outype is OutType.None ) {
-				_bu("\n$(");
+				_bu("\n  ob(");
+			} else if( outype is OutType.String ){
+				_bu(")\n\t(");
 			}
 		}
-		if( buffer ) {
-			// log("otype=", otype, " var=", val);
-			if( unstrip ) {
-				_bu("\n\t1, ")(val);
-			} else {
-				_bu("\n\t0,")(val);
-			}
-			outype	=  OutType.Var ;
+		if( unstrip ) {
+			_bu(val)(")") ;
 		} else {
-			if( unstrip ) {
-				_bu("\n\t3, '")(val);
-				outype	=  OutType.UnStripString ;
-			} else {
-				_bu("\n\t2, '")(val);
-				outype	=  OutType.String ;
-			}
+			_bu(val)(")") ;
 		}
+		outype	=  OutType.Var ;
 		return &this;
 	}
 	
 	alias void delegate(vBuffer bu) asCodeDg ;
-	pThis asCode(string val, bool buffer = false){
-		if( buffer ) {
-			FinishLastOut;
-			if( outype !is OutType.Code && outype !is OutType.None ) {
-				assert(_bu.length > 0 );
-				_bu.move(-1);
-				_bu(");\n");
+	pThis asCode(string val) {
+		FinishLastOut;
+		if( outype !is OutType.Code && outype !is OutType.None ) {
+			assert(_bu.length > 0 );
+			//_bu.move(-1);
+			if( outype is  OutType.String || outype is  OutType.Var ) {
+				_bu(");\n");	
 			}
-			_bu(val);
-			outype	= OutType.Code ;
-		} else {
-			if( outype !is  OutType.CodeString ){
-				FinishLastOut;
-			}
-			if( outype is OutType.Code || outype is OutType.None ) {
-				_bu("\n$(");
-			}
-			if( outype !is OutType.CodeString  ) {
-				_bu("\n\t4, '");
-			}
-			_bu.unstrip( val ) ;
-			outype	= OutType.CodeString ;
 		}
+		_bu(val);
+		outype	= OutType.Code ;
 		return &this;
 	}
 	
@@ -175,20 +143,19 @@ struct Compiler {
 				asString( ms[0][1..$] );
 				return true ;
 			}
-			bool buffer	= false ;
+			//bool buffer	= false ;
 			bool escape	= false ;
 			if( ms[1].length is 1 ){
 				if( ms[1][0] is '#' ) {
-					buffer	= true ;
+					//buffer	= true ;
 				} else if( ms[1][0] is '!' ){
 					escape	= true ;
 				}
 			} else if( ms[1].length is 2 ){
-				buffer	= true ;
 				escape	= true ;
 			}
 			// log("otype=", otype," var=`",  ms[2], "` buffer=", buffer , " escape=", escape, " src=", ms[0] );
-			asVar(ms[2], buffer,  escape);
+			asVar(ms[2], escape);
 			return true ;
 		}) ){
 			if( lasti <= val.length ) {
@@ -326,7 +293,9 @@ struct Compiler {
 	void visitComment(Node* comment){
 		assert(comment !is null);
 		assert(comment.isComment);
-		if (!comment.buffer) return;
+		if (!comment.comment.isPublic ){
+			return ;
+		}
 		asString("<!-- ");
 		asText( comment.val );
 		asString(" -->\n");
@@ -339,7 +308,7 @@ struct Compiler {
 		
 		if( code.code.isVar) {
 			assert(code.code.block is null ) ;
-			asVar( code.val, code.buffer, code.escape);
+			asVar( code.val, code.escape);
 			return ;
 		}
 		
@@ -354,12 +323,12 @@ struct Compiler {
 		// Block support
 		if (code.code.block) {
 			_code_bu("{\n");
-			asCode( cast(string) _code_bu.slice,  code.buffer);
+			asCode( cast(string) _code_bu.slice);
 			this.visit(code.code.block);
 			_code_bu.clear ;
 			_code_bu("}\n");
 		}
-		asCode( cast(string) _code_bu.slice, code.buffer);
+		asCode( cast(string) _code_bu.slice);
 	}
 	
 	
@@ -395,19 +364,13 @@ struct Compiler {
 			("// each: ")(each.obj)(", file: ")(parser.filename)(", line: ")(node.ln)("\n")
 			("$.each(this, ")(each.obj)(", function(")(each.value)(", ")(each.key)("){\n");
 		;
-		asCode( cast(string) _code_bu.slice,  node.buffer);
-		if( node.buffer ){
-			static_vars	~= each.key ;
-			static_vars	~= each.value ;
-		}
+		asCode( cast(string) _code_bu.slice);
+
 		this.visitBlock(each.block);
-		if( node.buffer ){
-			assert(static_vars.length >= 2);
-			static_vars	= static_vars[0..$-2] ;
-		}
+		
 		_code_bu.clear;
 		_code_bu("}); \n// each: ")(each.obj)(", file: ")(parser.filename)(", line: ")(node.ln)("\n");
-		asCode( cast(string) _code_bu.slice,  node.buffer);
+		asCode( cast(string) _code_bu.slice);
 	}
 	
 	void visitFilter(Node* filter){

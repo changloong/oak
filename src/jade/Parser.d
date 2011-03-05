@@ -95,7 +95,7 @@ struct Parser {
 		Tok* tok = this.expect(Tok.Type.Code);
 		Node* node  = Node.New!(Node.Type.Code);
 		node.val = tok.val ;
-		node.buffer = tok.buffer ;
+		
 		node.escape = tok.escape ;
 		node.code.isVar = tok.isVar;
 		
@@ -109,7 +109,7 @@ struct Parser {
 		Tok* tok	= this.expect(Tok.Type.Comment);
 		Node* node	= Node.New!(Node.Type.Comment);
 		node.val	= tok.val ;
-		node.buffer	= tok.buffer ;
+		
 		node.ln	= this.lexer.ln;
 		return node ;
 	}
@@ -146,7 +146,7 @@ struct Parser {
 		
 		node.each.obj	= tok.code ;
 		node.val	= tok.val ;
-		node.buffer	= tok.buffer ;
+		
 		node.each.key	= tok.key ;
 		
 		node.each.block	= this.parseBlock();
