@@ -20,7 +20,7 @@ class XTpl {
 					"if for foreach while do assert return unittest try catch else throw switch case break continue default finally goto synchronized"
 					"is import module alias typedef with cast package typeof typeid classinfo mixin"
 					"in out const static inout lazy ref extern export auto align scope pure"
-					"__gshared __traits tupleof stringof sizeof offsetof "
+					"__gshared __traits tupleof stringof sizeof offsetof string size_t ptrdiff_t ssize_t"
 					,' ') ;
 	
 	static char[] Invoke(char[] _argument){

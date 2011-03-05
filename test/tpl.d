@@ -2,7 +2,7 @@
 
 module tpl2.test ;
 
-import std.stdio, std.conv ;
+import std.stdio, std.conv, std.traits ;
 
 
 /// compile time integer to string
@@ -27,6 +27,27 @@ string ctfe_i2a(int i){
         return cast( string) res;
 }
 
+string[] ctfe_split(string s, char c){
+	string[] ret ;
+	
+	while(s.length >0 && s[0] is c ) s = s[1..$];
+	while(s.length >0 && s[$-1] is c ) s = s[0..$-1];
+	
+	for(int i, j =0, len = s.length; i < len ;i++){
+		while( i < len && s[i] !is c ){
+			i++ ;
+		}
+		ret	~= s[j..i] ;
+		while( i < len && s[i] is c ){
+			i++ ;
+		}
+		j	= i ;
+	}		
+
+	return ret ;
+}
+
+
 class Tpl(string TplName, string _file = __FILE__, size_t _line = __LINE__ ) {
 	alias void* Buffer;
 	alias void delegate(Buffer) render_dg_ty ;
@@ -44,7 +65,12 @@ class Tpl(string TplName, string _file = __FILE__, size_t _line = __LINE__ ) {
 		static const string _method_loc =  name ~ ":"  ~ _file[0..$] ~ "#" ~ ctfe_i2a(_line) ~ "," ~ __file[0..$] ~ "#" ~ ctfe_i2a(__line) ;
 		
 		static const tpl_var_id_offset_size	= import( "tpl://assign::" ~ _class_loc ~ "::"  ~ ( _method_loc ~ ":" ~  T.stringof[0..$] ~ ":" ~ typeid(T).stringof[1..$] ~ ":" ~ T.sizeof.stringof ) );
+		static const list = ctfe_split(tpl_var_id_offset_size, ':');
+		
 		pragma(msg, tpl_var_id_offset_size );
+		mixin("static assert( !is("~ list[1] ~ "==class) , `var name '" ~ name ~ "' can't be class` ) ;" );
+		mixin("static assert( !is("~ list[1] ~ "==struct) , `var name '" ~ name ~ "' can't be struct` ) ;" );
+		mixin("static assert( !is("~ list[1] ~ "==interface) , `var name '" ~ name ~ "' can't be interface` ) ;" );
 		
 		return this ;
 	}
@@ -65,7 +91,7 @@ class User {
 }
 
 void main() {
-	
+
 	auto tpl = new Tpl!("UserList", __FILE__, __LINE__) ;
 	
 	int i = 10 ;
@@ -77,7 +103,7 @@ void main() {
 	auto u2 = new .User ;
 	tpl.assign!("user", __FILE__, __LINE__)(u2);
 	
-	tpl.assign!("import", __FILE__, __LINE__)(i);
+	tpl.assign!("import1", __FILE__, __LINE__)(i);
 	
 	auto fn1	= tpl.render!("test.jade", __FILE__, __LINE__)();
 	
