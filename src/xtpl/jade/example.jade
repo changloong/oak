@@ -1,0 +1,32 @@
+!!! transitional
+html(lang=en)
+  head
+    meta(name=Content-Type, content=text/html, charset=utf-8)
+    title {page_title}
+  body
+    ul
+      // static each
+      -- each item in items
+        li!= item
+      // dynamic each 
+    ol
+      - each value, key in user
+        li `{key}` => {value} 
+    ul
+      -- for(var i = 0; i < 100 ; i++ ) {
+        -- each value,key in env
+          li #{key} => #{value}
+      -- }
+    #user_list.test1
+      | test div 
+      | multi line 
+      | hehe
+      // test ' \n
+      - if user.login
+        p welcome 
+          a#member.profile(href=/profile/{user.id}/, target=blank) {user.name}
+      - else if user.admin
+        p admin controll panel
+      - else
+        p please 
+          a#login login
