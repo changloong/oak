@@ -185,6 +185,16 @@ class XTpl {
 				tpl_error("%s.assign at (%s) , but already build tuple at %s", this, args[XTpl_Var.Index.Loc], _tuple_loc) ;
 			}
 			check_var_name(args[0], args[1]);
+			
+			foreach(ref __var; _vars) {
+				// check the var.name is used as type 
+				if( __var.name == cast(string) args[XTpl_Var.Index.Type] ){
+					tpl_error("var `%s` at loc(%s) is use type %s (%s) as name", __var.name, __var.loc, args[XTpl_Var.Index.Type], args[XTpl_Var.Index.Loc]);
+				} 
+				if( __var.type == cast(string) args[XTpl_Var.Index.Name] ){
+					tpl_error("var `%s` at loc(%s) is use type %s (%s) as name", args[XTpl_Var.Index.Type], args[XTpl_Var.Index.Loc], __var.type, __var.loc);
+				}
+			}
 			var		= new XTpl_Var(this, args) ;
 		} else {
 			var	= *_pvar ;
@@ -246,10 +256,7 @@ class XTpl {
 		}
 		
 		_tuple_bu("\n\t void xtpl_tuple_")(_name)("_function_render(Buffer bu){\n");
-			_tuple_bu
-					("int jj = i ;\n")
-			;
-		
+	
 		_tuple_bu("\t}\n");
 		_tuple_bu("} \n");
 		

@@ -68,9 +68,6 @@ class Tpl(string TplName, string _file = __FILE__, size_t _line = __LINE__ ) {
 		static const list = ctfe_split(tpl_var_id_offset_size, ':');
 		
 		pragma(msg, tpl_var_id_offset_size );
-		mixin("static assert( !is("~ list[1] ~ "==class) , `var name '" ~ name ~ "' can't be class` ) ;" );
-		mixin("static assert( !is("~ list[1] ~ "==struct) , `var name '" ~ name ~ "' can't be struct` ) ;" );
-		mixin("static assert( !is("~ list[1] ~ "==interface) , `var name '" ~ name ~ "' can't be interface` ) ;" );
 		
 		return this ;
 	}
@@ -94,14 +91,14 @@ void main() {
 
 	auto tpl = new Tpl!("UserList", __FILE__, __LINE__) ;
 	
+	
 	int i = 10 ;
 	auto u = new User ;
 	
 	tpl.assign!("user", __FILE__, __LINE__)(u);
-	tpl.assign!("i", __FILE__, __LINE__)(i);
 	
 	auto u2 = new .User ;
-	tpl.assign!("user", __FILE__, __LINE__)(u2);
+	tpl.assign!("User1", __FILE__, __LINE__)(u2);
 	
 	tpl.assign!("import1", __FILE__, __LINE__)(i);
 	
