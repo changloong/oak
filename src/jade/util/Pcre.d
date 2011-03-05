@@ -290,11 +290,12 @@ struct RegExp {
 		int i	= 0 ;
 		buf.clear ;
 		bool ret = each(subject, (string[] ms) {
+			
 			int j	= &ms[0][0] - subject.ptr ;
 			if( j !is i ) {
 				buf( subject[i..j] );
 			}
-			i	= &ms[0][$-1] - subject.ptr ;
+			i	= &ms[0][$-1] - subject.ptr + 1 ;
 			static if( isSomeString!(T) ){
 				buf(   _to );
 			}else static if( is(T==char) ){
