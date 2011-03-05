@@ -1,8 +1,8 @@
-//: \$dmd2 -J. -unittest
+//: \$dmd2 -J. -unittest \+..\src\xtpl\Buffer.d
 
 module tpl2.test ;
 
-import std.stdio, std.conv, std.traits ;
+import std.stdio, std.conv, std.traits, xtpl.Buffer ;
 
 
 /// compile time integer to string
@@ -49,7 +49,7 @@ string[] ctfe_split(string s, char c){
 
 
 class Tpl(string TplName, string _file = __FILE__, size_t _line = __LINE__ ) {
-	alias void* Buffer;
+	alias XTpl_Buffer Buffer;
 	alias void delegate(Buffer) render_dg_ty ;
 	
 	static const string _class_loc	 = TplName ~ ":" ~ _file[0..$] ~ "#" ~ ctfe_i2a(_line) ;
@@ -96,7 +96,7 @@ void main() {
 	auto u = new User ;
 	tpl.assign!("user", __FILE__, __LINE__)(u);
 	
-	tpl.assign!("page_title", __FILE__, __LINE__)( "test page"[] );
+	tpl.assign!("page_title", __FILE__, __LINE__)( 1 );
 	
 	
 	auto fn1	= tpl.render!("../src/jade/example.jade", __FILE__, __LINE__)();

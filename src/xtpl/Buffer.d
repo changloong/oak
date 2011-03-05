@@ -1,8 +1,15 @@
 
 module xtpl.Buffer ;
 
-import 
-	xtpl.all;
+package import 
+	std.algorithm,
+	std.traits,
+	std.exception,
+	std.format,
+	std.range,
+	std.array,
+	std.string,
+	std.conv;
 
 final class XTpl_Buffer : OutputRange!(char) {
         alias typeof(this)	This;
