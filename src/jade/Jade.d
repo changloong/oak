@@ -18,6 +18,7 @@ package import
 	
 	
 package import 
+	std.format,
 	std.datetime,
 	std.conv,
 	std.array,

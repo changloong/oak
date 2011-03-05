@@ -108,7 +108,8 @@ template Tpl_Jade(string name, T, string _file = __FILE__, size_t _line = _LINE_
 
 	static const string render_arg = "tpl://render::" ~ T._class_loc ~ "::"  ~ name ~ ":"  ~ T._file[0..$] ~ "#" ~ ctfe_i2a(T._line) ~ "," ~ _file[0..$] ~ "#" ~ ctfe_i2a(_line)  ;
 	static const string render_src = import( render_arg ) ;
-	pragma(msg, render_src) ;
+	//pragma(msg, render_src) ;
+	
 	mixin(render_src) ;
 	alias  typeof(&_tpl_struct.init.render) _tpl_render_delegate ;
 
@@ -136,9 +137,11 @@ void main() {
 	
 	mixin Tpl_Jade!("../src/jade/example.jade", typeof(tpl) , __FILE__, __LINE__) jade ;
 	
+	
 	auto obj = jade.compile(tpl);
 	auto bu = new XTpl_Buffer(1024, 1024);
 	obj.render(bu);
 	
 	writefln("%s", bu);
+	
 }

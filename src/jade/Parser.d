@@ -41,8 +41,7 @@ struct Parser {
 		if (this.peek.tp is tp) {
 			return this.lexer.advance;
 		} else {
-			Log("expected %s, but got %s on line:%d",   Tok.type(tp), this.peek.type, this.lexer.ln );
-			assert(false);
+			throw new Exception( std.string.format("expected %s, but got %s on line:%d",  Tok.type(tp), this.peek.type,  this.filename, this.lexer.ln ));
 		}
 		return null ;
 	}
@@ -53,7 +52,6 @@ struct Parser {
 		}
 		return null ;
 	}
-	
 	
 	Node* parseExpr() {
 		switch(this.peek.tp){
@@ -78,8 +76,8 @@ struct Parser {
 				this.lexer.defer(tok);
 				return this.parseExpr();
 			default:
-				Log("expected %s", this.peek.type);
-				assert(false);
+				
+				throw new Exception(  std.string.format("unexpected tok %s , on file:%s, line:%d \n%s", this.peek.type,  this.filename, this.peek.ln, this.input) );
 		}
 		return null ;
 	}

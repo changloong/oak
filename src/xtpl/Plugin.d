@@ -88,7 +88,7 @@ void tpl_error(string _file = __FILE__, size_t _line = __LINE__, T...)(string fm
 	} else {
 		bu("Error\n\0");
 	}
-	throw new Exception("") ;
+	throw new Exception( bu.toString ) ;
 }
 
 export extern(C) size_t plugin_lib_import(char* in_name, char** out_error , void** out_buffer) {
@@ -104,6 +104,9 @@ export extern(C) size_t plugin_lib_import(char* in_name, char** out_error , void
 		*out_buffer =  cast(char*)  _tpl_global_buffer.ptr ;
 		return ret.length ;
 	} catch(Exception e) {
+		scope bu =  new XTpl_Buffer(_tpl_global_buffer) ;
+		bu.clear ;
+		bu(e.toString)('\0');
 		*out_error	= cast(char*)  _tpl_global_buffer.ptr ;
 	}
 	return 0 ;
