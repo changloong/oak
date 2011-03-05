@@ -26,4 +26,21 @@ struct Tag {
 			`br` ,
 			`hr` ,
 		] ;
+	
+	static const string[] block_tags = 
+		[
+			`html`,
+			`head`,
+			`body` ,
+			`div` ,
+			`p` ,
+			`form` ,
+			`div` ,
+			`table` ,
+			`tbody` ,
+			`tr` ,
+			`h1` ,
+			`h2` ,
+			`h3` ,
+		] ;
 }

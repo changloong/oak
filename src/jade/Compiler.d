@@ -243,6 +243,13 @@ struct Compiler {
 			asString("<").asString(name).asString(">");
 		}
 		
+		foreach(int i, ref _name; Tag.block_tags){
+			if( name == _name ) {
+				_bu("\\n");
+				break ;
+			}
+		}
+		
             	if (tag.tag.code !is null ){
 			visitCode(tag.tag.code);
 		}
@@ -344,7 +351,7 @@ struct Compiler {
 			throw new Error(`unknown doctype "` ~ name ~ `"`);
 		}
        		asString(doctype);
-       		//_bu("\\n");
+       		_bu("\\n");
 	}
 	
 	string js(){
