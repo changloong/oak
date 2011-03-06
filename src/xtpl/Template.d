@@ -271,7 +271,7 @@ class XTpl {
 		_tuple_loc	= loc.idup ;
 		_tuple_len	= _vars.length ;
 		_tuple_bu
-			("\n// xtpl tuple ")(_name)("\n")
+			("\n#line 1 \"")(_file_path)("._d\" \n")
 			("static struct xtpl_tuple_")(_name)(" {\n")
 			("\tprivate alias typeof(this) _This ; \n")
 		;

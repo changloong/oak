@@ -107,6 +107,7 @@ template Tpl_Jade(string name, T, string _file = __FILE__, size_t _line = _LINE_
 	//pragma(msg, render_src) ;
 	
 	mixin(render_src) ;
+	
 	alias  typeof(&_tpl_struct.init.render) _tpl_render_delegate ;
 
 	_tpl_struct* compile(T tpl){
