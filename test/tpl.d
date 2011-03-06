@@ -92,13 +92,9 @@ class Tpl(string TplName, string _class_file = __FILE__, size_t _class_line = __
 		static const id = ctfe_a2i(list[2]);
 		static const offset = ctfe_a2i(list[3]);
 		static const size	= ctfe_a2i(list[4]);
-		
-		pragma(msg, tpl_var_id_offset_size);
-
+		// pragma(msg, tpl_var_id_offset_size);
 		assert( _tpl_tuple.length > offset + size );
-		
 		memcpy( &_tpl_tuple[offset  ], &t, size  );
-		
 		return this ;
 	}
 
@@ -120,9 +116,9 @@ template Tpl_Jade(string name, T, string _file = __FILE__, size_t _line = _LINE_
 
 
 class User {
-	bool 	login ;
+	bool 	login = true;
 	bool 	admin ;
-	int	id  = 300 ;
+	int	id  = 3001 ;
 	string 	name = "Chang Long" ;
 }
 

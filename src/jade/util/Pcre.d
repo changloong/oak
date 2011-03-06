@@ -212,6 +212,7 @@ struct RegExp {
 			free ;
 			return false ;
 		}
+		study ;
 		_options	= options ;
 		return true ;
 	}
