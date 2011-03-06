@@ -5,10 +5,8 @@ import jade.Jade ;
 struct Tok {
 	enum Type {
 		None ,
-		Newline ,
 		
 		String ,
-		vString ,
 		DocType ,
 		Comment ,
 
@@ -42,9 +40,10 @@ struct Tok {
 	static const string[] Type_Name	= EnumMemberName!(Type) ;
 	
 	Type	ty ;
-	size_t	id ;
 	size_t	ln ;
 	size_t	tab ;
+	Tok*	next ;
+	Tok*	pre ;
 	
 	union {
 		// newline

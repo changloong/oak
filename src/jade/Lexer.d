@@ -319,7 +319,7 @@ struct Lexer {
 	
 	static void Init_RegExp() {
 		
-		init_re1(`\r\n|\r` "\0");
+		init_re1(`\r\n|\r(?!\n)` "\0");
 		init_re2(`\t`  "\0");
 		
 		comment_re1(`^ *\/\/(-)?([^\n]+)`  "\0") ;

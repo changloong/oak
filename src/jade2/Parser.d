@@ -4,15 +4,19 @@ module jade.Parser ;
 import jade.Jade ;
 
 struct Parser {
-	Compiler*	compiler ;
+	Pool*		pool ;
+	string		filename ;
+	string		filedata ;
 	Lexer		lexer ;
 	
-	void Init(){
-		lexer.compiler	= compiler ;
-		lexer.Init ;
+	void Init(Compiler* cc){
+		pool	= &cc.pool ;
+		filename	= cc .filename ;
+		filedata	= cc .filedata ;
+		lexer.Init(cc) ;
 	}
 	
-	void parse(){
-		auto tk	= lexer.peek ;
+	void parse() {
+		while( lexer.peek !is null) {}
 	}
 }

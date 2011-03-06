@@ -17,17 +17,26 @@ class XTpl {
 	
 	alias  typeof(this)	This ;
 	static __gshared This[string]	tpl_instances ;
-	static __gshared string[] inner_vars	= ["ob"];
+	static __gshared string[] inner_vars	= ctfe_split(
+									"ob empty put front back popFront popBack toHash toString init destroy clear length remove typeinfo"
+									, ' ');
 	static __gshared string[] inner_type	= ["render"];
-	static __gshared string[] buildin_type	= ctfe_split("void byte bool ubyte short ushort int uint long ulong cent ucent float double real ifloat idouble ireal cfloat cdouble creal char wchar dchar body asm bool true false function delegate",' ') ;
+	static __gshared string[] buildin_type	= ctfe_split(
+					" void byte bool ubyte short ushort int uint long ulong cent ucent float double real ifloat idouble ireal cfloat cdouble creal char wchar dchar body asm bool true false function delegate"
+					" Object ClassInfo  ModuleInfo IUnknown"
+					" std math"
+					" string size_t ptrdiff_t ssize_t"
+					" __LINE__ __FILE__ __DATE__ __TIME__ __TIMESTAMP__ __VENDOR__ __VERSION__ __EOF__"
+					,' ') ;
 	static __gshared string[] key_words	= ctfe_split(
-					"public private protected with extern "
-					"final abstract override const debug version pragma public private deprecated protected volatile"
-					"class struct interface enum new this null delete invariant super union template"
-					"if for foreach while do assert return unittest try catch else throw switch case break continue default finally goto synchronized"
-					"is import module alias typedef with cast package typeof typeid classinfo mixin"
-					"in out const static inout lazy ref extern export auto align scope pure"
-					"__gshared __traits tupleof stringof sizeof offsetof string size_t ptrdiff_t ssize_t"
+					" public private protected with extern "
+					" final abstract override const debug version pragma public private deprecated protected volatile"
+					" class struct interface enum new this null delete invariant super union template"
+					" if for foreach while do assert return unittest try catch else throw switch case break continue default finally goto synchronized"
+					" is import module alias typedef with cast package typeof typeid classinfo mixin"
+					" in out const static inout lazy ref extern export auto align scope pure"
+					" tupleof stringof sizeof offsetof mangleof tupleof alignof"
+					" __gshared __traits __ctfe __vptr __monitor __coverage __ctor __dtor __cpctor __postblit __invariant __unitTest __result __returnLabel"
 					,' ') ;
 	
 	static char[] Invoke(char[] _argument){
@@ -164,6 +173,15 @@ class XTpl {
 			tpl_error("var name `%s` on loc:(%s) is a key word, please use other name", var, loc );
 		}
 		
+		static __gshared RegExp re1 ;
+		if( re1.empty ) {
+			re1(`^op[A-Z][a-zA-z\_]+$`);
+		}
+		
+		re1.each(cast(string) var, (string[] ms){
+			tpl_error("var name `%s` on loc:(%s) is invalid", var, loc );
+			return false;
+		});
 	}
 	
 	
@@ -253,7 +271,7 @@ class XTpl {
 		_tuple_loc	= loc.idup ;
 		_tuple_len	= _vars.length ;
 		_tuple_bu
-			("\n// xtpl tuple ")(_name)("\n")
+			("\n#line 1 \"")(_file_path)("._d\" \n")
 			("static struct xtpl_tuple_")(_name)(" {\n")
 			("\tprivate alias typeof(this) _This ; \n")
 		;

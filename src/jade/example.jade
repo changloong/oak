@@ -5,15 +5,15 @@ html(lang=en)
     title {page_title}
   body
     #user_list.test1
-      | test div 
-      | multi line 
+      | test div
+      | multi line
       | hehe
       // test ' \n
       - if user.login
-        p welcome 
+        p welcome
           a#member.profile(href=/profile/{user.id}/, target=blank) {user.name}
       - else if user.admin
         p admin controll panel
       - else
-        p please 
+        p please
           a#login login

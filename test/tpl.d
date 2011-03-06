@@ -92,13 +92,9 @@ class Tpl(string TplName, string _class_file = __FILE__, size_t _class_line = __
 		static const id = ctfe_a2i(list[2]);
 		static const offset = ctfe_a2i(list[3]);
 		static const size	= ctfe_a2i(list[4]);
-		
-		pragma(msg, tpl_var_id_offset_size);
-
+		// pragma(msg, tpl_var_id_offset_size);
 		assert( _tpl_tuple.length > offset + size );
-		
 		memcpy( &_tpl_tuple[offset  ], &t, size  );
-		
 		return this ;
 	}
 
@@ -108,8 +104,10 @@ template Tpl_Jade(string name, T, string _file = __FILE__, size_t _line = _LINE_
 
 	static const string render_arg = "tpl://render::" ~ T._class_loc ~ "::"  ~ name ~ ":"  ~ T._file[0..$] ~ "#" ~ ctfe_i2a(T._line) ~ "," ~ _file[0..$] ~ "#" ~ ctfe_i2a(_line)  ;
 	static const string render_src = import( render_arg ) ;
-	pragma(msg, render_src) ;
+	//pragma(msg, render_src) ;
+	
 	mixin(render_src) ;
+	
 	alias  typeof(&_tpl_struct.init.render) _tpl_render_delegate ;
 
 	_tpl_struct* compile(T tpl){
@@ -119,9 +117,13 @@ template Tpl_Jade(string name, T, string _file = __FILE__, size_t _line = _LINE_
 
 
 class User {
+<<<<<<< HEAD
 	bool 	login = true ;
+=======
+	bool 	login = true;
+>>>>>>> a9609e244fa25969f72631afcfe3a5a39e54095e
 	bool 	admin ;
-	int	id  = 300 ;
+	int	id  = 3001 ;
 	string 	name = "Chang Long" ;
 }
 
@@ -136,9 +138,11 @@ void main() {
 	
 	mixin Tpl_Jade!("../src/jade/example.jade", typeof(tpl) , __FILE__, __LINE__) jade ;
 	
+	
 	auto obj = jade.compile(tpl);
 	auto bu = new XTpl_Buffer(1024, 1024);
 	obj.render(bu);
 	
 	writefln("%s", bu);
+	
 }
