@@ -24,7 +24,7 @@ class XTpl {
 	static __gshared string[] buildin_type	= ctfe_split(
 					" void byte bool ubyte short ushort int uint long ulong cent ucent float double real ifloat idouble ireal cfloat cdouble creal char wchar dchar body asm bool true false function delegate"
 					" Object ClassInfo  ModuleInfo IUnknown"
-					" std "
+					" std math"
 					" string size_t ptrdiff_t ssize_t"
 					" __LINE__ __FILE__ __DATE__ __TIME__ __TIMESTAMP__ __VENDOR__ __VERSION__ __EOF__"
 					,' ') ;
