@@ -18,7 +18,7 @@ class XTpl {
 	alias  typeof(this)	This ;
 	static __gshared This[string]	tpl_instances ;
 	static __gshared string[] inner_vars	= ctfe_split(
-									"ob empty put front back popFront popBack toHash toString init length remove typeinfo"
+									"ob empty put front back popFront popBack toHash toString init destroy clear length remove typeinfo"
 									, ' ');
 	static __gshared string[] inner_type	= ["render"];
 	static __gshared string[] buildin_type	= ctfe_split(
