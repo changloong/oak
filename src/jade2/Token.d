@@ -13,8 +13,11 @@ struct Tok {
 		Tag ,
 		Id ,
 		Class ,
-		Attrs ,
+		AttrStart ,
 		Attr ,
+		AttrEnd ,
+		AttrKey ,
+		AttrValue ,
 
 		Var ,
 		If ,
@@ -46,16 +49,9 @@ struct Tok {
 	Tok*	pre ;
 	
 	union {
-		
 		// String 
 		string	string_value ;
 		
-		// var
-		struct {
-			string	var_name ;
-			bool	var_escape ;
-		}
-		// each
 	}
 	
 	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
@@ -65,6 +61,11 @@ struct Tok {
 	}
 	
 	string type(){
+		assert( ty < Type_Name.length && ty >= 0 );
+		return Type_Name[ty] ;
+	}
+	
+	static string sType(Tok.Type ty){
 		assert( ty < Type_Name.length && ty >= 0 );
 		return Type_Name[ty] ;
 	}
