@@ -119,7 +119,7 @@ template Tpl_Jade(string name, T, string _file = __FILE__, size_t _line = _LINE_
 
 
 class User {
-	bool 	login ;
+	bool 	login = true ;
 	bool 	admin ;
 	int	id  = 300 ;
 	string 	name = "Chang Long" ;
