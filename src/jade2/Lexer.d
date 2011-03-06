@@ -137,6 +137,7 @@ struct Lexer {
 			default:
 				err("expect new line");
 		}
+		Log("NewLine");
 		ln++;
 	}
 	
@@ -162,19 +163,21 @@ struct Lexer {
 	
 	private void parseIndent(){
 		int i	= 0 ;
-		while( _end - i >= _ptr ) {
-			if( _ptr[i] is ' ' ) {
+		while( _ptr <= _end ) {
+			if( _ptr[0] is ' ' ) {
 				i++ ;
-			} else if(_ptr[i] is '\t'){
+			} else if(_ptr[0] is '\t'){
 				i += 2 ;
 			} else {
 				break ;
 			}
+			_ptr++;
 		}
 		if( i % 2 ) {
 			err("expect even indent");
 		}
 		_last_indent_size	= i / 2 ;
+		Log("Indent: %d `%s`", _last_indent_size, line );
 	}
 	
 	

@@ -15,7 +15,7 @@ struct Pool {
 		
 		size_t	size ;
 		size_t	step 	= _Min_Step ;
-		GC.BlkAttr attr	= GC.BlkAttr.NO_SCAN ;
+		GC.BlkAttr attr	= GC.BlkAttr.NO_SCAN  | GC.BlkAttr.NO_MOVE ;
 	}
 	
 	void Init(size_t _step = _Def_Step , GC.BlkAttr _attr = cast(GC.BlkAttr) 0 ) {
