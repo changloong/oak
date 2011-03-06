@@ -325,20 +325,29 @@ struct Lexer {
 		while( (len = _end - _ptr) >= 0 ) {
 			if( !_stop_zero ) {
 				if( _stop_space ) {
-					if( _ptr[0] is ' ' ) {
+					if( _ptr[0] is ' ') {
 						break ;
 					}
-				} else {
-					if( _ptr[0] is ')' ) {
-						if( paren_count is 0 ) {
-							if( _ptr is _end ){
-								err("not end attr");
-							}
+					if( _ptr !is _end ) {
+						if( _ptr[0] !is '\\' && ( _ptr[1] is ',' || _ptr[1] is ')' )) {
+							_str_bu(_ptr[0]) ;
+							_ptr++;
 							break ;
 						}
-						paren_count-- ;
-					} else if( _ptr[0] is '(' ) {
-						paren_count++ ;
+					}
+				} else {
+					if( _ptr !is _end ) {
+						if( _ptr[1] is ')' ) {
+							if( paren_count is 0 ) {
+								if( _ptr is _end ){
+									err("not end attr");
+								}
+								break ;
+							}
+							paren_count-- ;
+						} else if( _ptr[1] is '(' ) {
+							paren_count++ ;
+						}
 					}
 				}
 			} 
@@ -588,9 +597,9 @@ struct Lexer {
 				}
 				
 				parseInlineString( _stop_char ) ;
+				skip_space;
 				
 				if( _stop_char !is ' ' ){
-					skip_space;
 					if( _ptr is _end ) {
 						err("expect AttrEnd") ;
 					}
@@ -598,19 +607,22 @@ struct Lexer {
 						err("expect AttrEnd `%s`", line) ;
 					}
 					_ptr++;
+					skip_space;
 				}
-				skip_space;
+				
 			}
 			
 			skip_space ;
 			
 			if( _ptr[0] is ',' ) {
+				// skip ,
+				_ptr++ ;
+				
 				// \\n, {/if}, {#else}, {#else if}
 				skip_space ;
 				if( _ptr is _end ) {
 					err("expect AttrEnd") ;
 				}
-				len = _end - _ptr ;
 				
 				// \\n
 				if( len > 0 && _ptr[0] is '\\' && (_ptr[1] is '\r' || _ptr[1] is '\n') ){
