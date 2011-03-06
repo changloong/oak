@@ -3,6 +3,8 @@ module jade.Node ;
 
 import jade.Jade ;
 
+package import 
+	jade.node.Tag ;
 
 
 abstract class Node {

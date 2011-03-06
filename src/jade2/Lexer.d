@@ -5,7 +5,7 @@ import jade.Jade ;
 
 struct Lexer {
 	Pool*		pool ;
-	vBuffer		_str_bu ;
+	vBuffer	_str_bu ;
 	string		filename ;
 	
 	const(char)*	_ptr ;
@@ -15,19 +15,21 @@ struct Lexer {
 	Tok*		_root_tok ;
 	Tok*		_last_tok ;
 	
-	size_t		ln, _last_indent_size ;
+	size_t	ln, _last_indent_size, _offset_tabs ;
+	bool		_search_inline_code ;
 	
 	void Init(Compiler* cc)  in {
 		assert( cc !is null);
 	} body {
 		pool		= &cc.pool ;
-		_str_bu		= cc._str_bu ;
+		_str_bu	= cc._str_bu ;
 		filename	= cc .filename ;
 		
 		_ptr	= &cc.filedata[0];
 		_end	= &cc.filedata[$-1];
 		_start	= _ptr ;
 		ln	= 1 ;
+		_search_inline_code	= true ;
 	}
 	
 	string line() {
@@ -88,7 +90,7 @@ struct Lexer {
 				break ;
 			}
 			if( _ptr[0] !is '\r' && _ptr[0] !is '\n' ){
-				err("lexer bug");
+				err("lexer bug `%s`", line);
 			}
 			skip_newline;
 		}
@@ -100,7 +102,7 @@ struct Lexer {
 		tk	= pool.New!(Tok)() ;
 		tk.ty	= ty ;
 		tk.ln	= ln ;
-		tk.tabs	= _last_indent_size ;
+		tk.tabs	= _last_indent_size + _offset_tabs ;
 		tk.pre	= _last_tok ;
 		_last_tok	= tk ;
 		if( val ) {
@@ -445,6 +447,7 @@ struct Lexer {
 		if( i > 0 ) {
 			if( !inline ) {
 				Tok* tk = NewTok(Tok.Type.String, cast(string) _ptr[0..i] ) ;
+				_ptr	+= i ;
 				return tk ;
 			} else {
 				return parseInlineString() ;
@@ -464,7 +467,7 @@ struct Lexer {
 
 		if( len > 3 ) {
 			skip_space() ;
-			Tok* s	= parseString ;
+			Tok* s	= parseString(false) ;
 		}
 		return tk ;
 	}
@@ -504,20 +507,51 @@ struct Lexer {
 		}
 		
 		if( _ptr[0] is ':' ) {
+			_ptr++;
 			if( _ptr is _end || _ptr[0] !is ' ' && _ptr[0] !is '\t' ) {
-				err("expect space");
+				err("expect space `%s`", line);
 			}
 			skip_space ;
-			// inline tag ;
-			assert(false) ;
+			auto _tag	= skip_identifier ;
+			if( _tag is null ) {
+				if( _ptr is _end || _ptr[0] !is ' ' && _ptr[0] !is '\t' ) {
+					err("expect embed tag");
+				}
+				if( _ptr[0] != '#' && _ptr[0] != '.' ) {
+					err("expect embed tag");
+				}
+				_tag	= "div" ;
+			}
+			_offset_tabs++;
+			auto _embed_tag	= parseTag(_tag) ;
+			assert(_embed_tag !is null);
+			_offset_tabs-- ;
+			return _tk ;
 		}
 		
-		if( _ptr is _end ) {
-			return _tk;
+		// _search_inline_code ?
+		if( _ptr <= _end && _ptr[0] is '%' ) {
+			_ptr++;
+			_search_inline_code	= true ;
+		} else {
+			_search_inline_code	= false ;
 		}
 		
 		skip_space ;
-		if( _ptr[0] is '(' ) {
+		
+		scope(exit){
+			// search text tag 
+			if( std.algorithm.countUntil( Tag.text_block, tag ) >= 0 ) {
+				assert(false, tag);
+			}
+		}
+		
+		// new line
+		if( _ptr <= _end && _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+			return _tk ;
+		}
+		
+		if( _ptr <= _end && _ptr[0] is '(' ) {
 			Tok* _tk_attrs	= parseAttrs() ;
 			if( _ptr !is _end && _ptr[0] !is '\r' && _ptr[0] !is '\n' && _ptr[0] !is '\t' && _ptr[0] !is ' ' ){
 				err("missing space after attributes `%s`", line);
@@ -526,7 +560,7 @@ struct Lexer {
 		}
 		
 		// new line
-		if( _ptr !is _end && (_ptr[0] is '\r' || _ptr[0] is '\n') ) {
+		if( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 			return _tk ;
 		}
 		
