@@ -30,8 +30,10 @@ struct Lexer {
 		ln	= 1 ;
 	}
 	
-	string line(){
-		return cast(string) _ptr[ 0 .. find(_ptr, _end, '\n') ];
+	string line() {
+		auto val	= cast(string) _ptr[ 0 .. find(_ptr, _end, '\n') ];
+		while( val.length && val[$-1] is '\r' ) val	= val[0..$-1] ;
+		return val ;
 	}
 	
 	void err(size_t _line = __LINE__, T...)(string fmt, T t){
@@ -189,11 +191,11 @@ struct Lexer {
 		int lcurly  , paren ;
 		
 		auto __ptr = _ptr ;
-		int len ;
 		L1:
-		while( ( len = (_end - _ptr)) >= 0 ) {
+		while(  _end !is _ptr ) {
 			switch( _ptr[0] ) {
 				case '{':
+					_ptr++ ;
 					lcurly++;
 					break;
 				case '}':
@@ -202,47 +204,51 @@ struct Lexer {
 							err("code end error, paren is not match ", paren);
 						}
 						_ptr++ ;
-						auto val	= __ptr[ 0 .. _ptr - __ptr - 1 ] ;
+						auto val	= __ptr[ 0 .. _ptr - __ptr -1 ] ;
 						if( _tmp_ty is Tok.Type.Var ) {
 							Tok* tk	= NewTok(Tok.Type.Var, cast(string) val);
 							return tk ;
 						}
-						if( val.length <= 1 ) {
+						if( val.length < 3 ) {
 							err("expect more code '%s' ", val);
 						}
-						switch( val[0] ) {
-							case '#':
-								// #if, #else, #else if ,
-								if( val.length > 3 ) {
-									// #if
-									if( val[1] is 'i' && val[2] is 'f' && (val[3] is ' ' || val[3] is '\t' ) ) {
-										
-									} else if( val.length > 4  && val[1] is 'e' && val[2] is 'l' && val[3] is 's' && val[4] is 'e' ){
-										val	= val[5..$] ;
-										// skip space
-										while( val.length && val[0] is ' ' || val[0] is '\t' ) {
-											val	= val[1..$];
-										}
-										// #else
-										if( val.length is 0 ) {
-											return  NewTok(Tok.Type.Else ) ;
-										}
-										// #else if
-										if( val.length > 3 && val[0] is 'i' && val[1] is 'f' && ( val[2] is ' ' || val[2] is '\t') ) {
-											Tok* tk	= NewTok(Tok.Type.ElseIf , cast(string) val[3..$] );
-											return tk ;
-										}
+				
+						if( val[0] is 'i' && val[1] is 'f' && ( val[2] is ' '  || val[2] is '\t'  ) ) {
+							auto _val	= val[3..$] ;
+							while(_val.length && _val[0] is ' ') _val = _val[1..$];
+							while(_val.length && _val[$-1] is ' ') _val = _val[0..$-1];
+							if( _val.length > 0 ) {
+								return  NewTok(Tok.Type.If, cast(string) _val ) ;
+							}
+						} else if( val.length > 3 &&  val[0] is 'e' && val[1] is 'l' && val[2] is 's' && val[3] is 'e'  ){
+							auto _val	= val[4..$] ;
+							while(_val.length && _val[0] is ' ') _val = _val[1..$];
+							while(_val.length && _val[$-1] is ' ') _val = _val[0..$-1];
+							
+							// else 
+							if( _val.length is 0 ) {
+								return  NewTok(Tok.Type.Else ) ;
+							} else {
+								// else if
+								if( _val.length > 3 &&  _val[0] is 'i' && _val[1] is 'f' && ( _val[2] is ' '  || _val[2] is '\t'  )  ) {
+									_val	= val[3..$] ;
+									while(_val.length && _val[0] is ' ') _val = _val[1..$];
+									if( _val.length > 0 ) {
+										return  NewTok(Tok.Type.ElseIf, cast(string) _val ) ;
 									}
 								}
-							case '/':
-								if( val.length is 3 && val[1] is 'i' && val[2] is 'f' ) {
-									return  NewTok(Tok.Type.EnfIf ) ;
-								}
-							default:
-								err("inline code error `%s`", __ptr[ 0 .. _ptr - __ptr - 1 ] );
+							}
+						} else if( val[0] is '/' ) {
+							auto _val	= val[1..$] ;
+							while(_val.length && _val[0] is ' ') _val = _val[1..$];
+							while(_val.length && _val[$-1] is ' ') _val = _val[0..$-1];
+							if( _val.length is 2 && _val[0] is 'i' && _val[1] is 'f' ) {
+								return  NewTok(Tok.Type.EnfIf ) ;
+							}
 						}
-						assert(false);
+						err("inline code error `%s`", val );
 					}
+					_ptr++ ;
 					lcurly--;
 					break;
 				case '"':
@@ -250,9 +256,11 @@ struct Lexer {
 					skip_inline_qstring(_ptr[0]) ;
 					break;
 				case '(':
+					_ptr++ ;
 					paren++;
 					break;
 				case ')':
+					_ptr++ ;
 					paren--;
 					break;
 				case '\r':
@@ -260,9 +268,8 @@ struct Lexer {
 					err("expect '}'");
 					break;
 				default:
-					break;
+					_ptr++ ;
 			}
-			_ptr++ ;
 		}
 		err("expect '}'");
 		return null ;
@@ -306,12 +313,12 @@ struct Lexer {
 		auto __ptr = _ptr ;
 		
 		bool _stop_zero	= _stop_char is 0 ;
-		bool _stop_space = false ;
+		bool _stop_comma = false ;
 		bool _stop_paren = false ;
 		
 		if( !_stop_zero ) {
-			if( _stop_char is ' ' ) {
-				_stop_space	= true ;
+			if( _stop_char is ',' ) {
+				_stop_comma	= true ;
 			} else {
 				assert( _stop_char is ')' );
 				_stop_paren	= true ;
@@ -324,30 +331,26 @@ struct Lexer {
 		L1:
 		while( (len = _end - _ptr) >= 0 ) {
 			if( !_stop_zero ) {
-				if( _stop_space ) {
-					if( _ptr[0] is ' ') {
-						break ;
-					}
+				if( _stop_comma ) {
 					if( _ptr !is _end ) {
-						if( _ptr[0] !is '\\' && ( _ptr[1] is ',' || _ptr[1] is ')' )) {
+						if( _ptr[1] is ')'   || _ptr[1] is ','  ) {
 							_str_bu(_ptr[0]) ;
 							_ptr++;
 							break ;
 						}
 					}
 				} else {
-					if( _ptr !is _end ) {
-						if( _ptr[1] is ')' ) {
-							if( paren_count is 0 ) {
-								if( _ptr is _end ){
-									err("not end attr");
-								}
-								break ;
+					if( _ptr[0] is ')' ) {
+						if( paren_count is 0 ) {
+							if( _ptr is _end ){
+								err("not end attr");
 							}
-							paren_count-- ;
-						} else if( _ptr[1] is '(' ) {
-							paren_count++ ;
+							_ptr++ ;
+							break ;
 						}
+						paren_count-- ;
+					} else if( _ptr[0] is '(' ) {
+						paren_count++ ;
 					}
 				}
 			} 
@@ -377,19 +380,18 @@ struct Lexer {
 								break;
 							}
 						} else {
-							_str_bu('\\')( _ptr[1] ) ;
-							_ptr	+= 2;
+							// skip ('\\')
+							if( _ptr != _end && ( _ptr[1] is '(' || _ptr[1] is ')' ) ) {
+								_ptr	+= 2 ;
+								_str_bu( _ptr[1] );
+							} else {
+								_ptr++;
+								_str_bu('\\');
+							}
 							break;
 						}
-					} else {
-						if( _ptr != _end && ( _ptr[1] is '(' || _ptr[1] is ')' ) ) {
-							_ptr	+= 2 ;
-							_str_bu( _ptr[1] );
-						} else {
-							_ptr++;
-							_str_bu('\\');
-						}
-					}
+					} 
+					assert(false);
 					break;
 				case '$':
 					if( len > 0 && _ptr[1] is '{' ) {
@@ -544,112 +546,123 @@ struct Lexer {
 		_ptr++;
 		skip_space ;
 		
-		int len;
-		auto __ptr = _ptr ;
-		auto _str_pos	= _str_bu.length ;
+		bool _last_value	= true ;
 		
-		while( (len = _end - _ptr ) >=0 ) {
-			scope(exit){
+		bool scan_skip_line() {
+			if( _ptr !is _end && _ptr[0] is '\\' && (_ptr[1] is '\r' || _ptr[1] is '\n') ) {
 				_ptr++;
-			}
-			
-			if( len > 0 && _ptr[0] is '{'&& ( _ptr[1] is '#' || _ptr[1] is '/'  ) ) {
-				_ptr++;
-				Tok* _tk_code	= parseInlineCode();
-				assert( _tk_code !is null ) ;
-			}
-			
-			// parse AttrKey
-			auto key	= skip_identifier ;
-			if( key is null ) {
-				err("expect AttrKey");
-			}
-			Tok* _tk_key	= NewTok(Tok.Type.AttrKey, key);
-			
-			skip_space ;
-			len = _end - _ptr ;
-			if( len is 0 ) {
-				err("expect AttrEnd" );
-			}
-			
-			if( _ptr[0] is ')' ) {
-				return NewTok(Tok.Type.AttrEnd) ;
-			}
-			
-			if( _ptr[0] is '=' ) {
-				_ptr++ ;
+				auto _tabs	= _last_indent_size ;
+				skip_newline;
+				parseIndent ;
+				if( _last_indent_size < _tabs ){
+					err("expect indent at least %d tabs", _tabs);
+				}
+				_last_indent_size	= _tabs ;
 				skip_space ;
-				// find 
-				if( _ptr is _end ) {
-					err("expect AttrValue") ;
-				}
-				
-				Tok* _tk_val	= NewTok(Tok.Type.AttrValue) ;
-				
-				char _stop_char	 ;
-				
-				if(  _ptr[0] is '(' ) {
-					_ptr++ ;
-					skip_space;
-					_stop_char	= ')' ;
-				} else {
-					_stop_char	= ' ';
-				}
-				
-				parseInlineString( _stop_char ) ;
-				skip_space;
-				
-				if( _stop_char !is ' ' ){
-					if( _ptr is _end ) {
-						err("expect AttrEnd") ;
-					}
-					if( _ptr[0] !is ')' ){
-						err("expect AttrEnd `%s`", line) ;
-					}
-					_ptr++;
-					skip_space;
-				}
-				
+				return true ;
 			}
-			
+			return false ;
+		}
+		
+		bool scan_inline_code() {
+			skip_space;
+			if( _end != _ptr  && _ptr[0] is '{' && _ptr[1] !is ' ' && _ptr[1] !is '\t'  && _ptr[1] !is '\r' && _ptr[1] !is '\n'   ) {
+				
+				_ptr++ ;
+				parseInlineCode();
+				skip_space;
+				scan_skip_line ;
+				return true ;
+			}
+			return false ;
+		}
+		
+		bool scan_comma() {
 			skip_space ;
 			
 			if( _ptr[0] is ',' ) {
 				// skip ,
 				_ptr++ ;
-				
-				// \\n, {/if}, {#else}, {#else if}
+				_last_value	= true ;
 				skip_space ;
-				if( _ptr is _end ) {
-					err("expect AttrEnd") ;
-				}
-				
-				// \\n
-				if( len > 0 && _ptr[0] is '\\' && (_ptr[1] is '\r' || _ptr[1] is '\n') ){
-					_ptr++;
-					auto _tabs	= _last_indent_size ;
-					skip_newline;
-					parseIndent ;
-					if( _last_indent_size < _tabs ){
-						err("expect indent at least %d tabs", _tabs);
-					}
-					_last_indent_size	= _tabs ;
-					skip_space ;
-				}
-				// {/if}, {#else}, {#else if}
-				if( len > 0 && _ptr[0] is '{' ) {
-					parseInlineCode ;
-					skip_space ;
-				}
-				
-			} else {
-				if( _ptr[0] is ')' ) {
-					return NewTok(Tok.Type.AttrEnd) ;
-				}
-				err("expect AttrKey or AttrEnd `%s`", line ) ;
+				scan_inline_code ;
+				scan_skip_line ;
+				return true ;
 			}
 			
+			return false ;
+		}
+		
+		bool scan_attrs_end() {
+			skip_space ;
+			if( _ptr is _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+				err("expect AttrEnd" );
+			}
 			
+			scan_inline_code ;
+			
+			// attr end 
+			if( _ptr[0] is ')' ) {
+				_ptr++ ;
+				NewTok(Tok.Type.AttrEnd) ;
+				return true ;
+			}
+			
+			return false ;
+		}
+		
+		
+		
+		while(  _end >= _ptr ) {
+			
+			if( scan_attrs_end ) {
+				break ;
+			}
+			
+			scan_inline_code ;
+			
+			// parse AttrKey
+			assert(_last_value) ;
+			auto key	= skip_identifier ;
+			if( key is null ) {
+				err("expect AttrKey `%s`", line);
+			}
+			NewTok(Tok.Type.AttrKey, key);
+			
+			if( scan_attrs_end ) {
+				break ;
+			}
+
+			// attribute value 
+			if( _ptr[0] is '=' ) {
+				_ptr++ ;
+				skip_space ;
+				if( _ptr is _end ) {
+					err("expect AttrValue") ;
+				}
+				NewTok(Tok.Type.AttrValue) ;
+				char _stop_char	 ;
+				if(  _ptr[0] is '(' ) {
+					_ptr++ ;
+					skip_space;
+					_stop_char	= ')' ;
+				} else {
+					_stop_char	= ',' ;
+				}
+				
+				parseInlineString( _stop_char ) ;
+				skip_space ;
+			}
+			
+			if( scan_comma ) {
+				continue ;
+			}
+			
+			if( scan_attrs_end ) {
+				break ;
+			}
+			
+			err("expect AttrKey or AttrEnd `%s`", line ) ;
 		}
 		return null ;
 	}
