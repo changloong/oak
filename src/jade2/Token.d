@@ -41,13 +41,11 @@ struct Tok {
 	
 	Type	ty ;
 	size_t	ln ;
-	size_t	tab ;
+	size_t	tabs ;
 	Tok*	next ;
 	Tok*	pre ;
 	
 	union {
-		// newline
-		size_t	indent_size ;
 		
 		// String 
 		string	string_value ;
@@ -70,4 +68,5 @@ struct Tok {
 		assert( ty < Type_Name.length && ty >= 0 );
 		return Type_Name[ty] ;
 	}
+
 }

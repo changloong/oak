@@ -9,14 +9,17 @@ struct Parser {
 	string		filedata ;
 	Lexer		lexer ;
 	
-	void Init(Compiler* cc){
-		pool	= &cc.pool ;
+	void Init(Compiler* cc) in {
+		assert( cc !is null);
+	} body {
+		pool		= &cc.pool ;
 		filename	= cc .filename ;
 		filedata	= cc .filedata ;
 		lexer.Init(cc) ;
 	}
 	
 	void parse() {
-		while( lexer.peek !is null) {}
+		lexer.parse ;
+		
 	}
 }

@@ -18,6 +18,8 @@ private {
 
 struct Compiler {
 	Pool		pool ;
+	vBuffer		_str_bu ;
+	vBuffer		_ret_bu ;
 	Parser		parser ;
 	string		filedata ;
 	string		filename ;
@@ -32,12 +34,20 @@ struct Compiler {
 	} body {
 		filename	= _filename ;
 		filedata	= _filedata ;
+		if( _str_bu is null ) {
+			_str_bu	= new vBuffer(1024, 1024) ;
+		}
+		if( _ret_bu is null ) {
+			_ret_bu	= new vBuffer(1024, 1024) ;
+		}
 	}
 	
 	void compile() in {
 		assert(filename !is null);
 		assert(filedata !is null);
 	} body {
+		_str_bu.clear ;
+		_ret_bu.clear ;
 		pool.Clear ;
 		parser.Init(&this) ;
 		parser.parse ;
