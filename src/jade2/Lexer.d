@@ -49,21 +49,20 @@ struct Lexer {
 	}
 	
 	void parse() {
-		Tok* tk ;
 		while( _ptr <= _end ){
 			parseIndent ;
 			switch( _ptr[0] ) {
 				// DocType
 				case '!':
-					tk	= parseDocType ;
+					parseDocType ;
 					break;
 				// Comment
 				case '/':
-					assert(false);
+					parseComment;
 					break;
 				// code
 				case '-':
-					assert(false);
+					parseCode;
 					break;
 				// filter
 				case ':':
@@ -71,24 +70,23 @@ struct Lexer {
 					break;
 				// text
 				case '|':
-					assert(false);
+					_ptr++;
+					if( _ptr <= _end ) {
+						parseString(_search_inline_code);
+					}
 					break;
 				// id
 				case '#':
 				// class
 				case '.':
-					tk	= parseTag(`div`) ;
+					parseTag(`div`) ;
 					break;
 				// tag 
 				default:
-					tk	= parseTag ;
+					parseTag ;
 					break;
 			}
-			assert(tk !is null);
-			if( _root_tok is null ) {
-				_root_tok	= tk ;
-			}
-			if( _ptr is _end ) {
+			if( _ptr >= _end ) {
 				break ;
 			}
 			if( _ptr[0] !is '\r' && _ptr[0] !is '\n' ){
@@ -400,18 +398,19 @@ struct Lexer {
 								_ptr	+= 3;
 								break;
 							}
-						} else {
-							// skip ('\\')
-							if( _ptr < _end && ( _ptr[1] is '(' || _ptr[1] is ')' ) ) {
-								_ptr	+= 2 ;
-								_str_bu( _ptr[1] );
-							} else {
-								_ptr++;
-								_str_bu('\\');
-							}
-							break;
 						}
-					} 
+						
+						// skip ('\\')
+						if( _ptr < _end && ( _ptr[1] is '(' || _ptr[1] is ')' ) ) {
+							_ptr	+= 2 ;
+							_str_bu( _ptr[1] );
+						} else {
+							_ptr++;
+							_str_bu('\\');
+						}
+						break;
+					}
+					Log("`%s`", line);
 					assert(false);
 					break;
 				case '$':
@@ -450,6 +449,33 @@ struct Lexer {
 		}
 		save_string() ;
 		return _ret_tk ;
+	}
+	
+	string  parseLineString( bool trimr = true ){
+		if( _ptr > _end ) {
+			return null ;
+		}
+		int i	= 0 ;
+		while( _end - i >= _ptr ) {
+			if( _ptr[i] is '\n' || _ptr[i] is '\r' ) {
+				break ;
+			}
+			i++ ;
+		}
+		if( i > 0 ) {
+			_ptr	+= i ;
+			auto val	= cast(string) _ptr[0..i] ;
+			if( trimr ) {
+				while( 
+					val.length &&
+					( val[$-1] is ' ' || val[$-1] is '\t' || val[$-1] is '\r'|| val[$-1] is '\n'  )
+				) {
+					val	= val[0..$-1];
+				}
+			}
+			return  val ;
+		}
+		return null ;
 	}
 	
 	Tok*  parseString(bool inline = true ) {
@@ -718,6 +744,132 @@ struct Lexer {
 		return null ;
 	}
 	
+	Tok* parseComment(){
+		assert(_ptr[0] is '/' );
+		_ptr++;
+		if( _ptr >= _end ) {
+			err("expect Comment");
+		}
+		Tok* tk	= null ;
+		if( _ptr[0] is '/' ) {
+			// inline Common
+			_ptr++;
+			if( _ptr >= _end ) {
+				err("expect Comment");
+			}
+			tk	= NewTok(Tok.Type.CommentStart);
+			if( _ptr[0] is '-' ) {
+				_ptr++;
+				if( _ptr >= _end ) {
+					err("expect Comment");
+				}
+				tk.bool_value	= true ;
+			} else {
+				tk.bool_value	= false ;
+			}
+			_offset_tabs++;
+			parseString;
+			_offset_tabs--;
+			tk	= NewTok(Tok.Type.CommentEnd);
+			return tk ;
+		}
+		
+		tk	= NewTok(Tok.Type.CommentBlock);
+
+		if( _ptr[0] is '-' ) {
+			_ptr++;
+			if( _ptr >= _end ) {
+				err("expect Comment");
+			}
+			tk.bool_value	= true ;
+		} else {
+			tk.bool_value	= false ;
+		}
+
+		_offset_tabs++;
+		parseString;
+		_offset_tabs--;
+		
+		return tk ;
+	}
+	
+	Tok* parseCode(){
+		Tok* tk ;
+		assert(_ptr[0] is '-' );
+		_ptr++;
+		if( _ptr >= _end ) {
+			err("expect Code");
+		}
+		
+		// native code
+		if( _ptr[0] is '-' ) {
+			_ptr++;
+			if( _ptr >= _end ) {
+				err("expect Code");
+			}
+			tk	= NewTok(Tok.Type.Code, parseLineString);
+			return tk ;
+		}
+		if( _ptr[0] !is ' ' && _ptr[0] !is '\t' ) {
+			err("expect space");
+		}
+		skip_space;
+		if( _ptr >= _end ) {
+			err("expect Code");
+		}
+		auto code_line	= line ;
+		auto code_type	=  _ptr[ 0 .. safeFind!(const(char))(_ptr, &code_line[$-1], ' ') ];
+		
+		if( code_type == "if" ) {
+			_ptr	+= 2 ;
+			if( _ptr >= _end ) {
+				err("expect Code");
+			}
+			skip_space ;
+			if( _ptr >= _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+				err("expect Code");
+			}
+			tk	= NewTok(Tok.Type.IfCode, parseLineString);
+			return tk ;
+		} else if( code_type == "else" ) {
+			_ptr	+= 4 ;
+			if( _ptr >= _end ) {
+				err("expect Code");
+			}
+			skip_space ;
+			if( _ptr >= _end ) {
+				err("expect Code");
+			}
+			if( _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+				tk	= NewTok(Tok.Type.ElseIfCode, parseLineString);
+				return tk ;
+			}
+			auto code_type2	=  _ptr[ 0 .. safeFind!(const(char))(_ptr, &code_line[$-1], ' ') ];
+			
+			if( code_type2 == "if" ) {
+				_ptr	+= 2 ;
+				if( _ptr >= _end ) {
+					err("expect Code");
+				}
+				skip_space ;
+				if( _ptr >= _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+					err("expect Code");
+				}
+				tk	= NewTok(Tok.Type.IfCode, parseLineString);
+				return tk ;
+			}
+			err("expect Code `%s`", code_type2);
+			
+		} else if( code_type == "each" ) {
+			
+			assert(false, code_type) ;
+			
+		} else {
+			err("expect Code `%s`", code_type);
+		}
+		
+		return tk ;
+	}
 	
 	static size_t safeFind(T)(T* _from , T* _to, T obj){
 		T* _p = _from ;

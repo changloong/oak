@@ -8,7 +8,9 @@ struct Tok {
 		
 		String ,
 		DocType ,
-		Comment ,
+		CommentStart ,
+		CommentEnd ,
+		CommentBlock ,
 
 		Tag ,
 		Id ,
@@ -25,6 +27,8 @@ struct Tok {
 		Else ,
 		EnfIf ,
 
+		Code ,	
+		
 		Each ,
 		Each_Type ,
 		Each_Key ,
@@ -35,7 +39,9 @@ struct Tok {
 		Each_To ,
 		Each_Step ,
 		
-		Code ,	
+		IfCode,
+		ElseIfCode,
+		ElseCode,
 		
 		Filter ,
 	}

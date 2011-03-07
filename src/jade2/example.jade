@@ -1,4 +1,4 @@
-!!!  ${vas}123 3 {else if 1}
+!!! 5
 html
   head
     meta(name=Content-Type, \
@@ -13,7 +13,7 @@ html
       // test ' \n
       - if user.login
         p welcome 
-          a#member.profile(href=/profile/{user.id}/, target=blank) {user.name}
+          a#member.profile(href=/profile/${user.id}/, target=blank) ${user.name}
       - else if user.admin
         p admin controll panel
       - else
