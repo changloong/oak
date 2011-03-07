@@ -5,6 +5,10 @@ html(lang={if user.admin}en{/if} , id=123) \${page_title}test
       .class1{
       	font-size:12px;
       }
+    script
+       $(document.body).ready(function(){ 
+           alert(123);
+       });
     meta(name=Content-Type, \
       {if user.login}content=text/html, {/if}\
       charset=utf-8)
