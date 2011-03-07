@@ -168,8 +168,9 @@ struct Lexer {
 		return cast(string) __ptr[ 0 .. _ptr - __ptr ] ;
 	}
 	
-	private void parseIndent(){
+	private size_t parseIndent() {
 		int i	= 0 ;
+		auto __ptr	= _ptr ;
 		while( _ptr <= _end ) {
 			if( _ptr[0] is ' ' ) {
 				i++ ;
@@ -182,6 +183,7 @@ struct Lexer {
 		}
 		_last_indent_size	= i / 2 ;
 		Log("Indent: %d `%s`", _last_indent_size, line );
+		return _ptr - __ptr  ;
 	}
 	
 	
@@ -493,6 +495,36 @@ struct Lexer {
 		return null ;
 	}
 	
+	void parseTextBlock(Tok* tk) {
+		if( _ptr > _end ) {
+			err("expect text block");
+		}
+		if(_ptr[0] !is '\n' && _ptr[0] !is '\r' ){
+			err("expect new line");
+		}
+		
+		while(true) {
+			auto __ptr	= _ptr ;
+			
+			skip_newline;
+			parseIndent;
+			
+			if( _last_indent_size <= tk.tabs ) {
+				_ptr	= __ptr ;
+				break ;
+			}
+			auto _tabs	= _last_indent_size - tk.tabs -1 ;
+			while( _tabs > 0 ) {
+				auto _back_char	= * (--_ptr) ;
+				if( _back_char is '\t' ) {
+					break ;
+				}
+				--_ptr;
+			}
+			parseString(_search_inline_code) ;
+		}
+	}
+	
 	Tok*  parseString(bool inline = true ) {
 		if( _ptr > _end ) {
 			return null ;
@@ -610,7 +642,7 @@ struct Lexer {
 		scope(exit){
 			// search text tag 
 			if( std.algorithm.countUntil( Tag.text_block, tag ) >= 0 ) {
-				assert(false, tag);
+				parseTextBlock(_tk);
 			}
 		}
 		
