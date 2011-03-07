@@ -72,7 +72,7 @@ struct Lexer {
 				case '|':
 					_ptr++;
 					if( _ptr <= _end ) {
-						parseString(_search_inline_code);
+						parseString( !_search_inline_code);
 					}
 					break;
 				// id

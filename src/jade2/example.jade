@@ -1,5 +1,5 @@
 !!! 5
-html
+html(lang=en)
   head
     meta(name=Content-Type, \
       content=text/html, \
@@ -8,7 +8,7 @@ html
   body: a bc
     #user_list.test1
       | test div 
-      | multi line 
+      | multi line ${val1} 
       | hehe
       // test ' \n
       - if user.login
