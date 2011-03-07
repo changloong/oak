@@ -521,6 +521,7 @@ struct Lexer {
 				}
 				--_ptr;
 			}
+			_last_indent_size	= tk.tabs + 1 ;
 			parseString(_search_inline_code) ;
 		}
 	}
