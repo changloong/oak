@@ -382,18 +382,15 @@ struct Lexer {
 			}
 		}
 		
-		int len ;
-		L1:
-		while( (len = _end - _ptr) >= 0 ) {
+		bool check_stop(){
+			if( _ptr > _end ) {
+				return false ;
+			}
 			if( !_stop_zero ) {
 				if( _stop_comma ) {
-					if( _ptr < _end ) {
-						if( _ptr[1] is ')'   || _ptr[1] is ','  ) {
-							_str_bu(_ptr[0]) ;
-							_ptr++;
-							string_trim_right();
-							break ;
-						}
+					if( _ptr[0] is ')'   || _ptr[0] is ','  ) {
+						string_trim_right();
+						return true ;
 					}
 				} else {
 					if( _ptr[0] is ')' ) {
@@ -403,14 +400,20 @@ struct Lexer {
 							}
 							_ptr++ ;
 							string_trim_right();
-							break ;
+							return true ;
 						}
 						paren_count-- ;
 					} else if( _ptr[0] is '(' ) {
 						paren_count++ ;
 					}
 				}
-			} 
+			}
+			return false ;
+		}
+		
+		int len ;
+		L1:
+		while( (len = _end - _ptr) >= 0 ) {
 			
 			switch( _ptr[0] ) {
 				case '\\' :
@@ -496,6 +499,9 @@ struct Lexer {
 				case '\n':
 					break L1;
 				default:
+					if( check_stop ) {
+						break L1 ;
+					}
 					_str_bu( _ptr[0] );
 					_ptr++;
 			}
@@ -821,7 +827,6 @@ struct Lexer {
 					}
 				}
 				parseInlineString( _stop_char ) ;
-				skip_space ;
 			}
 			
 			if( scan_comma ) {
