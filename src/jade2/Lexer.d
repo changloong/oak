@@ -451,7 +451,7 @@ struct Lexer {
 						
 						// skip ('\\')
 						if( _ptr < _end ) {
-							if(  _ptr[1] is '(' || _ptr[1] is ')'  || _ptr[1] is '"' || _ptr[1] is '\''  || _ptr[1] is '\\'  ) {
+							if(  _ptr[1] is '(' || _ptr[1] is ')'  || _ptr[1] is '[' || _ptr[1] is ']'  || _ptr[1] is '"' || _ptr[1] is '\''  || _ptr[1] is '\\'  ) {
 								_str_bu( _ptr[1] );
 								_ptr	+= 2 ;
 								break;
