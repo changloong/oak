@@ -187,8 +187,44 @@ struct Lexer {
 	}
 	
 	
-	private void skip_inline_qstring(char q){
-		assert(false);
+	private string skip_inline_qstring(char q){
+		if( _ptr >= _end ) {
+			err("expect qstring");
+		}
+		if( _ptr[0] !is q ) {
+			err("lexer qstring bug");
+		}
+		auto __ptr	= _ptr ;
+		_ptr++;
+		
+		bool	is_find	= false ;
+		while( _ptr <= _end ) {
+						
+			if( _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+				err("missing qstring end");
+			}
+			
+			if( _ptr[0] is q ) {
+				is_find	= true ;
+				_ptr++;
+				break ;
+			}
+			if( _ptr[0] is '\\' ) {
+				if( _ptr >= _end ) {
+					err("expect escape qstring");
+				}
+				_ptr++;
+			}
+			_ptr++ ;
+			
+		}
+		
+		if( !is_find ) {
+			err("missing qstring end");
+		}
+		
+		auto val = cast(string) __ptr[0 .. _ptr - __ptr ];
+		return val ;
 	}
 	
 	Tok* parseInlineCode( Tok.Type _tmp_ty = Tok.Type.None ){
