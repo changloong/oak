@@ -960,14 +960,162 @@ struct Lexer {
 			err("expect Code `%s`", code_type2);
 			
 		} else if( code_type == "each" ) {
+			_ptr +=4 ;
+			skip_space;
+			auto _each_line	= line ;
+			while( _each_line.length && ( _each_line[$-1] is ' ' || _each_line[$-1] is '\t' ) ) _each_line	= _each_line[0..$-1];
 			
-			assert(false, code_type) ;
+			auto _each_in		= find_with_space!"in"(_each_line);
+			if( _each_in < 0 ) {
+				err("expect each in");
+			} else if( _each_in < 2 ){// "i in"
+				err("expect each key");
+			}  else if( _each_in > _each_line.length -4 ){ // i in o
+				err("expect each object");
+			}
+			auto _each_comma	= countUntil(_each_line, ',' );
+			
+			if( _each_comma < 0 ) {
+				// no key 
+				auto _each_val	= skip_identifier ;
+				if( _ptr >= _end ) {
+					err("expect each in");
+				}
+				if( _ptr[0] !is '\t' && _ptr[0] !is ' ' ){
+					err("expect space but `%s`", _ptr[0] ) ;
+				}
+				skip_space ;
+				if( _ptr - _each_line.ptr != _each_in ){
+					err("expect each in");
+				}
+				_ptr += 3 ;
+				skip_space ;
+				auto _each_obj	= parseLineString ;
+				if( _each_obj is null ) {
+					err("expect each obj");
+				}
+				if( _ptr > _end || _ptr[0] !is '\n' && _ptr[0] !is '\r' ) {
+					err("expect new line");
+				}
+				
+				tk	= NewTok(Tok.Type.Each_Object, _each_obj);
+				NewTok(Tok.Type.Each_Value, _each_val);
+				
+				// Log("`%s` in `%s`", _each_val, _each_obj );
+				
+				return tk ;
+			}
+			
+			if( _each_comma is 0 ) { // "i,j in o"
+				err("expect each key");
+			} else if( _each_comma >= _each_in - 2 ){ 
+				err("each expression error `%s` _each_comma = %d", line, _each_comma);
+			}
+			
+			auto _each_type	= skip_identifier ;
+			if( _each_type is null ) {
+				err("expect each key");
+			}
+			if( _ptr >= _end ) {
+				err("expect each in");
+			}
+			if( _ptr >= _end ) {
+				err("expect each in");
+			}
+			skip_space ;
+			string _each_key ;
+			if( _ptr[0] !is ',' ) {
+				// find each_key
+				_each_key	= skip_identifier ;
+				if( _each_key is null ) {
+					err("expect each key");
+				}
+				skip_space ;
+			} else {
+				//no _each_type
+				_each_key	= _each_type ;
+				_each_type	= null ;
+			}
+			
+			if( _ptr[0] !is ',' ) {
+				err("expect each comma");
+			}
+			// skip ,
+			_ptr++;
+			skip_space ;
+			
+			// find _each_value 
+			string _each_value = skip_identifier ;
+			if( _each_value is null ) {
+				err("expect each value");
+			}
+			if( _ptr >= _end || _ptr[0] !is '\t' && _ptr[0] !is ' ' ) {
+				err("expect each space");
+			}
+			skip_space ;
+			if( _each_in != _ptr - _each_line.ptr ) {
+				err("expect each in");
+			}
+			// skip "in "
+			_ptr += 3 ;
+			skip_space ;
+			
+			string _each_obj	= parseLineString ;
+			if( _each_obj is null ) {
+				err("expect each obj");
+			}
+			if( _ptr > _end || _ptr[0] !is '\n' && _ptr[0] !is '\r' ) {
+				err("expect new line");
+			}
+			
+		
+			tk	= NewTok(Tok.Type.Each_Object, _each_obj);
+			if( _each_type !is null ) {
+				NewTok(Tok.Type.Each_Type, _each_type);
+			}
+			NewTok(Tok.Type.Each_Key, _each_key);
+			NewTok(Tok.Type.Each_Value, _each_value);
+			
+			// Log("`%s` `%s` , `%s` in `%s`", _each_type, _each_key, _each_value, _each_obj);
+			
 			
 		} else {
 			err("expect Code `%s`", code_type);
 		}
 		
 		return tk ;
+	}
+	
+	static ptrdiff_t find_with_space(string obj)(string str){
+		ptrdiff_t i  = 1 ;
+		for(ptrdiff_t l = str.length - obj.length - 1 ; i < l; i++ ){
+			static if(obj.length is 1) {
+				if( 
+					obj[0] is str[i] 
+						&& 
+					( str[i+1]  is ' ' || str[i+1]  is '\t' ) 
+						&& 
+					( str[i-1]  is ' ' || str[i-1]  is '\t' ) 
+				){
+					return i ;
+				}
+			} else static if(obj.length is 2) {
+				if( 
+					obj[0] is str[i] 
+						&& 
+					obj[1] is str[i+1] 
+						&& 
+					( str[i+2]  is ' ' || str[i+2]  is '\t' ) 
+						&& 
+					( str[i-1]  is ' ' || str[i-1]  is '\t' ) 
+				){
+					return i ;
+				}	
+			} else {
+				static assert(false);
+			}
+		}
+		return -1 ;
 	}
 	
 	static size_t safeFind(T)(T* _from , T* _to, T obj){

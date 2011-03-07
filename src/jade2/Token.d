@@ -34,10 +34,6 @@ struct Tok {
 		Each_Key ,
 		Each_Value ,
 		Each_Object ,
-		Each_Range ,
-		Each_From ,
-		Each_To ,
-		Each_Step ,
 		
 		IfCode,
 		ElseIfCode,

@@ -17,6 +17,14 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=123) \${page_title}test
     #header: #logo: img(src=/images/logo.gif)
     /-
       -- int i = 0 ;
+      
+    - each   val in o
+      li: a ${i} => ${val}
+    - each  i,v in o
+     li: a ${i} => ${val}
+    - each  int i,v in o
+      li: a ${i} => ${val}
+  
     #user_list.test1.test12
       | test div 
       | multi line ${val1} \${val2}

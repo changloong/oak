@@ -19,6 +19,7 @@ package import
 	
 	
 package import 
+	std.algorithm,
 	std.format,
 	core.memory ,
 	std.datetime,
