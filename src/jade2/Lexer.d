@@ -505,7 +505,6 @@ struct Lexer {
 		
 		while(true) {
 			auto __ptr	= _ptr ;
-			
 			skip_newline;
 			parseIndent;
 			
@@ -514,14 +513,16 @@ struct Lexer {
 				break ;
 			}
 			auto _tabs	= _last_indent_size - tk.tabs -1 ;
+			auto _str_pos	= _str_bu.length ;
+			
 			while( _tabs > 0 ) {
-				auto _back_char	= * (--_ptr) ;
-				if( _back_char is '\t' ) {
-					break ;
-				}
-				--_ptr;
+				_str_bu(' ')(' ');
+				_tabs--;
 			}
 			_last_indent_size	= tk.tabs + 1 ;
+			if( _str_pos != _str_bu.length ){
+				NewTok(Tok.Type.String, cast(string) _str_bu.slice[_str_pos ..$] );
+			}
 			parseString(_search_inline_code) ;
 		}
 	}
