@@ -9,7 +9,8 @@ html(lang={if user.admin}en{/if} , id=123) \${page_title}test
       {if user.login}content=text/html, {/if}\
       charset=utf-8)
     title ${page_title}
-  body: a bc
+  body
+    #header: #logo: img(src=/images/logo.gif)
     -- int i = 0 ;
     #user_list.test1.test12
       | test div 
