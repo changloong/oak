@@ -3,12 +3,12 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=123) \${page_title}test
   head
     style 
       .class1{
-      	font-size:12px;
+         font-size:12px;
       }
     script
-       $(document.body).ready(function(){ 
-           alert(123);
-       });
+      $(document.body).ready(function(){ 
+          alert(123);
+      });
     meta(name=Content-Type, \
       {if user.login}content=text/html, {/if}\
       charset=utf-8)
@@ -25,6 +25,7 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=123) \${page_title}test
       - if user.login
         p welcome 
           a#member.profile(href=/profile/${user.id}/, target=blank) ${user.name}
+	    img.photograph(src=/images/{if user.pic !is null}${user.pic}{else}blank.gif{/if})
       - else if user.admin
         p admin controll panel
       - else
@@ -33,6 +34,3 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=123) \${page_title}test
           a#login login
 
     :i18n "user.intro" [user_name=${user.name}]a#user_intro(href="/user/${user.id}") [message_number={$user.msgs}]span.red
-    
-    
-    

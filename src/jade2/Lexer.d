@@ -347,7 +347,7 @@ struct Lexer {
 		auto _str_pos = _str_bu.length ;
 		
 		void save_string() {
-			if(  _str_bu.length >= _str_pos ) {
+			if(  _str_bu.length > _str_pos ) {
 				Tok* _tk	= NewTok(Tok.Type.String, cast(string) _str_bu.slice[ _str_pos ..$ ] );
 				_str_pos	=  _str_bu.length ;
 				push_tk(_tk);
