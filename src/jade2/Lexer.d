@@ -525,26 +525,34 @@ struct Lexer {
 	
 		Tok* _tk	= NewTok(Tok.Type.Tag, tag);
 		
-		if( _ptr >= _end ) {
-			return _tk;
-		}
-		
-		if( _ptr <= _end  && _ptr[0] is '#' ) {
-			_ptr++ ;
-			string value	= skip_identifier ;
-			if( value is null ) {
-				err("expect tag.id");
+		while(true) {
+			if( _ptr >= _end ) {
+				return _tk;
 			}
-			Tok* _tk_id		= NewTok(Tok.Type.Id, value) ;
-		}
-		
-		if( _ptr <= _end  && _ptr[0] is '.' ) {
-			_ptr++ ;
-			string value	= skip_identifier ;
-			if( value is null ) {
-				err("expect tag.class");
+			if( _ptr[0] is ' ' || _ptr[0] is '\t' || _ptr[0] is '\n' || _ptr[0] is '\r' || _ptr[0] is ':' || _ptr[0] is '%'|| _ptr[0] is '(' ){
+				break;
 			}
-			Tok* _tk_class		= NewTok(Tok.Type.Class, value) ;
+			
+			if( _ptr[0] is '#' ) {
+				_ptr++ ;
+				string value	= skip_identifier ;
+				if( value is null ) {
+					err("expect tag.id");
+				}
+				Tok* _tk_id		= NewTok(Tok.Type.Id, value) ;
+				continue ;
+			}
+			
+			if( _ptr[0] is '.' ) {
+				_ptr++ ;
+				string value	= skip_identifier ;
+				if( value is null ) {
+					err("expect tag.class");
+				}
+				Tok* _tk_class		= NewTok(Tok.Type.Class, value) ;
+				continue ;
+			}
+			err("tag err `%s`", line);
 		}
 		
 		if(  _ptr <= _end  && _ptr[0] is ':' ) {
