@@ -333,6 +333,17 @@ struct Lexer {
 		
 		size_t	paren_count = 0 ;
 		
+		void string_trim_right(){
+			while( _str_bu.length >= _str_pos){
+				auto _last_char	=  _str_bu.slice[$-1] ;
+				if( _last_char is ' ' || _last_char is '\t' ){
+					_str_bu.move(-1);
+				} else {
+					break;
+				}
+			}
+		}
+		
 		int len ;
 		L1:
 		while( (len = _end - _ptr) >= 0 ) {
@@ -342,6 +353,7 @@ struct Lexer {
 						if( _ptr[1] is ')'   || _ptr[1] is ','  ) {
 							_str_bu(_ptr[0]) ;
 							_ptr++;
+							string_trim_right();
 							break ;
 						}
 					}
@@ -352,6 +364,7 @@ struct Lexer {
 								err("not end attr");
 							}
 							_ptr++ ;
+							string_trim_right();
 							break ;
 						}
 						paren_count-- ;
@@ -675,14 +688,17 @@ struct Lexer {
 				}
 				NewTok(Tok.Type.AttrValue) ;
 				char _stop_char	 ;
-				if(  _ptr <= _end && _ptr[0] is '(' ) {
-					_ptr++ ;
-					skip_space;
-					_stop_char	= ')' ;
-				} else {
-					_stop_char	= ',' ;
+				if(  _ptr <= _end ) {
+					if(  _ptr[0] is '(' ) {
+						_ptr++ ;
+						skip_space;
+						_stop_char	= ')' ;
+					} else if( _ptr[0] is ')' ) {
+						err("expect AttrValue but `%s`", line);
+					} else {
+						_stop_char	= ',' ;
+					}
 				}
-				
 				parseInlineString( _stop_char ) ;
 				skip_space ;
 			}
