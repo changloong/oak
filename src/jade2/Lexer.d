@@ -388,15 +388,31 @@ struct Lexer {
 							}
 							_last_indent_size	= _tabs ;
 							assert(false);
-						} else if( len > 1 ) {
-							if( _ptr[1] is '$' && _ptr[1] is '{' ) {
+							break;
+						}
+						
+						if( len > 3 ) {
+							if( _ptr[1] is '$' && _ptr[2] is '{' && _ptr[3] !is ' ' && _ptr[3] !is '\t' && _ptr[3] !is '\r' && _ptr[3] !is '\n' ) {
 								_str_bu('$')('{');
 								_ptr	+= 3;
 								break;
-							} else if( _ptr[1] is '{' && (_ptr[2] !is ' ' && _ptr[2] !is '\t') ) {
+							}
+							
+						} else {
+							if( len > 2 && _ptr[1] is '$' && _ptr[2] is '{' ) {
+								err("var error");
+							}
+						}
+
+						if( len > 2 ) {
+							if( _ptr[1] is '{' && _ptr[2] !is ' ' && _ptr[2] !is '\t'  && _ptr[2] !is '\r' && _ptr[2] !is '\n' ) {
 								_str_bu('{')(_ptr[2]) ;
 								_ptr	+= 3;
 								break;
+							}
+						} else {
+							if( len > 0 && _ptr[1] is '{' ){
+								err("var error");
 							}
 						}
 						
