@@ -6,9 +6,10 @@ html(lang={if user.admin}en{/if} , id=123) \${page_title}test
       charset=utf-8)
     title ${page_title}
   body: a bc
+    -- int i = 0 ;
     #user_list.test1.test12
       | test div 
-      | multi line ${val1} 
+      | multi line ${val1} \${val2}
       | hehe
       // test ' \n
       - if user.login
@@ -18,4 +19,10 @@ html(lang={if user.admin}en{/if} , id=123) \${page_title}test
         p admin controll panel
       - else
         p please 
+	
           a#login login
+
+    :i18n "user.intro" [${user.name}](a, href="/user/${user.id}") [message_number={$user.msgs}](span, class="red")
+    
+    
+    

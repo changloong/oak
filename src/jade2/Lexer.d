@@ -466,7 +466,7 @@ struct Lexer {
 		return _ret_tk ;
 	}
 	
-	string  parseLineString( bool trimr = true ){
+	string parseLineString( bool trimr = true ){
 		if( _ptr > _end ) {
 			return null ;
 		}
@@ -530,11 +530,15 @@ struct Lexer {
 	
 
 	Tok* parseTag(string tag = null) {
-
 		if( tag is null ) {
+			skip_space ;
 			tag	= skip_identifier ;
 			if( tag is null ) {
-				err("expect tag but find `%s` ", line ) ;
+				// skip empty line
+				if( _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+					return null ;
+				}
+				err("expect tag but find `%s` ", _ptr[0], line ) ;
 			}
 		}
 	
