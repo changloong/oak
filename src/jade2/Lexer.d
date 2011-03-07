@@ -1068,7 +1068,6 @@ struct Lexer {
 				err("expect new line");
 			}
 			
-		
 			tk	= NewTok(Tok.Type.Each_Object, _each_obj);
 			if( _each_type !is null ) {
 				NewTok(Tok.Type.Each_Type, _each_type);
