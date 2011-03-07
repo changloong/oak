@@ -426,8 +426,7 @@ struct Lexer {
 						}
 						break;
 					}
-					Log("`%s`", line);
-					assert(false);
+					err("lexer bug `%s`", line);
 					break;
 				case '$':
 					if( len > 0 && _ptr[1] is '{' ) {
