@@ -47,12 +47,12 @@ struct Tok {
 	size_t	tabs ;
 	Tok*	next ;
 	Tok*	pre ;
+
+	string	string_value ;
+	bool	bool_value ;
 	
-	union {
-		// String 
-		string	string_value ;
-		
-	}
+	alias bool_value escaped ;
+	
 	
 	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
 		static const _ty = ctfe_indexOf!(string)(Type_Name, name[2..$]);

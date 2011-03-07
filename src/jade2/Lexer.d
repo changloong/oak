@@ -43,7 +43,9 @@ struct Lexer {
 		formattedWrite(a, "(%s:%d) ", __FILE__, _line);
 		formattedWrite(a, fmt, t);
 		formattedWrite(a, " at file:`%s` line:%d", filename, ln);
-		throw new Exception( a.data );
+		write("\n", a.data, "\n");
+		assert(false);
+		//throw new Exception( a.data );
 	}
 	
 	void parse() {
@@ -104,12 +106,15 @@ struct Lexer {
 		tk.ln	= ln ;
 		tk.tabs	= _last_indent_size + _offset_tabs ;
 		tk.pre	= _last_tok ;
+		if( _last_tok !is null ) {
+			_last_tok.next	= tk ;
+		}
 		_last_tok	= tk ;
-		if( val ) {
+		if( val !is null ) {
 			tk.string_value	= val ;
-			Log("%s =  `%s` ", Tok.sType(ty), val );
+			Log("`%s` %d = `%s`", Tok.sType(ty), tk.tabs, val);
 		} else {
-			Log("%s", Tok.sType(ty) );
+			Log("`%s` %d", Tok.sType(ty), tk.tabs );
 		}
 		return tk ;
 	}
@@ -176,9 +181,6 @@ struct Lexer {
 				break ;
 			}
 			_ptr++;
-		}
-		if( i % 2 ) {
-			err("expect even indent");
 		}
 		_last_indent_size	= i / 2 ;
 		Log("Indent: %d `%s`", _last_indent_size, line );
@@ -309,7 +311,7 @@ struct Lexer {
 		auto _str_pos = _str_bu.length ;
 		
 		void save_string() {
-			if(  _str_bu.length - _str_pos ) {
+			if(  _str_bu.length >= _str_pos ) {
 				Tok* _tk	= NewTok(Tok.Type.String, cast(string) _str_bu.slice[ _str_pos ..$ ] );
 				_str_pos	=  _str_bu.length ;
 				push_tk(_tk);
@@ -600,7 +602,7 @@ struct Lexer {
 		bool _last_value	= true ;
 		
 		bool scan_skip_line() {
-			if( _end  < _ptr && _ptr[0] is '\\' && (_ptr[1] is '\r' || _ptr[1] is '\n') ) {
+			if( _ptr <= _end && _ptr[0] is '\\' && (_ptr[1] is '\r' || _ptr[1] is '\n') ) {
 				_ptr++;
 				auto _tabs	= _last_indent_size ;
 				skip_newline;
