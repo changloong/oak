@@ -5,7 +5,7 @@ import jade.Jade ;
 
 struct Lexer {
 	Pool*		pool ;
-	vBuffer	_str_bu ;
+	vBuffer		_str_bu ;
 	string		filename ;
 	
 	const(char)*	_ptr ;
@@ -565,7 +565,7 @@ struct Lexer {
 			if( _str_pos != _str_bu.length ){
 				NewTok(Tok.Type.String, cast(string) _str_bu.slice[_str_pos ..$] );
 			}
-			parseString(_search_inline_code) ;
+			parseString(!_search_inline_code) ;
 		}
 	}
 	

@@ -1,11 +1,11 @@
 !!! 5
 html(lang={if user.admin("hi", 123)}en{/if} , id=123) \${page_title}test
   head
-    style 
+    style
       .class1{
          font-size:12px;
       }
-    script
+    script%
       $(document.body).ready(function(){ 
           alert(123);
       });
