@@ -155,7 +155,7 @@ struct Lexer {
 				_ptr[0] >= '0' && _ptr[0] <= '9' || 
 				_ptr[0] >= 'a' && _ptr[0] <= 'z' || 
 				_ptr[0] >= 'A' && _ptr[0] <= 'Z' || 
-				_ptr[0]	is '_' 
+				_ptr[0]	is '_' || _ptr[0]	is '-' 
 			) {
 				_ptr++ ;
 			} else {
