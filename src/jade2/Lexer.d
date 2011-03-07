@@ -616,10 +616,10 @@ struct Lexer {
 			auto _tag	= skip_identifier ;
 			if( _tag is null ) {
 				if( _ptr >= _end  || _ptr[0] is '\r' && _ptr[0] is '\n' ) {
-					err("expect embed tag ");
+					err("expect embed tag");
 				}
 				if( _ptr <= _end  && _ptr[0] != '#' && _ptr[0] != '.' ) {
-					err("expect embed tag`%s`", _ptr[0]);
+					err("expect embed tag `%s`", _ptr[0]);
 				}
 				_tag	= "div" ;
 			}
