@@ -686,6 +686,7 @@ struct Lexer {
 		scope(exit){
 			// search text tag 
 			if( std.algorithm.countUntil( Tag.text_block, tag ) >= 0 ) {
+				_search_inline_code	= !_search_inline_code ;
 				parseTextBlock(_tk);
 			}
 		}
