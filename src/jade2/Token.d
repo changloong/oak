@@ -16,7 +16,6 @@ struct Tok {
 		Id ,
 		Class ,
 		AttrStart ,
-		Attr ,
 		AttrEnd ,
 		AttrKey ,
 		AttrValue ,
@@ -39,7 +38,11 @@ struct Tok {
 		ElseIfCode,
 		ElseCode,
 		
-		Filter ,
+		FilterType ,
+		FilterTagStart ,
+		FilterTagEnd ,
+		FilterArgStart ,
+		FilterArgEng ,
 	}
 	
 	static const string[] Type_Name	= EnumMemberName!(Type) ;

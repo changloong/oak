@@ -52,3 +52,13 @@ package string[] EnumMemberName(T)() if(is(T==enum)){
 	}
 	return _names ;
 }
+
+extern(C){
+	private void exit(ptrdiff_t);
+}
+
+struct _J {
+	static void Exit(ptrdiff_t ret){
+		exit(ret);
+	}
+}

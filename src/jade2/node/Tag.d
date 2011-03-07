@@ -18,7 +18,7 @@ final class Tag : Node {
 			`hr` ,
 		] ;
 	
-	static string[] text_block = 
+	static const string[] text_block = 
 		[
 			`style`,
 			`script`,

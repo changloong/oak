@@ -16,7 +16,7 @@ struct Lexer {
 	Tok*		_last_tok ;
 	
 	size_t	ln, _last_indent_size, _offset_tabs ;
-	bool		_search_inline_code ;
+	// bool		_search_inline_code ;
 	
 	void Init(Compiler* cc)  in {
 		assert( cc !is null);
@@ -29,7 +29,7 @@ struct Lexer {
 		_end	= &cc.filedata[$-1];
 		_start	= _ptr ;
 		ln	= 1 ;
-		_search_inline_code	= true ;
+		// _search_inline_code	= true ;
 	}
 	
 	string line() {
@@ -43,9 +43,8 @@ struct Lexer {
 		formattedWrite(a, "(%s:%d) ", __FILE__, _line);
 		formattedWrite(a, fmt, t);
 		formattedWrite(a, " at file:`%s` line:%d", filename, ln);
-		write("\n", a.data, "\n");
-		assert(false);
-		//throw new Exception( a.data );
+		stderr.write("\n- ", a.data, "\n");
+		_J.Exit(1);
 	}
 	
 	void parse() {
@@ -66,13 +65,13 @@ struct Lexer {
 					break;
 				// filter
 				case ':':
-					assert(false);
+					parseFilter;
 					break;
 				// text
 				case '|':
 					_ptr++;
 					if( _ptr <= _end ) {
-						parseString( !_search_inline_code);
+						parseString();
 					}
 					break;
 				// id
@@ -118,13 +117,21 @@ struct Lexer {
 	}
 	
 	
-	private void skip_space(){
+	private bool skip_space( bool expect = false ){
 		while( _ptr <= _end ) {
 			if( _ptr[0] != ' ' && _ptr[0] != '\t' ) {
-				break ;
+				return true ;
 			}
 			_ptr++ ;
 		}
+		if( expect ) {
+			if( _ptr > _end ) {
+				err("expect space but find EOF");
+			} else {
+				err("expect space but find `%s`",  _ptr[0]);
+			}
+		}
+		return false ;
 	}
 	
 	private void skip_newline(){
@@ -319,56 +326,36 @@ struct Lexer {
 	Tok*  parseInlineString( char _stop_char = 0 ) {
 		assert( _ptr <= _end) ;
 		assert( _ptr[0] !is '\n' &&  _ptr[0] !is '\r' ) ;
-		
-		// Tok* _last_tk	= null ;
-		Tok* _ret_tk	= null ;
-		
-		void push_tk(Tok* _tk){
-			if( _ret_tk is null ) {
-				_ret_tk	= _tk ;
-				// assert(_last_tk is null);
-			} 
-			/*
-			else {
-				if( _last_tk is null ) {
-					_last_tk	= _tk ;
-					_tk.pre		= _ret_tk ;
-					_ret_tk.next	= _tk ;
-				} else {
-					_last_tk.next	= _tk ;
-					_tk.pre	= _last_tk ;
-					_last_tk	= _tk ;
-				}
-			}
-			*/
-		}
-		
-		
+
 		auto _str_pos = _str_bu.length ;
 		
 		void save_string() {
 			if(  _str_bu.length > _str_pos ) {
 				Tok* _tk	= NewTok(Tok.Type.String, cast(string) _str_bu.slice[ _str_pos ..$ ] );
 				_str_pos	=  _str_bu.length ;
-				push_tk(_tk);
+				// push_tk(_tk);
 			}
 		}
 		
 		auto __ptr = _ptr ;
 		
-		bool _stop_zero	= _stop_char is 0 ;
+		bool _stop_zero	= false ;
 		bool _stop_comma = false ;
 		bool _stop_paren = false ;
+		bool _stop_quote = false ;
 		
-		if( !_stop_zero ) {
-			if( _stop_char is ',' ) {
-				_stop_comma	= true ;
-			} else {
-				assert( _stop_char is ')' );
-				_stop_paren	= true ;
-			}
+		if( _stop_char is 0 ) {
+			_stop_zero	= true ;
+		} else if(_stop_char is ',' ){
+			_stop_comma	= true ;
+		} else if(_stop_char is ')' ){
+			_stop_paren	= true ;
+		} else if(_stop_char is '"' ){
+			_stop_quote	= true ;
+		} else {
+			err("lexer bug");
 		}
-		
+
 		size_t	paren_count = 0 ;
 		
 		void string_trim_right(){
@@ -392,7 +379,7 @@ struct Lexer {
 						string_trim_right();
 						return true ;
 					}
-				} else {
+				} else if( _stop_paren ) {
 					if( _ptr[0] is ')' ) {
 						if( paren_count is 0 ) {
 							if( _ptr is _end ){
@@ -405,6 +392,11 @@ struct Lexer {
 						paren_count-- ;
 					} else if( _ptr[0] is '(' ) {
 						paren_count++ ;
+					}
+				}  else if( _stop_quote ) {
+					if( _ptr[0] is '"' ) {
+						_ptr++;
+						return true ;
 					}
 				}
 			}
@@ -458,33 +450,35 @@ struct Lexer {
 						}
 						
 						// skip ('\\')
-						if( _ptr < _end && ( _ptr[1] is '(' || _ptr[1] is ')' ) ) {
-							_ptr	+= 2 ;
-							_str_bu( _ptr[1] );
-						} else {
-							_ptr++;
-							_str_bu('\\');
-						}
+						if( _ptr < _end ) {
+							if(  _ptr[1] is '(' || _ptr[1] is ')'  || _ptr[1] is '"' || _ptr[1] is '\''  || _ptr[1] is '\\'  ) {
+								_str_bu( _ptr[1] );
+								_ptr	+= 2 ;
+								break;
+							}
+						} 
+						_ptr++;
+						_str_bu('\\');
 						break;
 					}
 					err("lexer bug `%s`", line);
 					break;
 				case '$':
-					if( len > 0 && _ptr[1] is '{' ) {
+					if( len > 1 && _ptr[1] is '{' && _ptr[2] !is ' ' && _ptr[2] !is '\t' && _ptr[2] !is '\r'  && _ptr[2] !is '\n' ) {
 						// save old string
 						save_string() ;
 						// paser var name 
 						_ptr += 2 ;
 						Tok* _tk = parseInlineCode(Tok.Type.Var) ;
 						assert(_tk !is null);
-						push_tk(_tk) ;
+						// push_tk(_tk) ;
 					} else {
 						_ptr++;
 						_str_bu('$');
 					}
 					break ;
 				case '{':
-					if( len > 0 && _ptr[1] !is ' ' ) {
+					if( len > 0 && _ptr[1] !is ' ' && _ptr[1] !is '\t'  && _ptr[1] !is '\r'  && _ptr[1] !is '\n'  ) {
 						// save old string
 						save_string() ;
 						_ptr += 1 ;
@@ -506,8 +500,10 @@ struct Lexer {
 					_ptr++;
 			}
 		}
+		skip_space;
+		
 		save_string() ;
-		return _ret_tk ;
+		return null ;
 	}
 	
 	string parseLineString( bool trimr = true ){
@@ -565,7 +561,7 @@ struct Lexer {
 			if( _str_pos != _str_bu.length ){
 				NewTok(Tok.Type.String, cast(string) _str_bu.slice[_str_pos ..$] );
 			}
-			parseString(!_search_inline_code) ;
+			parseString() ;
 		}
 	}
 	
@@ -604,8 +600,17 @@ struct Lexer {
 		return tk ;
 	}
 	
+	Tok* parseTagWithIdClass(bool without_content= false ) {
+		if( _ptr > _end ) {
+			err("expect tag");
+		}
+		if( _ptr[0] is '#' || _ptr[0] is '.'  ){
+			return parseTag( `div`, without_content) ;
+		}
+		return parseTag( null, without_content) ;
+	}
 
-	Tok* parseTag(string tag = null) {
+	Tok* parseTag(string tag = null, bool without_content= false ) {
 		if( tag is null ) {
 			skip_space ;
 			tag	= skip_identifier ;
@@ -650,58 +655,37 @@ struct Lexer {
 			err("tag err `%s`", line);
 		}
 		
+		bool is_embed_tag	= false ;
 		if(  _ptr <= _end  && _ptr[0] is ':' ) {
+			is_embed_tag	= true ;
 			_ptr++;
-			if( _ptr >= _end || _ptr[0] !is ' ' && _ptr[0] !is '\t' ) {
-				err("expect space `%s`", line);
-			}
-			skip_space ;
-			auto _tag	= skip_identifier ;
-			if( _tag is null ) {
-				if( _ptr >= _end  || _ptr[0] is '\r' && _ptr[0] is '\n' ) {
-					err("expect embed tag");
-				}
-				if( _ptr <= _end  && _ptr[0] != '#' && _ptr[0] != '.' ) {
-					err("expect embed tag `%s`", _ptr[0]);
-				}
-				_tag	= "div" ;
-			}
-			_offset_tabs++;
-			auto _embed_tag	= parseTag(_tag) ;
-			assert(_embed_tag !is null);
-			_offset_tabs-- ;
-			return _tk ;
 		}
-		
-		// _search_inline_code ?
-		if( _ptr <= _end && _ptr[0] is '%' ) {
-			_ptr++;
-			_search_inline_code	= true ;
-		} else {
-			_search_inline_code	= false ;
-		}
-		
 		skip_space ;
-		
-		scope(exit){
-			// search text tag 
-			if( std.algorithm.countUntil( Tag.text_block, tag ) >= 0 ) {
-				_search_inline_code	= !_search_inline_code ;
-				parseTextBlock(_tk);
-			}
-		}
-		
 		// new line
 		if( _ptr <= _end && (_ptr[0] is '\r' || _ptr[0] is '\n') ) {
 			return _tk ;
 		}
 		
+		skip_space ;
 		if( _ptr <= _end && _ptr[0] is '(' ) {
 			Tok* _tk_attrs	= parseAttrs() ;
 			if( _ptr !is _end && _ptr[0] !is '\r' && _ptr[0] !is '\n' && _ptr[0] !is '\t' && _ptr[0] !is ' ' ){
 				err("missing space after attributes `%s`", line);
 			}
 			skip_space ;
+		}
+		
+		if( is_embed_tag ) {
+			skip_space(true) ;
+			_offset_tabs++;
+			parseTagWithIdClass(without_content);
+			_offset_tabs-- ;
+			return _tk ;
+		}
+		
+		if( without_content ) {
+			skip_space ;
+			return _tk ;
 		}
 		
 		// new line
@@ -1083,6 +1067,68 @@ struct Lexer {
 		}
 		
 		return tk ;
+	}
+	
+	Tok* parseFilter() {
+		if( _ptr >= _end || _ptr[0] !is ':' ) {
+			err("filter error");
+		}
+		_ptr++;
+		auto filter_type	= skip_identifier();
+		if( filter_type is null ) {
+			err("expect filter type");
+		}
+		Tok* tk	= NewTok(Tok.Type.FilterType, filter_type ) ;
+		
+		// filter tag
+		while( _ptr <= _end ) {
+			if( _ptr[0] !is '!' ) {
+				break ;
+			}
+			_ptr++ ;
+			if( _ptr > _end || _ptr[0] is ' ' ||  _ptr[0] is '\t'  ||  _ptr[0] is '\r'  ||  _ptr[0] is '\n' ){
+				err("expect filter tag");
+			}
+			if( _ptr[0] !is '"' ) {
+				string filter_tag = skip_identifier() ;
+				if( filter_tag is null ) {
+					err("expect filter tag");
+				}
+				NewTok(Tok.Type.FilterTagStart) ;
+				NewTok(Tok.Type.String, filter_tag) ;
+				NewTok(Tok.Type.FilterTagEnd) ;
+				continue ;
+			}
+			_ptr++ ;
+			if( _ptr > _end || _ptr[0] is ' ' ||  _ptr[0] is '\t'  ||  _ptr[0] is '\r'  ||  _ptr[0] is '\n' ){
+				err("expect filter tag");
+			}
+			NewTok(Tok.Type.FilterTagStart) ;
+			parseInlineString('"');
+			NewTok(Tok.Type.FilterTagEnd) ;
+		}
+		if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+			return tk ;
+		}
+		skip_space(true) ;
+		if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+			return tk ;
+		}
+		if( _ptr[0] !is '[' ) {
+			parseTagWithIdClass(true) ;
+			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+				return tk ;
+			}
+			skip_space(true) ;
+			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+				return tk ;
+			}
+		}
+		
+		
+		Log("%s", line);
+		assert(false);
+		return null;
 	}
 	
 	static ptrdiff_t find_with_space(string obj)(string str){
