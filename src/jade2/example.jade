@@ -1,5 +1,5 @@
 !!! 5
-html(lang={if user.admin("hi")}en{/if} , id=123) \${page_title}test
+html(lang={if user.admin("hi", 123)}en{/if} , id=123) \${page_title}test
   head
     style 
       .class1{
@@ -32,7 +32,7 @@ html(lang={if user.admin("hi")}en{/if} , id=123) \${page_title}test
 	
           a#login login
 
-    :i18n "user.intro" [${user.name}](a, href="/user/${user.id}") [message_number={$user.msgs}](span, class="red")
+    :i18n "user.intro" [user_name=${user.name}]a#user_intro(href="/user/${user.id}") [message_number={$user.msgs}]span.red
     
     
     
