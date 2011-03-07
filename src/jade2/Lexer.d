@@ -508,12 +508,8 @@ struct Lexer {
 			err("expect doctype token");
 		}
 		_ptr	+= 3 ;
-		Tok* tk	= NewTok(Tok.Type.DocType) ;
-
-		if( len > 3 ) {
-			skip_space() ;
-			Tok* s	= parseString(false) ;
-		}
+		skip_space() ;
+		Tok* tk	= NewTok(Tok.Type.DocType, parseLineString) ;
 		return tk ;
 	}
 	
