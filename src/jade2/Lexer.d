@@ -463,7 +463,6 @@ struct Lexer {
 			i++ ;
 		}
 		if( i > 0 ) {
-			_ptr	+= i ;
 			auto val	= cast(string) _ptr[0..i] ;
 			if( trimr ) {
 				while( 
@@ -473,6 +472,7 @@ struct Lexer {
 					val	= val[0..$-1];
 				}
 			}
+			_ptr	+= i ;
 			return  val ;
 		}
 		return null ;
