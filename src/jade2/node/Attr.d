@@ -6,7 +6,7 @@ import jade.Jade ;
 final class Attr : Node {
 	
 	string 	key ;
-	AttrValue	value ;
+	MixString	value ;
 	
 	this() {
 		

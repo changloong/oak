@@ -6,7 +6,10 @@ import jade.Jade ;
 package import 
 	jade.node.Attrs ,
 	jade.node.Attr ,
-	jade.node.AttrValue ,
+	
+	jade.node.MixString ,
+	jade.node.PureString ,
+	jade.node.InlineIf ,
 	
 	jade.node.Block ,
 	jade.node.Comment ,
@@ -23,16 +26,19 @@ abstract class Node {
 		
 		Attrs ,
 		Attr ,
-		AttrValue ,
+		
+		MixString ,
+		PureString ,
 		
 		Block ,
 		Code ,
 		Comment ,
 		DocType ,
-		Each ,
-		Filter ,
 		Tag ,
-		Text ,
+		
+		Filter ,
+		InlineIf ,
+		Each ,
 	}
 	
 	static const string[] Type_Name = EnumMemberName!(Type) ;

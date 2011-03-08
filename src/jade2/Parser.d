@@ -8,6 +8,7 @@ struct Parser {
 	string		filename ;
 	string		filedata ;
 	Lexer		lexer ;
+	Node		_last_node, root ;
 	
 	void Init(Compiler* cc) in {
 		assert( cc !is null);
@@ -102,10 +103,10 @@ struct Parser {
 	
 	void parse() {
 		lexer.parse ;
-		Block block	= NewNode!(Block)();
+		root = NewNode!(Block)();
 		
 		for( auto node	= parseExpr(); node !is null; node	= parseExpr()){
-			block.pushChild(node) ;
+			root.pushChild(node) ;
 		}
 		
 		version(JADE_DEBUG_PARSER_TOK_DUMP1) {
@@ -240,9 +241,9 @@ struct Parser {
 		return node ;
 	}
 	
-	AttrValue parseAttrValue() {
+	MixString parseAttrValue() {
 		Tok* tk	= expect(Tok.Type.AttrValue) ;
-		auto node 	= NewNode!(AttrValue)( tk ) ;
+		auto node 	= NewNode!(MixString)( tk ) ;
 		for(  tk = peek ; tk !is null ; tk = peek ) {
 			switch( tk.ty ) {
 				default:
