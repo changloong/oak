@@ -124,18 +124,18 @@ struct Lexer {
 	}
 	
 	
-	private bool skip_space( bool expect = false ){
+	private bool skip_space( bool expected = false ){
 		while( _ptr <= _end ) {
 			if( _ptr[0] != ' ' && _ptr[0] != '\t' ) {
 				return true ;
 			}
 			_ptr++ ;
 		}
-		if( expect ) {
+		if( expected ) {
 			if( _ptr > _end ) {
-				err("expect space but find EOF");
+				err("expected space but find EOF");
 			} else {
-				err("expect space but find `%s`",  _ptr[0]);
+				err("expected space but find `%s`",  _ptr[0]);
 			}
 		}
 		return false ;
@@ -143,7 +143,7 @@ struct Lexer {
 	
 	private void skip_newline(){
 		if( _ptr > _end ) {
-			err("expect new line");
+			err("expected new line");
 		}
 		switch( _ptr[0] ) {
 			case '\r':
@@ -156,7 +156,7 @@ struct Lexer {
 				_ptr++;
 				break;
 			default:
-				err("expect new line");
+				err("expected new line");
 		}
 		version(JADE_DEBUG_LEXER_NEWLINE)
 			Log("NewLine");
@@ -205,7 +205,7 @@ struct Lexer {
 	
 	private string skip_inline_qstring(char q){
 		if( _ptr >= _end ) {
-			err("expect qstring");
+			err("expected qstring");
 		}
 		if( _ptr[0] !is q ) {
 			err("lexer qstring bug");
@@ -227,7 +227,7 @@ struct Lexer {
 			}
 			if( _ptr[0] is '\\' ) {
 				if( _ptr >= _end ) {
-					err("expect escape qstring");
+					err("expected escape qstring");
 				}
 				_ptr++;
 			}
@@ -251,7 +251,7 @@ struct Lexer {
 			_ln ++ ;
 			parseIndent ;
 			if( _last_indent_size < _tabs ){
-				err("expect indent at least %d tabs", _tabs);
+				err("expected indent at least %d tabs", _tabs);
 			}
 			_last_indent_size	= _tabs ;
 			skip_space ;
@@ -284,7 +284,7 @@ struct Lexer {
 							return tk ;
 						}
 						if( val.length < 3 ) {
-							err("expect more code '%s' ", val);
+							err("expected more code '%s' ", val);
 						}
 				
 						if( val[0] is 'i' && val[1] is 'f' && ( val[2] is ' '  || val[2] is '\t'  ) ) {
@@ -339,13 +339,13 @@ struct Lexer {
 					break;
 				case '\r':
 				case '\n':
-					err("expect '}'");
+					err("expected '}'");
 					break;
 				default:
 					_ptr++ ;
 			}
 		}
-		err("expect '}'");
+		err("expected '}'");
 		return null ;
 	}
 	
@@ -463,7 +463,7 @@ struct Lexer {
 							size_t _tabs = _last_indent_size ;
 							parseIndent();
 							if( _last_indent_size < _tabs ){
-								err("expect indent at least %d tabs", _tabs);
+								err("expected indent at least %d tabs", _tabs);
 							}
 							_last_indent_size	= _tabs ;
 							assert(false);
@@ -581,10 +581,10 @@ struct Lexer {
 	
 	void parseTextBlock(Tok* tk, bool _search_code = false) {
 		if( _ptr > _end ) {
-			err("expect text block");
+			err("expected text block");
 		}
 		if(_ptr[0] !is '\n' && _ptr[0] !is '\r' ){
-			err("expect new line");
+			err("expected new line");
 		}
 		
 		while( _ptr <= _end ) {
@@ -639,7 +639,7 @@ struct Lexer {
 		assert(_ptr[0] is '!' ) ;
 		ptrdiff_t len = _end - _ptr ;
 		if(  len < 3 || _ptr[1] !is '!' || _ptr[2] !is '!' ){
-			err("expect doctype token");
+			err("expected doctype token");
 		}
 		_ptr	+= 3 ;
 		skip_space() ;
@@ -649,7 +649,7 @@ struct Lexer {
 	
 	Tok* parseTagWithIdClass(bool without_content= false ) {
 		if( _ptr > _end ) {
-			err("expect tag");
+			err("expected tag");
 		}
 		if( _ptr[0] is '#' || _ptr[0] is '.'  ){
 			return parseTag( `*`, without_content) ;
@@ -666,7 +666,7 @@ struct Lexer {
 				if( _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 					return null ;
 				}
-				err("expect tag but find `%s` ", _ptr[0], line ) ;
+				err("expected tag but find `%s` ", _ptr[0], line ) ;
 			}
 		}
 	
@@ -684,7 +684,7 @@ struct Lexer {
 				_ptr++ ;
 				string value	= skip_identifier ;
 				if( value is null ) {
-					err("expect tag.id");
+					err("expected tag.id");
 				}
 				Tok* _tk_id		= NewTok(Tok.Type.Id, value) ;
 				continue ;
@@ -694,7 +694,7 @@ struct Lexer {
 				_ptr++ ;
 				string value	= skip_identifier ;
 				if( value is null ) {
-					err("expect tag.class");
+					err("expected tag.class");
 				}
 				Tok* _tk_class		= NewTok(Tok.Type.Class, value) ;
 				continue ;
@@ -749,10 +749,10 @@ struct Lexer {
 	
 	Tok* parseAttrs() {
 		if( _ptr >=_end ) {
-			err("expect attrs");
+			err("expected attrs");
 		}
 		if( _ptr <= _end && _ptr[0] !is '(' ) {
-			err("expect '(' ");
+			err("expected '(' ");
 		}
 		NewTok(Tok.Type.AttrStart) ;
 		_ptr++;
@@ -789,7 +789,7 @@ struct Lexer {
 		bool scan_attrs_end() {
 			skip_space ;
 			if( _ptr >= _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
-				err("expect AttrEnd" );
+				err("expected AttrEnd" );
 			}
 			
 			scan_inline_code ;
@@ -816,7 +816,7 @@ struct Lexer {
 			assert(_last_value) ;
 			auto key	= skip_identifier ;
 			if( key is null ) {
-				err("expect AttrKey `%s`", line);
+				err("expected AttrKey `%s`", line);
 			}
 			NewTok(Tok.Type.AttrKey, key);
 			
@@ -829,7 +829,7 @@ struct Lexer {
 				_ptr++ ;
 				skip_space ;
 				if( _ptr >= _end ) {
-					err("expect AttrValue") ;
+					err("expected AttrValue") ;
 				}
 				NewTok(Tok.Type.AttrValue) ;
 				char _stop_char	 ;
@@ -839,7 +839,7 @@ struct Lexer {
 						skip_space;
 						_stop_char	= ')' ;
 					} else if( _ptr[0] is ')' ) {
-						err("expect AttrValue but `%s`", line);
+						err("expected AttrValue but `%s`", line);
 					} else {
 						_stop_char	= ',' ;
 					}
@@ -855,7 +855,7 @@ struct Lexer {
 				break ;
 			}
 			
-			err("expect AttrKey or AttrEnd `%s`", line ) ;
+			err("expected AttrKey or AttrEnd `%s`", line ) ;
 		}
 		return null ;
 	}
@@ -864,20 +864,20 @@ struct Lexer {
 		assert(_ptr[0] is '/' );
 		_ptr++;
 		if( _ptr >= _end ) {
-			err("expect Comment");
+			err("expected Comment");
 		}
 		Tok* tk	= null ;
 		if( _ptr[0] is '/' ) {
 			// inline Common
 			_ptr++;
 			if( _ptr >= _end ) {
-				err("expect Comment");
+				err("expected Comment");
 			}
 			tk	= NewTok(Tok.Type.CommentStart);
 			if( _ptr[0] is '-' ) {
 				_ptr++;
 				if( _ptr >= _end ) {
-					err("expect Comment");
+					err("expected Comment");
 				}
 				tk.bool_value	= true ;
 			} else {
@@ -895,7 +895,7 @@ struct Lexer {
 		if( _ptr[0] is '-' ) {
 			_ptr++;
 			if( _ptr >= _end ) {
-				err("expect Comment");
+				err("expected Comment");
 			}
 			tk.bool_value	= true ;
 		} else {
@@ -914,24 +914,24 @@ struct Lexer {
 		assert(_ptr[0] is '-' );
 		_ptr++;
 		if( _ptr >= _end ) {
-			err("expect Code");
+			err("expected Code");
 		}
 		
 		// native code
 		if( _ptr[0] is '-' ) {
 			_ptr++;
 			if( _ptr >= _end ) {
-				err("expect Code");
+				err("expected Code");
 			}
 			tk	= NewTok(Tok.Type.Code, parseLineString);
 			return tk ;
 		}
 		if( _ptr[0] !is ' ' && _ptr[0] !is '\t' ) {
-			err("expect space");
+			err("expected space");
 		}
 		skip_space;
 		if( _ptr >= _end ) {
-			err("expect Code");
+			err("expected Code");
 		}
 		auto code_line	= line ;
 		auto code_type	=  _ptr[ 0 .. safeFind!(const(char))(_ptr, &code_line[$-1], ' ') ];
@@ -939,22 +939,22 @@ struct Lexer {
 		if( code_type == "if" ) {
 			_ptr	+= 2 ;
 			if( _ptr >= _end ) {
-				err("expect Code");
+				err("expected Code");
 			}
 			skip_space ;
 			if( _ptr >= _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
-				err("expect Code");
+				err("expected Code");
 			}
 			tk	= NewTok(Tok.Type.IfCode, parseLineString);
 			return tk ;
 		} else if( code_type == "else" ) {
 			_ptr	+= 4 ;
 			if( _ptr >= _end ) {
-				err("expect Code");
+				err("expected Code");
 			}
 			skip_space ;
 			if( _ptr >= _end ) {
-				err("expect Code");
+				err("expected Code");
 			}
 			if( _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 				tk	= NewTok(Tok.Type.ElseIfCode, parseLineString);
@@ -965,16 +965,16 @@ struct Lexer {
 			if( code_type2 == "if" ) {
 				_ptr	+= 2 ;
 				if( _ptr >= _end ) {
-					err("expect Code");
+					err("expected Code");
 				}
 				skip_space ;
 				if( _ptr >= _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
-					err("expect Code");
+					err("expected Code");
 				}
 				tk	= NewTok(Tok.Type.IfCode, parseLineString);
 				return tk ;
 			}
-			err("expect Code `%s`", code_type2);
+			err("expected Code `%s`", code_type2);
 			
 		} else if( code_type == "each" ) {
 			_ptr +=4 ;
@@ -984,11 +984,11 @@ struct Lexer {
 			
 			auto _each_in		= find_with_space!"in"(_each_line);
 			if( _each_in < 0 ) {
-				err("expect each in");
+				err("expected each in");
 			} else if( _each_in < 2 ){// "i in"
-				err("expect each key");
+				err("expected each key");
 			}  else if( _each_in > _each_line.length -4 ){ // i in o
-				err("expect each object");
+				err("expected each object");
 			}
 			auto _each_comma	= countUntil(_each_line, ',' );
 			
@@ -996,23 +996,23 @@ struct Lexer {
 				// no key 
 				auto _each_val	= skip_identifier ;
 				if( _ptr >= _end ) {
-					err("expect each in");
+					err("expected each in");
 				}
 				if( _ptr[0] !is '\t' && _ptr[0] !is ' ' ){
-					err("expect space but `%s`", _ptr[0] ) ;
+					err("expected space but `%s`", _ptr[0] ) ;
 				}
 				skip_space ;
 				if( _ptr - _each_line.ptr != _each_in ){
-					err("expect each in");
+					err("expected each in");
 				}
 				_ptr += 3 ;
 				skip_space ;
 				auto _each_obj	= parseLineString ;
 				if( _each_obj is null ) {
-					err("expect each obj");
+					err("expected each obj");
 				}
 				if( _ptr > _end || _ptr[0] !is '\n' && _ptr[0] !is '\r' ) {
-					err("expect new line");
+					err("expected new line");
 				}
 				
 				tk	= NewTok(Tok.Type.Each_Object, _each_obj);
@@ -1024,20 +1024,20 @@ struct Lexer {
 			}
 			
 			if( _each_comma is 0 ) { // "i,j in o"
-				err("expect each key");
+				err("expected each key");
 			} else if( _each_comma >= _each_in - 2 ){ 
 				err("each expression error `%s` _each_comma = %d", line, _each_comma);
 			}
 			
 			auto _each_type	= skip_identifier ;
 			if( _each_type is null ) {
-				err("expect each key");
+				err("expected each key");
 			}
 			if( _ptr >= _end ) {
-				err("expect each in");
+				err("expected each in");
 			}
 			if( _ptr >= _end ) {
-				err("expect each in");
+				err("expected each in");
 			}
 			skip_space ;
 			string _each_key ;
@@ -1045,7 +1045,7 @@ struct Lexer {
 				// find each_key
 				_each_key	= skip_identifier ;
 				if( _each_key is null ) {
-					err("expect each key");
+					err("expected each key");
 				}
 				skip_space ;
 			} else {
@@ -1055,7 +1055,7 @@ struct Lexer {
 			}
 			
 			if( _ptr[0] !is ',' ) {
-				err("expect each comma");
+				err("expected each comma");
 			}
 			// skip ,
 			_ptr++;
@@ -1064,14 +1064,14 @@ struct Lexer {
 			// find _each_value 
 			string _each_value = skip_identifier ;
 			if( _each_value is null ) {
-				err("expect each value");
+				err("expected each value");
 			}
 			if( _ptr >= _end || _ptr[0] !is '\t' && _ptr[0] !is ' ' ) {
-				err("expect each space");
+				err("expected each space");
 			}
 			skip_space ;
 			if( _each_in != _ptr - _each_line.ptr ) {
-				err("expect each in");
+				err("expected each in");
 			}
 			// skip "in "
 			_ptr += 3 ;
@@ -1079,10 +1079,10 @@ struct Lexer {
 			
 			string _each_obj	= parseLineString ;
 			if( _each_obj is null ) {
-				err("expect each obj");
+				err("expected each obj");
 			}
 			if( _ptr > _end || _ptr[0] !is '\n' && _ptr[0] !is '\r' ) {
-				err("expect new line");
+				err("expected new line");
 			}
 			
 			tk	= NewTok(Tok.Type.Each_Object, _each_obj);
@@ -1096,7 +1096,7 @@ struct Lexer {
 			
 			
 		} else {
-			err("expect Code `%s`", code_type);
+			err("expected Code `%s`", code_type);
 		}
 		
 		return tk ;
@@ -1117,7 +1117,7 @@ struct Lexer {
 		
 		auto filter_type	= skip_identifier();
 		if( filter_type is null ) {
-			err("expect filter type");
+			err("expected filter type");
 		}
 		Tok* tk	= NewTok(Tok.Type.FilterType, filter_type ) ;
 		
@@ -1133,12 +1133,12 @@ struct Lexer {
 			}
 			_ptr++ ;
 			if( _ptr > _end || _ptr[0] is ' ' ||  _ptr[0] is '\t'  ||  _ptr[0] is '\r'  ||  _ptr[0] is '\n' ){
-				err("expect filter tag");
+				err("expected filter tag");
 			}
 			if( _ptr[0] !is '"' ) {
 				string filter_tag = skip_identifier() ;
 				if( filter_tag is null ) {
-					err("expect filter tag");
+					err("expected filter tag");
 				}
 				NewTok(Tok.Type.FilterArgStart) ;
 				NewTok(Tok.Type.String, filter_tag) ;
@@ -1147,7 +1147,7 @@ struct Lexer {
 			}
 			_ptr++ ;
 			if( _ptr > _end || _ptr[0] is ' ' ||  _ptr[0] is '\t'  ||  _ptr[0] is '\r'  ||  _ptr[0] is '\n' ){
-				err("expect filter tag");
+				err("expected filter tag");
 			}
 			NewTok(Tok.Type.FilterArgStart) ;
 			parseInlineString('"');
@@ -1181,35 +1181,35 @@ struct Lexer {
 				if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 					return tk ;
 				}
-				err("expect filter tag start but find `%s`", line );
+				err("expected filter tag start but find `%s`", line );
 			}
 			_ptr++;
 			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
-				err("expect filter tag key" );
+				err("expected filter tag key" );
 			}
 			skip_space;
 			auto _tag_key	= skip_identifier();
 			if ( _tag_key is null ) {
-				err("expect filter tag key" );
+				err("expected filter tag key" );
 			}
 			NewTok(Tok.Type.FilterTagKey, _tag_key) ;
 			
 			// find =
 			skip_space;
 			if ( _ptr > _end || _ptr[0] !is '=' ) {
-				err("expect filter tag key = " );
+				err("expected filter tag key = " );
 			}
 			_ptr++;
 			skip_space;
 			
 			// find value
 			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
-				err("expect filter tag value" );
+				err("expected filter tag value" );
 			}
 			NewTok(Tok.Type.FilterTagValueStart) ;
 			Tok* _tag_val	= parseInlineString(']');
 			if( _tag_val is null ) {
-				err("expect filter tag value" );
+				err("expected filter tag value" );
 			}
 			skip_space;
 			
@@ -1228,7 +1228,7 @@ struct Lexer {
 				NewTok(Tok.Type.FilterTagStart) ;
 				Tok* _tk	= parseTagWithIdClass(true);
 				if( _tk is null ) {
-					err("expect filter tag" );
+					err("expected filter tag" );
 				}
 				NewTok(Tok.Type.FilterTagEnd) ;
 				
