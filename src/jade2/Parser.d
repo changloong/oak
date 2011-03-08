@@ -57,19 +57,19 @@ struct Parser {
 		return tk ;
 	}
 	
-	void dump_next(){
+	void dump_next(string _file = __FILE__, ptrdiff_t _line = __LINE__)(){
 		Tok* tk = lexer._last_tok  ;
 		if( tk is null ) {
-			Log("peek = null ");
+			Log!(_file, _line)("peek = null ");
 			return  ;
 		}
+		Log!(_file, _line)("peek = %s ln:%d:%d tab=%d `%s`",  tk.type, tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
 		tk	= tk.next ;
 		if( tk is null ) {
-			Log("next = null ");
+			Log!(_file, _line)("next = null ");
 			return  ;
 		}
-		
-		Log("next = %s ln:%d:%d tab=%d `%s`",  tk.type, tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
+		Log!(_file, _line)("next = %s ln:%d:%d tab=%d `%s`",  tk.type, tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
 	}
 	
 	Tok* peekSibling(Tok* tk = null) {
@@ -129,20 +129,20 @@ struct Parser {
 		}
 	}
 	
-	void dump_tok( bool from_last = false ) {
-		write("\n--------- dump tok --------\n");
+	void dump_tok(string _file = __FILE__, ptrdiff_t _line = __LINE__)( bool from_last = false ) {
+		writefln("\n--------- dump tok --------\n%s:%d", _file, _line);
 		Tok* tk	= lexer._root_tok ;
 		if( from_last ) {
 			tk	= lexer._last_tok ;
 		}
 		while( tk !is null ) {
 			//auto node = parseExpr ;
-			Log("tab:%d ln:%d:%d %s = `%s`" , tk.tabs, tk.ln,tk._ln, tk.type, tk.string_value );
+			writeln("tab:%d ln:%d:%d %s = `%s`" , tk.tabs, tk.ln,tk._ln, tk.type, tk.string_value );
 			tk	= tk.next ;
 		}
 	}
 	
-	private N NewNode(N,T...)(T t) if( is(N==class) && BaseClassesTuple!(N).length > 0 && is( BaseClassesTuple!(N)[0] == Node) ){
+	private N NewNode(N, string _file = __FILE__, ptrdiff_t _line = __LINE__, T... )(T t) if( is(N==class) && BaseClassesTuple!(N).length > 0 && is( BaseClassesTuple!(N)[0] == Node) ){
 		N node ;
 
 		static if( T.length > 0 && isPointer!(T[0]) && is(pointerTarget!(T)==Tok) ) {
@@ -162,7 +162,7 @@ struct Parser {
 				node.ln	= t[0].ln ;
 			}
 			
-			Log("%s , ln:%d:%d tab:%d `%s` ",  N.stringof , t[0].ln, t[0]._ln, t[0].tabs, t[0].string_value);
+			Log!(_file, _line)(" ===> New %s , ln:%d:%d tab:%d `%s` ",  N.stringof , t[0].ln, t[0]._ln, t[0].tabs, t[0].string_value);
 		}  else {
 			node = pool.New!(N)(t) ;
 		}
@@ -206,7 +206,7 @@ struct Parser {
 					break ;
 				default:
 					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
-					dump_next;
+					dump_next();
 					assert(false) ;
 			}
 		}
@@ -230,7 +230,7 @@ struct Parser {
 		
 				default:
 					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
-					dump_next;
+					dump_next();
 					assert(false) ;
 			}
 		}
@@ -242,25 +242,21 @@ struct Parser {
 		Tok* tk	= expect(Tok.Type.AttrKey) ;
 		auto node 	= NewNode!(Attr)( tk ) ;
 		node.key	=  tk.string_value ;
-
+		auto _ln	= tk._ln ;
+		L1:
 		for(  tk = peek ; tk !is null ; tk = peek ) {
+			if( _ln != _ln ) {
+				err("end attr key wrong ");
+				break ;
+			}
 			switch( tk.ty ) {
-				/*
-				case Tok.Type.AttrEnd:
-					return node ;
-				case Tok.Type.AttrKey:
-					auto _node	= parseAttr();
-					assert(_node !is null );
-					// push to attrs 
-					break ;
-				*/
 				case  Tok.Type.AttrValue :
 					node.value	= parseAttrValue ;
 					assert( node.value !is null ) ;
-					break ;
+					break L1;
 				default:
 					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
-					dump_next;
+					dump_next();
 					assert(false) ;
 			}
 		}
@@ -282,19 +278,20 @@ struct Parser {
 					auto _node	= parseInlineIf() ;
 					assert( _node !is null );
 					node.pushChild(_node);
-					next ;
 					break ;
 				case  Tok.Type.AttrKey :
-					Log("end one key");
 					break L1;
+				
 				default:
+					assert( tk is  peek) ;
 					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
-					dump_next;
-					dump_tok ;
+					dump_next();
+					//dump_tok ;
 					assert(false) ;
 			}
 		}
 		
+		Log(" ========> end attr value ");
 		return node ;
 	}
 	
@@ -322,13 +319,15 @@ struct Parser {
 					break L1 ;
 				default:
 					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
-					dump_next;
+					dump_next();
 					assert(false) ;
 			}
 		}
 		if( !find_end ) {
 			err("missing InlineIf end on line: %d", node.ln );	
 		}
+		dump_next();
+		Log(" ========> end if ");
 		return node ;
 	}
 }

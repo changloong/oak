@@ -98,7 +98,7 @@ struct Lexer {
 		_last_tok = _root_tok ;
 	}
 	
-	private Tok* NewTok(Tok.Type ty, string val = null ) {
+	private Tok* NewTok(string _file = __FILE__, ptrdiff_t _line = __LINE__)(Tok.Type ty, string val = null ) {
 		Tok* tk ;
 		tk	= pool.New!(Tok)() ;
 		tk.ty	= ty ;
@@ -115,10 +115,10 @@ struct Lexer {
 		if( val !is null ) {
 			tk.string_value	= val ;
 			version(JADE_DEBUG_LEXER_TOK)
-				Log("%s tab:%d  ln:%d = `%s`", Tok.sType(ty), tk.tabs, ln, val);
+				Log!(_file, _line)("%s tab:%d  ln:%d = `%s`", Tok.sType(ty), tk.tabs, ln, val);
 		} else {
 			version(JADE_DEBUG_LEXER_TOK)
-				Log("`%s` tab:%d ln:%d", Tok.sType(ty), ln, tk.tabs );
+				Log!(_file, _line)("`%s` tab:%d ln:%d", Tok.sType(ty), ln, tk.tabs );
 		}
 		return tk ;
 	}
