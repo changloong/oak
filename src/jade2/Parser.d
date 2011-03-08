@@ -137,7 +137,7 @@ struct Parser {
 		}
 		while( tk !is null ) {
 			//auto node = parseExpr ;
-			writeln("tab:%d ln:%d:%d %s = `%s`" , tk.tabs, tk.ln,tk._ln, tk.type, tk.string_value );
+			writefln("tab:%d ln:%d:%d %s = `%s`" , tk.tabs, tk.ln,tk._ln, tk.type, tk.string_value );
 			tk	= tk.next ;
 		}
 	}
@@ -176,9 +176,13 @@ struct Parser {
 		Tok* tk = peek ;
 		switch( tk.ty ) {
 			case Tok.Type.DocType:
-				return parseDocType() ;
+				auto _node	= parseDocType() ;
+				parent.pushChild(_node);
+				return _node;
 			case Tok.Type.Tag:
-				return parseTag() ;
+				auto _node	= parseTag() ;
+				parent.pushChild(_node);
+				return _node;
 			
 			case Tok.Type.String:
 				auto _node	= NewNode!(PureString)( tk ) ;
@@ -448,8 +452,25 @@ struct Parser {
 		auto _ln	= tk._ln ;
 		auto _tab	= tk.tabs ;
 		
+		// find filter arg
 		L1:
-		for(  ; tk !is null ; tk = peek ) {
+		for( tk = peek  ; tk !is null ; tk = peek ) {
+			if( tk._ln !is _ln ) {
+				break ;
+			}
+			switch( tk.ty ) {
+				case Tok.Type.FilterArgStart :
+					assert(false);
+				default:
+					dump_next();
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
+					assert(false) ;
+			}
+		}
+		
+		// find filter args
+		L2:
+		for( tk = peek  ; tk !is null ; tk = peek ) {
 			if( tk._ln !is _ln ) {
 				break ;
 			}
@@ -462,11 +483,21 @@ struct Parser {
 			}
 		}
 		
-		// find inner text
+		// find filter text ,  hasVar
+		L3:
+		for(  tk = peek ; tk !is null ; tk = peek ){
+			if( tk.tabs <= _tab ) {
+				break ;
+			}
+			auto _node = parseExpr(node);
+			Log("%s  ", _node.type );
+			assert( _node.isVar || _node.isInlineIf || _node.isPureString) ;
+		}
 		
-		dump_next();
-		Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
-		assert(false) ;
+		//dump_next();
+		//Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
+		//assert(false) ;
+		
 		return node ;
 	}
 }
