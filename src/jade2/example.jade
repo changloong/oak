@@ -13,10 +13,11 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=home)
       .class1 {
         font-size:12px;
       }
-  
+    ::js
+       alert( ${user.id} )
     :js
       $(document.body).ready(function(){ 
-        alert(123);
+        alert( ${user.id} )
       });
 
     :include!"../header.jade"

@@ -571,7 +571,7 @@ struct Lexer {
 		return null ;
 	}
 	
-	void parseTextBlock(Tok* tk) {
+	void parseTextBlock(Tok* tk, bool _search_code = false) {
 		if( _ptr > _end ) {
 			err("expect text block");
 		}
@@ -599,7 +599,7 @@ struct Lexer {
 			if( _str_pos != _str_bu.length ){
 				NewTok(Tok.Type.String, cast(string) _str_bu.slice[_str_pos ..$] );
 			}
-			parseString(false) ;
+			parseString(_search_code) ;
 		}
 	}
 	
@@ -1098,6 +1098,14 @@ struct Lexer {
 			err("filter error");
 		}
 		_ptr++;
+		
+		bool _search_code	= false ;
+		
+		if( _ptr <= _end && _ptr[0] is ':' ) {
+			_search_code	= true ;
+			_ptr++ ;
+		}
+		
 		auto filter_type	= skip_identifier();
 		if( filter_type is null ) {
 			err("expect filter type");
@@ -1105,7 +1113,7 @@ struct Lexer {
 		Tok* tk	= NewTok(Tok.Type.FilterType, filter_type ) ;
 		
 		scope(exit){
-			parseTextBlock(tk);
+			parseTextBlock(tk, _search_code);
 		}
 		
 		// filter arg
