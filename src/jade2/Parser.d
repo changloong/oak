@@ -180,6 +180,7 @@ struct Parser {
 			case Tok.Type.Tag:
 				return parseTag() ;
 			default:
+				dump_next();
 				Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 				assert(false) ;
 		}
@@ -213,8 +214,8 @@ struct Parser {
 				case Tok.Type.Class:
 					
 				default:
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					dump_next();
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					assert(false) ;
 			}
 		}
@@ -233,13 +234,17 @@ struct Parser {
 					next ;
 					break L2;
 				default:
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					dump_next();
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					assert(false) ;
 			}
 		}
+		
 		// find inline text
-		assert(false);
+		tk	= peek ;
+		if( tk !is null && tk._ln is _ln ) {
+			parseMixString(node) ;
+		}
 		return node ;
 	}
 	
@@ -264,8 +269,8 @@ struct Parser {
 					break ;
 		
 				default:
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					dump_next();
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					assert(false) ;
 			}
 		}
@@ -291,8 +296,8 @@ struct Parser {
 					assert( node.value !is null ) ;
 					break L1;
 				default:
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					dump_next();
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					assert(false) ;
 			}
 		}
@@ -329,13 +334,11 @@ struct Parser {
 				
 				default:
 					assert( tk is  peek) ;
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					dump_next();
-					//dump_tok ;
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					assert(false) ;
 			}
 		}
-		
 		Log(" ========> end attr value ,  end mix string");
 		return node ;
 	}
@@ -374,5 +377,34 @@ struct Parser {
 		dump_next();
 		Log(" ========> end if ");
 		return node ;
+	}
+	
+	void parseMixString(Node parent) {
+		Tok* tk	= peek ;
+		auto _ln	= tk._ln ;
+		L1:
+		for(  ; tk !is null ; tk = peek ) {
+			if( tk._ln !is _ln ) {
+				break ;
+			}
+			switch( tk.ty ) {
+				case Tok.Type.String :
+					auto _node	= NewNode!(PureString)( tk ) ;
+					parent.pushChild( _node ) ;
+					next ;
+					break ;
+				
+				case Tok.Type.If  :
+					auto _node	= parseInlineIf() ;
+					assert( _node !is null );
+					parent.pushChild(_node);
+					break ;
+				
+				default:
+					dump_next();
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
+					assert(false) ;
+			}
+		}
 	}
 }
