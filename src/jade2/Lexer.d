@@ -76,7 +76,7 @@ struct Lexer {
 				case '#':
 				// class
 				case '.':
-					parseTag(`div`) ;
+					parseTag(`*`) ;
 					break;
 				// tag 
 				default:
@@ -643,7 +643,7 @@ struct Lexer {
 			err("expect tag");
 		}
 		if( _ptr[0] is '#' || _ptr[0] is '.'  ){
-			return parseTag( `div`, without_content) ;
+			return parseTag( `*`, without_content) ;
 		}
 		return parseTag( null, without_content) ;
 	}
