@@ -179,6 +179,11 @@ struct Parser {
 				return parseDocType() ;
 			case Tok.Type.Tag:
 				return parseTag() ;
+			case Tok.Type.String:
+				auto _node	= NewNode!(PureString)( tk ) ;
+				next ;
+				return _node;
+			
 			default:
 				dump_next();
 				Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
@@ -199,6 +204,7 @@ struct Parser {
 		auto node 	= NewNode!(Tag)( tk ) ;
 		
 		auto _ln	= tk._ln ;
+		auto _tab	= tk.tabs ;
 		// find id, class
 		L1:
 		for(  tk = peek ; tk !is null ; tk = peek ) {
@@ -206,17 +212,15 @@ struct Parser {
 				break ;
 			}
 			switch( tk.ty ) {
-				case Tok.Type.AttrStart:
-					break L1;
-				
 				case Tok.Type.Id:
 					
-				case Tok.Type.Class:
-					
-				default:
-					dump_next();
+				case Tok.Type.Class:dump_next();
 					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					assert(false) ;
+					assert(false) ;
+				
+				default:
+					break L1;
 			}
 		}
 		
@@ -233,18 +237,31 @@ struct Parser {
 					assert( peek.ty is Tok.Type.AttrEnd);
 					next ;
 					break L2;
+				
 				default:
-					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
-					assert(false) ;
+					break L2;
 			}
 		}
 		
 		// find inline text
 		tk	= peek ;
 		if( tk !is null && tk._ln is _ln ) {
+			// tack all child string 
 			parseMixString(node) ;
+			assert(false);
 		}
+		
+		// find all child 
+		L3:
+		for(  tk = peek ; tk !is null ; tk = peek ){
+			if( tk.tabs <= _tab ) {
+				break ;
+			}
+			auto _node	= parseExpr();
+			assert( _node !is null ) ;
+			node.pushChild(_node);
+		}
+
 		return node ;
 	}
 	
