@@ -16,7 +16,6 @@ struct Lexer {
 	Tok*		_last_tok ;
 	
 	size_t	ln, _last_indent_size, _offset_tabs ;
-	// bool		_search_inline_code ;
 	
 	void Init(Compiler* cc)  in {
 		assert( cc !is null);
@@ -29,7 +28,6 @@ struct Lexer {
 		_end	= &cc.filedata[$-1];
 		_start	= _ptr ;
 		ln	= 1 ;
-		// _search_inline_code	= true ;
 	}
 	
 	string line() {
