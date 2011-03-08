@@ -49,13 +49,16 @@ struct Parser {
 		return tk ;
 	}
 	
-	Tok* next() {
+	Tok* next(string _file = __FILE__, ptrdiff_t _line = __LINE__)() {
 		Tok* tk = lexer._last_tok  ;
 		if( tk is null ) {
 			return tk ;
 		}
 		tk	= tk.next ;
 		lexer._last_tok = tk ;
+		
+		writefln("* %s:%d move to next tok", _file, _line);
+
 		return tk ;
 	}
 	
@@ -110,7 +113,7 @@ struct Parser {
 			err("expected %s, but got EOF",  Tok.sType(ty), this.filename ) ;
 		}
 		if ( tk.ty is ty) {
-			next ;
+			next() ;
 			return tk ;
 		} else {
 			err("expected %s, but got %s on line:%d",  Tok.sType(ty), tk.type,  this.filename, tk.ln ) ;
@@ -174,6 +177,7 @@ struct Parser {
 	
 	private Node parseExpr( Node parent ) {
 		Tok* tk = peek ;
+		writefln("-%d %s ln:%d tab:%d  `%s`", __LINE__, tk.type, tk.ln, tk.tabs, tk.string_value);
 		switch( tk.ty ) {
 			case Tok.Type.DocType:
 				auto _node	= parseDocType() ;
@@ -187,23 +191,23 @@ struct Parser {
 			case Tok.Type.String:
 				auto _node	= NewNode!(PureString)( tk ) ;
 				parent.pushChild(_node);
-				next ;
+				next() ;
 				return _node;
 			case Tok.Type.Var:
 				auto _node	= NewNode!(Var)( tk ) ;
 				parent.pushChild(_node);
-				next ;
+				next() ;
 				return _node;
 			case Tok.Type.If:
 				auto _node	= parseInlineIf;
 				parent.pushChild(_node);
-				next ;
+				next() ;
 				return _node;
 			
 			case Tok.Type.FilterType :
 				auto _node	= parseFilter ;
 				parent.pushChild(_node);
-				next ;
+				next() ;
 				return _node;
 			
 			default:
@@ -257,7 +261,7 @@ struct Parser {
 					auto _node	= parseAttrs() ;
 					assert(_node !is null ) ;
 					assert( peek.ty is Tok.Type.AttrEnd);
-					next ;
+					next() ;
 					break L2;
 				
 				default:
@@ -360,7 +364,7 @@ struct Parser {
 				case  Tok.Type.String :
 					auto _node	= NewNode!(PureString)( tk ) ;
 					node.pushChild( _node ) ;
-					next ;
+					next() ;
 					break ;
 				
 				case  Tok.Type.AttrKey :
@@ -395,12 +399,12 @@ struct Parser {
 				case Tok.Type.String :
 					auto _node	= NewNode!(PureString)( tk ) ;
 					node.pushChild( _node ) ;
-					next ;
+					next() ;
 					break ;
 				
 				case Tok.Type.EnfIf  :
 					find_end	= true ;
-					next ;
+					next() ;
 					break L1 ;
 				default:
 					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
@@ -428,7 +432,7 @@ struct Parser {
 				case Tok.Type.String :
 					auto _node	= NewNode!(PureString)( tk ) ;
 					parent.pushChild( _node ) ;
-					next ;
+					next() ;
 					break ;
 				
 				case Tok.Type.If  :
@@ -468,7 +472,7 @@ struct Parser {
 			}
 		}
 		
-		// find filter args
+		// find filter tag
 		L2:
 		for( tk = peek  ; tk !is null ; tk = peek ) {
 			if( tk._ln !is _ln ) {
@@ -490,13 +494,13 @@ struct Parser {
 				break ;
 			}
 			auto _node = parseExpr(node);
-			Log("%s  ", _node.type );
 			assert( _node.isVar || _node.isInlineIf || _node.isPureString) ;
 		}
 		
 		//dump_next();
-		//Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
+		Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
 		//assert(false) ;
+		Log(" ==============> end filter ");
 		
 		return node ;
 	}
