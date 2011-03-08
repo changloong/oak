@@ -36,6 +36,65 @@ struct Parser {
 		_J.Exit(1);
 	}
 	
+	Tok* peek(size_t pos = 0 ) {
+		Tok* tk = lexer._last_tok  ;
+		while( pos > 0 ) {
+			if( tk is null ) {
+				break ;
+			}
+			tk	= tk.next ;
+			pos--;
+		}
+		while( pos < 0 ) {
+			if( tk is null ) {
+				break ;
+			}
+			tk	= tk.pre ;
+			pos++ ;
+		}
+		return tk ;
+	}
+	
+	Tok* next() {
+		Tok* tk = lexer._last_tok  ;
+		if( tk is null ) {
+			return tk ;
+		}
+		tk	= tk.next ;
+		lexer._last_tok = tk ;
+		return tk ;
+	}
+	
+	Tok* nextSibling(Tok* tk = null) {
+		if( tk is null ) {
+			tk = lexer._last_tok  ;
+		}
+		if( tk is null ) {
+			return tk ;
+		}
+		auto tab = tk.tabs ;
+		auto ln = tk.ln ;
+		auto _ln = tk._ln ;
+		tk	= tk.next ;
+		for( tk = tk.next; tk !is null; tk = tk.next ) {
+			// child 
+			if( tk.tabs > tab ) {
+				continue ;
+			}
+			// don't has sibling
+			if( tk.tabs < tab ) {
+				return null ;
+			}
+			assert(tk.tabs is tab ) ;
+			if( tk._ln is _ln ){
+				continue ;
+			}
+			// find sibling
+			break ;
+		}
+		return tk ;
+	}
+	
 	void parse() {
 		lexer.parse ;
 
