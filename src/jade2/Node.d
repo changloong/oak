@@ -10,6 +10,7 @@ package import
 	jade.node.MixString ,
 	jade.node.PureString ,
 	jade.node.InlineIf ,
+	jade.node.Var ,
 	
 	jade.node.Block ,
 	jade.node.Comment ,
@@ -35,6 +36,8 @@ abstract class Node {
 		Comment ,
 		DocType ,
 		Tag ,
+		
+		Var ,
 		
 		Filter ,
 		InlineIf ,
@@ -69,6 +72,10 @@ abstract class Node {
 			lastChild.next	= node ;
 			lastChild	= node ;
 		}
+	}
+	
+	bool empty() {
+		return firstChild is null ;
 	}
 	
 	mixin Pool.Allocator ;

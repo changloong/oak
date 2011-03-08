@@ -1,9 +1,9 @@
 
-module jade.node.PureString ;
+module jade.node.Var ;
 
 import jade.Jade ;
 
-final class PureString : Node {
+final class Var : Node {
 	string		value ;
 	this(Tok* tk) {
 		value	= tk.string_value ;

@@ -57,6 +57,21 @@ struct Parser {
 		return tk ;
 	}
 	
+	void dump_next(){
+		Tok* tk = lexer._last_tok  ;
+		if( tk is null ) {
+			Log("peek = null ");
+			return  ;
+		}
+		tk	= tk.next ;
+		if( tk is null ) {
+			Log("next = null ");
+			return  ;
+		}
+		
+		Log("next = %s ln:%d:%d tab=%d `%s`",  tk.type, tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
+	}
+	
 	Tok* peekSibling(Tok* tk = null) {
 		if( tk is null ) {
 			tk = lexer._last_tok  ;
@@ -110,14 +125,17 @@ struct Parser {
 		}
 		
 		version(JADE_DEBUG_PARSER_TOK_DUMP1) {
-			Tok* tk	= lexer._root_tok ;
-			while( tk !is null ) {
-				//auto node = parseExpr ;
-				Log("tab:%d ln:%d:%d %s = `%s`" , tk.tabs, tk.ln,tk._ln, tk.type, tk.string_value );
-				tk	= tk.next ;
-			}
+			dump ;
 		}
-		
+	}
+	
+	void dump() {
+		Tok* tk	= lexer._root_tok ;
+		while( tk !is null ) {
+			//auto node = parseExpr ;
+			Log("tab:%d ln:%d:%d %s = `%s`" , tk.tabs, tk.ln,tk._ln, tk.type, tk.string_value );
+			tk	= tk.next ;
+		}
 	}
 	
 	private N NewNode(N,T...)(T t) if( is(N==class) && BaseClassesTuple!(N).length > 0 && is( BaseClassesTuple!(N)[0] == Node) ){
@@ -139,10 +157,11 @@ struct Parser {
 			if( node.ln is 0 ) {
 				node.ln	= t[0].ln ;
 			}
+			
+			Log("%s , ln:%d:%d tab:%d `%s` ",  N.stringof , t[0].ln, t[0]._ln, t[0].tabs, t[0].string_value);
 		}  else {
 			node = pool.New!(N)(t) ;
 		}
-		
 		mixin("node.ty = Node.Type." ~ N.stringof  ~ ";" );
 		assert(node.firstChild is null ) ;
 		assert(node.next is null ) ;
@@ -157,7 +176,7 @@ struct Parser {
 			case Tok.Type.Tag:
 				return parseTag() ;
 			default:
-				Log("%s %d:%d  %s", tk.type, tk.ln, tk.tabs, tk.string_value);
+				Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 				assert(false) ;
 		}
 		return null ;
@@ -182,7 +201,8 @@ struct Parser {
 					
 					break ;
 				default:
-					Log("%s %d:%d  %s", tk.type, tk.ln, tk.tabs, tk.string_value);
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
+					dump_next;
 					assert(false) ;
 			}
 		}
@@ -205,7 +225,8 @@ struct Parser {
 					break ;
 		
 				default:
-					Log("%s %d:%d  %s", tk.type, tk.ln, tk.tabs, tk.string_value);
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
+					dump_next;
 					assert(false) ;
 			}
 		}
@@ -234,7 +255,8 @@ struct Parser {
 					assert( node.value !is null ) ;
 					break ;
 				default:
-					Log("%s %d:%d  %s", tk.type, tk.ln, tk.tabs, tk.string_value);
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
+					dump_next;
 					assert(false) ;
 			}
 		}
@@ -244,12 +266,61 @@ struct Parser {
 	MixString parseAttrValue() {
 		Tok* tk	= expect(Tok.Type.AttrValue) ;
 		auto node 	= NewNode!(MixString)( tk ) ;
+		auto _ln	= tk._ln ;
+		L1:
 		for(  tk = peek ; tk !is null ; tk = peek ) {
+			if( _ln != _ln ) {
+				break ;
+			}
 			switch( tk.ty ) {
+				case  Tok.Type.If :
+					auto _node	= parseInlineIf() ;
+					assert( _node !is null );
+					node.pushChild(_node);
+					next ;
+					break ;
+				case  Tok.Type.AttrKey :
+					break L1;
 				default:
-					Log("%s %d:%d  %s", tk.type, tk.ln, tk.tabs, tk.string_value);
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
+					dump_next;
 					assert(false) ;
 			}
+		}
+		
+		return node ;
+	}
+	
+	Node parseInlineIf() {
+		Tok* tk	= expect(Tok.Type.If) ;
+		auto node 	= NewNode!(InlineIf)( tk ) ;
+		
+		bool	find_end	= false ;
+		auto _ln	= tk._ln ;
+		L1:
+		for(  tk = peek ; tk !is null ; tk = peek ) {
+			if( tk._ln !is _ln ) {
+				break ;
+			}
+			switch( tk.ty ) {
+				case Tok.Type.String :
+					auto _node	= NewNode!(PureString)( tk ) ;
+					node.pushChild( _node ) ;
+					next ;
+					break ;
+				
+				case Tok.Type.EnfIf  :
+					find_end	= true ;
+					next ;
+					break L1 ;
+				default:
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
+					dump_next;
+					assert(false) ;
+			}
+		}
+		if( !find_end ) {
+			err("missing InlineIf end on line: %d", node.ln );	
 		}
 		return node ;
 	}
