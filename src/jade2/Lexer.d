@@ -113,10 +113,10 @@ struct Lexer {
 		if( val !is null ) {
 			tk.string_value	= val ;
 			version(JADE_DEBUG_LEXER_TOK)
-				Log("`%s` %d = `%s`", Tok.sType(ty), tk.tabs, val);
+				Log("%s tab:%d  ln:%d = `%s`", Tok.sType(ty), tk.tabs, ln, val);
 		} else {
 			version(JADE_DEBUG_LEXER_TOK)
-				Log("`%s` %d", Tok.sType(ty), tk.tabs );
+				Log("`%s` tab:%d ln:%d", Tok.sType(ty), ln, tk.tabs );
 		}
 		return tk ;
 	}
@@ -140,10 +140,10 @@ struct Lexer {
 	}
 	
 	private void skip_newline(){
-		if( _ptr >= _end ) {
+		if( _ptr > _end ) {
 			err("expect new line");
 		}
-		switch( _ptr[0]) {
+		switch( _ptr[0] ) {
 			case '\r':
 				_ptr++;
 				if( _ptr !is _end && _ptr[0] is '\n' ) {
@@ -196,7 +196,7 @@ struct Lexer {
 		}
 		_last_indent_size	= i / 2 ;
 		version(JADE_DEBUG_LEXER_SPACE)
-			Log("Indent: %d `%s`", _last_indent_size, line );
+			Log("Indent: tab:%d ln:%d  text:`%s`", _last_indent_size, ln, line );
 		return _ptr - __ptr  ;
 	}
 	
@@ -242,7 +242,7 @@ struct Lexer {
 	}
 	
 	private  bool scan_skip_line() {
-		if( _ptr <= _end && _ptr[0] is '\\' && (_ptr[1] is '\r' || _ptr[1] is '\n') ) {
+		if( _ptr <= _end - 1 && _ptr[0] is '\\' && (_ptr[1] is '\r' || _ptr[1] is '\n') ) {
 			_ptr++;
 			auto _tabs	= _last_indent_size ;
 			skip_newline;
@@ -590,6 +590,7 @@ struct Lexer {
 			parseIndent;
 			
 			if( _last_indent_size <= tk.tabs ) {
+				ln-- ;
 				_ptr	= __ptr ;
 				break ;
 			}

@@ -41,11 +41,13 @@ struct Parser {
 
 		Block block	= NewTok!(Block)();
 		
+		version(JADE_DEBUG_PARSER_TOK_DUMP) {
 		Tok* tk	= lexer._root_tok ;
-		while( tk !is null ) {
-			//auto node = parseExpr ;
-			Log("%d %s = %s" , tk.tabs, tk.type, tk.string_value );
-			tk	= tk.next ;
+			while( tk !is null ) {
+				//auto node = parseExpr ;
+				Log("tab:%d ln:%d %s = `%s`" , tk.tabs, tk.ln, tk.type, tk.string_value );
+				tk	= tk.next ;
+			}
 		}
 		
 	}
