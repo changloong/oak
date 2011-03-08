@@ -4,6 +4,10 @@ module jade.Node ;
 import jade.Jade ;
 
 package import 
+	jade.node.Attrs ,
+	jade.node.Attr ,
+	jade.node.AttrValue ,
+	
 	jade.node.Block ,
 	jade.node.Comment ,
 	jade.node.Code ,
@@ -16,7 +20,11 @@ abstract class Node {
 	
 	enum Type {
 		None ,
+		
 		Attrs ,
+		Attr ,
+		AttrValue ,
+		
 		Block ,
 		Code ,
 		Comment ,
@@ -31,6 +39,7 @@ abstract class Node {
 	
 	Type		ty ;
 	size_t	ln ;
+	Tok*		_tok ;
 	Node		next , firstChild , lastChild ;
 	
 	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
@@ -46,6 +55,7 @@ abstract class Node {
 	
 	void pushChild(Node node) {
 		if( firstChild is null ) {
+			assert(lastChild is null) ;
 			firstChild	= node ;
 			lastChild	= node ;
 		} else {

@@ -18,10 +18,9 @@ final class Tag : Node {
 			`hr` ,
 		] ;
 	
-	static const string[] text_block = 
-		[
-			`style`,
-			`script`,
-			`textarea` ,
-		] ;
+	string	 tag ;
+	
+	this(Tok* tk) {
+		tag	= tk.string_value ;
+	}
 }
