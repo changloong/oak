@@ -3,6 +3,8 @@ module jade.Parser ;
 
 import jade.Jade ;
 
+alias jade.node.Filter.Filter Filter ;
+
 struct Parser {
 	Pool*		pool ;
 	string		filename ;
@@ -120,9 +122,7 @@ struct Parser {
 		lexer.parse ;
 		root = NewNode!(Block)();
 		
-		for( auto node	= parseExpr(); node !is null; node	= parseExpr()){
-			root.pushChild(node) ;
-		}
+		for( auto node	= parseExpr(root); node !is null; node	= parseExpr(root)) {}
 		
 		version(JADE_DEBUG_PARSER_TOK_DUMP1) {
 			dump ;
@@ -172,15 +172,33 @@ struct Parser {
 		return node ;
 	}
 	
-	private Node parseExpr(){
+	private Node parseExpr( Node parent ) {
 		Tok* tk = peek ;
 		switch( tk.ty ) {
 			case Tok.Type.DocType:
 				return parseDocType() ;
 			case Tok.Type.Tag:
 				return parseTag() ;
+			
 			case Tok.Type.String:
 				auto _node	= NewNode!(PureString)( tk ) ;
+				parent.pushChild(_node);
+				next ;
+				return _node;
+			case Tok.Type.Var:
+				auto _node	= NewNode!(Var)( tk ) ;
+				parent.pushChild(_node);
+				next ;
+				return _node;
+			case Tok.Type.If:
+				auto _node	= parseInlineIf;
+				parent.pushChild(_node);
+				next ;
+				return _node;
+			
+			case Tok.Type.FilterType :
+				auto _node	= parseFilter ;
+				parent.pushChild(_node);
 				next ;
 				return _node;
 			
@@ -257,9 +275,7 @@ struct Parser {
 			if( tk.tabs <= _tab ) {
 				break ;
 			}
-			auto _node	= parseExpr();
-			assert( _node !is null ) ;
-			node.pushChild(_node);
+			parseExpr(node);
 		}
 
 		return node ;
@@ -423,5 +439,34 @@ struct Parser {
 					assert(false) ;
 			}
 		}
+	}
+	
+	Node parseFilter() {
+		Tok* tk	= expect(Tok.Type.FilterType) ;
+		assert(tk !is null);
+		Node node	=  NewNode!(Filter)( tk ) ;
+		auto _ln	= tk._ln ;
+		auto _tab	= tk.tabs ;
+		
+		L1:
+		for(  ; tk !is null ; tk = peek ) {
+			if( tk._ln !is _ln ) {
+				break ;
+			}
+			switch( tk.ty ) {
+				
+				default:
+					dump_next();
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
+					assert(false) ;
+			}
+		}
+		
+		// find inner text
+		
+		dump_next();
+		Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
+		assert(false) ;
+		return node ;
 	}
 }
