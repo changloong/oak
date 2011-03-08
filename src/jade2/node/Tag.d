@@ -18,9 +18,12 @@ final class Tag : Node {
 			`hr` ,
 		] ;
 	
-	string	 tag ;
+	string		tag ;
+	bool		isEmbed ;
 	
 	this(Tok* tk) {
 		tag	= tk.string_value ;
+		isEmbed	= tk.bool_value ;
+		
 	}
 }

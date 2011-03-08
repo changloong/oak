@@ -727,7 +727,9 @@ struct Lexer {
 				skip_space(true) ;
 			}
 			_offset_tabs++;
-			parseTagWithIdClass(without_content);
+			auto _tag	= parseTagWithIdClass(without_content);
+			assert(_tag !is null );
+			_tag.bool_value	= true ;
 			_offset_tabs-- ;
 			return _tk ;
 		}
