@@ -18,7 +18,9 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=home)
       $(document.body).ready(function(){ 
           alert(123);
       });
+
     :include!"../header.jade"
+    
     meta(name=Content-Type, \
       {if user.login}content=text/html, {/if}\
       charset=utf-8)
