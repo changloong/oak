@@ -1,8 +1,8 @@
-//: \$dmd2 -J. -unittest \+..\src\xtpl\Buffer.d
+//: \$dmd2 -J. -unittest \+..\src\xtpl\Buffer.d -O -inline -release
 
 module tpl2.test ;
 
-import std.stdio, std.conv, std.traits, xtpl.Buffer ;
+import std.stdio, std.conv, std.traits, xtpl.Buffer , std.datetime ;
 
 
 alias XTpl_Buffer Buffer;
@@ -138,17 +138,18 @@ void main() {
 	auto obj = jade.compile(tpl);
 	auto bu = new XTpl_Buffer(1024, 1024);
 	
-	obj.render(bu);
-	writefln("%s", bu);
-	bu.clear;
+	StopWatch sw;
+	sw.start;
 	
-	u.login	= false ;
-	obj.render(bu);
-	writefln("%s", bu);
-	bu.clear;
+	for( int i = 0; i < 400_0000 ; i++ ) {
+		bu.clear;
+		//u.login	= !u.login ;
+		if( i %3 ) u.admin	= ! u.admin ;
+		obj.render(bu);
+		if( i is 0 ) {
+			writefln("%s", bu);
+		}
+	}
 	
-	u.admin	= true ;
-	obj.render(bu);
-	writefln("%s", bu);
-	bu.clear;
+	writefln("user %d ms ", sw.peek.msecs);
 }
