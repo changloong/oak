@@ -39,10 +39,14 @@ struct Tok {
 		ElseCode,
 		
 		FilterType ,
+		FilterArgStart ,
+		FilterArgEnd ,
+		
+		FilterTagKey ,
+		FilterTagValueStart ,
+		FilterTagValueEnd ,
 		FilterTagStart ,
 		FilterTagEnd ,
-		FilterArgStart ,
-		FilterArgEng ,
 	}
 	
 	static const string[] Type_Name	= EnumMemberName!(Type) ;

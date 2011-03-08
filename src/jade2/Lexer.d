@@ -151,7 +151,8 @@ struct Lexer {
 			default:
 				err("expect new line");
 		}
-		Log("NewLine");
+		version(LEXER_SPACE)
+			Log("NewLine");
 		ln++;
 	}
 	
@@ -189,7 +190,8 @@ struct Lexer {
 			_ptr++;
 		}
 		_last_indent_size	= i / 2 ;
-		Log("Indent: %d `%s`", _last_indent_size, line );
+		version(LEXER_SPACE)
+			Log("Indent: %d `%s`", _last_indent_size, line );
 		return _ptr - __ptr  ;
 	}
 	
@@ -233,6 +235,23 @@ struct Lexer {
 		auto val = cast(string) __ptr[0 .. _ptr - __ptr ];
 		return val ;
 	}
+	
+	private  bool scan_skip_line() {
+		if( _ptr <= _end && _ptr[0] is '\\' && (_ptr[1] is '\r' || _ptr[1] is '\n') ) {
+			_ptr++;
+			auto _tabs	= _last_indent_size ;
+			skip_newline;
+			parseIndent ;
+			if( _last_indent_size < _tabs ){
+				err("expect indent at least %d tabs", _tabs);
+			}
+			_last_indent_size	= _tabs ;
+			skip_space ;
+			return true ;
+		}
+		return false ;
+	}
+		
 	
 	Tok* parseInlineCode( Tok.Type _tmp_ty = Tok.Type.None ){
 		int lcurly  , paren ;
@@ -327,15 +346,24 @@ struct Lexer {
 		assert( _ptr <= _end) ;
 		assert( _ptr[0] !is '\n' &&  _ptr[0] !is '\r' ) ;
 
+		Tok*	_ret_tk ;
+		
 		auto _str_pos = _str_bu.length ;
+		
+		void push_tk(Tok* tk) {
+			if( _ret_tk is null ) {
+				_ret_tk	= tk ;
+			}
+		}
 		
 		void save_string() {
 			if(  _str_bu.length > _str_pos ) {
 				Tok* _tk	= NewTok(Tok.Type.String, cast(string) _str_bu.slice[ _str_pos ..$ ] );
 				_str_pos	=  _str_bu.length ;
-				// push_tk(_tk);
+				push_tk(_tk);
 			}
 		}
+		
 		
 		auto __ptr = _ptr ;
 		
@@ -343,6 +371,7 @@ struct Lexer {
 		bool _stop_comma = false ;
 		bool _stop_paren = false ;
 		bool _stop_quote = false ;
+		bool _stop_bracket	= false ;
 		
 		if( _stop_char is 0 ) {
 			_stop_zero	= true ;
@@ -352,6 +381,8 @@ struct Lexer {
 			_stop_paren	= true ;
 		} else if(_stop_char is '"' ){
 			_stop_quote	= true ;
+		} else if(_stop_char is ']' ){
+			_stop_bracket	= true ;
 		} else {
 			err("lexer bug");
 		}
@@ -398,6 +429,13 @@ struct Lexer {
 						_ptr++;
 						return true ;
 					}
+				} else if ( _stop_bracket ) {
+					if( _ptr[0] is ']' ) {
+						_ptr++;
+						return true ;
+					}
+				} else {
+					err("lexer bug");
 				}
 			}
 			return false ;
@@ -471,7 +509,7 @@ struct Lexer {
 						_ptr += 2 ;
 						Tok* _tk = parseInlineCode(Tok.Type.Var) ;
 						assert(_tk !is null);
-						// push_tk(_tk) ;
+						 push_tk(_tk) ;
 					} else {
 						_ptr++;
 						_str_bu('$');
@@ -503,7 +541,7 @@ struct Lexer {
 		skip_space;
 		
 		save_string() ;
-		return null ;
+		return _ret_tk ;
 	}
 	
 	string parseLineString( bool trimr = true ){
@@ -676,7 +714,9 @@ struct Lexer {
 		}
 		
 		if( is_embed_tag ) {
-			skip_space(true) ;
+			if( !scan_skip_line ) {
+				skip_space(true) ;
+			}
 			_offset_tabs++;
 			parseTagWithIdClass(without_content);
 			_offset_tabs-- ;
@@ -710,23 +750,7 @@ struct Lexer {
 		skip_space ;
 		
 		bool _last_value	= true ;
-		
-		bool scan_skip_line() {
-			if( _ptr <= _end && _ptr[0] is '\\' && (_ptr[1] is '\r' || _ptr[1] is '\n') ) {
-				_ptr++;
-				auto _tabs	= _last_indent_size ;
-				skip_newline;
-				parseIndent ;
-				if( _last_indent_size < _tabs ){
-					err("expect indent at least %d tabs", _tabs);
-				}
-				_last_indent_size	= _tabs ;
-				skip_space ;
-				return true ;
-			}
-			return false ;
-		}
-		
+
 		bool scan_inline_code() {
 			skip_space;
 			if( _ptr < _end && _ptr[0] is '{' && _ptr[1] !is ' ' && _ptr[1] !is '\t'  && _ptr[1] !is '\r' && _ptr[1] !is '\n'   ) {
@@ -1080,7 +1104,7 @@ struct Lexer {
 		}
 		Tok* tk	= NewTok(Tok.Type.FilterType, filter_type ) ;
 		
-		// filter tag
+		// filter arg
 		while( _ptr <= _end ) {
 			if( _ptr[0] !is '!' ) {
 				break ;
@@ -1094,18 +1118,18 @@ struct Lexer {
 				if( filter_tag is null ) {
 					err("expect filter tag");
 				}
-				NewTok(Tok.Type.FilterTagStart) ;
+				NewTok(Tok.Type.FilterArgStart) ;
 				NewTok(Tok.Type.String, filter_tag) ;
-				NewTok(Tok.Type.FilterTagEnd) ;
+				NewTok(Tok.Type.FilterArgEnd) ;
 				continue ;
 			}
 			_ptr++ ;
 			if( _ptr > _end || _ptr[0] is ' ' ||  _ptr[0] is '\t'  ||  _ptr[0] is '\r'  ||  _ptr[0] is '\n' ){
 				err("expect filter tag");
 			}
-			NewTok(Tok.Type.FilterTagStart) ;
+			NewTok(Tok.Type.FilterArgStart) ;
 			parseInlineString('"');
-			NewTok(Tok.Type.FilterTagEnd) ;
+			NewTok(Tok.Type.FilterArgEnd) ;
 		}
 		if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 			return tk ;
@@ -1114,17 +1138,83 @@ struct Lexer {
 		if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 			return tk ;
 		}
+		
 		if( _ptr[0] !is '[' ) {
 			parseTagWithIdClass(true) ;
 			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 				return tk ;
 			}
-			skip_space(true) ;
+			if( !scan_skip_line ) {
+				skip_space(true) ;
+			}
 			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 				return tk ;
 			}
 		}
 		
+		// filter tag
+		
+		while( _ptr <= _end ) {
+			if( _ptr[0] !is '[' ) {
+				if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+					return tk ;
+				}
+				err("expect filter tag start but find `%s`", line );
+			}
+			_ptr++;
+			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+				err("expect filter tag key" );
+			}
+			skip_space;
+			auto _tag_key	= skip_identifier();
+			if ( _tag_key is null ) {
+				err("expect filter tag key" );
+			}
+			NewTok(Tok.Type.FilterTagKey, _tag_key) ;
+			
+			// find =
+			skip_space;
+			if ( _ptr > _end || _ptr[0] !is '=' ) {
+				err("expect filter tag key = " );
+			}
+			_ptr++;
+			skip_space;
+			
+			// find value
+			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+				err("expect filter tag value" );
+			}
+			NewTok(Tok.Type.FilterTagValueStart) ;
+			Tok* _tag_val	= parseInlineString(']');
+			if( _tag_val is null ) {
+				err("expect filter tag value" );
+			}
+			skip_space;
+			
+			NewTok(Tok.Type.FilterTagValueEnd) ;
+
+			if( !scan_skip_line ) {
+				skip_space() ;
+			}
+			
+			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+				break ;
+			}
+			
+			// find filter tag
+			if( _ptr[0] !is '[' ) {
+				NewTok(Tok.Type.FilterTagStart) ;
+				Tok* _tk	= parseTagWithIdClass(true);
+				if( _tk is null ) {
+					err("expect filter tag" );
+				}
+				NewTok(Tok.Type.FilterTagEnd) ;
+				
+				if( !scan_skip_line ) {
+					skip_space() ;
+				}
+			}
+		}
 		
 		Log("%s", line);
 		assert(false);
