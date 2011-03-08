@@ -1,5 +1,5 @@
 !!! 5
-html(lang={if user.admin("hi", 123)}en{/if} , id=123) \${page_title}test
+html(lang={if user.admin("hi", 123)}en{/if} , id=home)
   head
     style
       |.class1{
@@ -18,6 +18,7 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=123) \${page_title}test
       $(document.body).ready(function(){ 
           alert(123);
       });
+    :include!"../header.jade"
     meta(name=Content-Type, \
       {if user.login}content=text/html, {/if}\
       charset=utf-8)
@@ -42,7 +43,7 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=123) \${page_title}test
       - if user.login
         p welcome 
           a#member.profile(href=/profile/${user.id}/, target=blank) ${user.name}
-	    img.photograph(src=/images/{if user.pic !is null}${user.pic}{else}blank.gif{/if}) 123
+	    img.photograph(src=/images/{if user.pic !is null}${user.pic}{else}blank.gif{/if})
       - else if user.admin
         p admin controll panel
       - else
@@ -50,7 +51,7 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=123) \${page_title}test
 	
           a#login login
 
-:i18n!"user.intro" div:(id=test, onclick=(${test_fn}, doClick())) \
+  :i18n!"user.intro" div:(id=test, onclick=(${test_fn}, doClick())) \
 	p#p1.c1.c2 \
 	[user_name=${user.name}]a#user_intro(href="/user/${user.id}") \
 	[message_number=${user.msgs}]span.red
