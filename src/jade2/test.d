@@ -6,7 +6,6 @@ version(JADE_TEST) :
 import jade.Jade ;
 
 
-
 void main(){
 	string file = `example.jade`;
 	auto data = cast(string) std.file.read(file);
@@ -20,8 +19,10 @@ void main(){
 	
 	Compiler cc ;
 	
-	cc.Init(file, data) ;
 	
-	cc.compile ;
+	for(int i =0 ; i < 1 ; i++) {
+		cc.Init(file, data) ;
+		cc.compile ;
+	}
 	
 }

@@ -107,9 +107,11 @@ struct Lexer {
 		_last_tok	= tk ;
 		if( val !is null ) {
 			tk.string_value	= val ;
-			Log("`%s` %d = `%s`", Tok.sType(ty), tk.tabs, val);
+			version(JADE_DEBUG_LEXER_TOK)
+				Log("`%s` %d = `%s`", Tok.sType(ty), tk.tabs, val);
 		} else {
-			Log("`%s` %d", Tok.sType(ty), tk.tabs );
+			version(JADE_DEBUG_LEXER_TOK)
+				Log("`%s` %d", Tok.sType(ty), tk.tabs );
 		}
 		return tk ;
 	}
@@ -149,7 +151,7 @@ struct Lexer {
 			default:
 				err("expect new line");
 		}
-		version(LEXER_SPACE)
+		version(JADE_DEBUG_LEXER_NEWLINE)
 			Log("NewLine");
 		ln++;
 	}
@@ -188,7 +190,7 @@ struct Lexer {
 			_ptr++;
 		}
 		_last_indent_size	= i / 2 ;
-		version(LEXER_SPACE)
+		version(JADE_DEBUG_LEXER_SPACE)
 			Log("Indent: %d `%s`", _last_indent_size, line );
 		return _ptr - __ptr  ;
 	}
