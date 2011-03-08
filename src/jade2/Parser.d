@@ -196,17 +196,42 @@ struct Parser {
 		Tok* tk	= expect(Tok.Type.Tag) ;
 		assert(tk !is null);
 		auto node 	= NewNode!(Tag)( tk ) ;
+		
+		auto _ln	= tk._ln ;
 		// find id, class
+		L1:
+		for(  tk = peek ; tk !is null ; tk = peek ) {
+			if( _ln != _ln ) {
+				break ;
+			}
+			switch( tk.ty ) {
+				case Tok.Type.AttrStart:
+					break L1;
+				
+				case Tok.Type.Id:
+					
+				case Tok.Type.Class:
+					
+				default:
+					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
+					dump_next();
+					assert(false) ;
+			}
+		}
 		
 		// find attrs 
+		L2:
 		for(  tk = peek ; tk !is null ; tk = peek ){
+			if( _ln != _ln ) {
+				break ;
+			}
 			switch( tk.ty ) {
 				case Tok.Type.AttrStart:
 					auto _node	= parseAttrs() ;
 					assert(_node !is null ) ;
 					assert( peek.ty is Tok.Type.AttrEnd);
 					next ;
-					break ;
+					break L2;
 				default:
 					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					dump_next();
@@ -214,7 +239,7 @@ struct Parser {
 			}
 		}
 		// find inline text
-		
+		assert(false);
 		return node ;
 	}
 	
