@@ -65,7 +65,7 @@ struct Parser {
 		return tk ;
 	}
 	
-	Tok* nextSibling(Tok* tk = null) {
+	Tok* peekSibling(Tok* tk = null) {
 		if( tk is null ) {
 			tk = lexer._last_tok  ;
 		}
