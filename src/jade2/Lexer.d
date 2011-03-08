@@ -1113,6 +1113,7 @@ struct Lexer {
 		Tok* tk	= NewTok(Tok.Type.FilterType, filter_type ) ;
 		
 		scope(exit){
+			tk.bool_value	= _search_code ;
 			parseTextBlock(tk, _search_code);
 		}
 		
