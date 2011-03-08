@@ -3,20 +3,20 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=home)
   head
     style
       |.class1{
-      | font-size:12px;
+      |  font-size:12px;
       |}
     script
       |$(document.body).ready(function(){ 
-      |       alert(123);
+      |  alert(123);
       |});
     :css
       .class1 {
-         font-size:12px;
+        font-size:12px;
       }
   
     :js
       $(document.body).ready(function(){ 
-          alert(123);
+        alert(123);
       });
 
     :include!"../header.jade"

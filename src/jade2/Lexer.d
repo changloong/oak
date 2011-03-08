@@ -599,11 +599,11 @@ struct Lexer {
 			if( _str_pos != _str_bu.length ){
 				NewTok(Tok.Type.String, cast(string) _str_bu.slice[_str_pos ..$] );
 			}
-			parseString() ;
+			parseString(false) ;
 		}
 	}
 	
-	Tok*  parseString(bool inline = true ) {
+	Tok*  parseString(bool _search_code = true ) {
 		if( _ptr > _end ) {
 			return null ;
 		}
@@ -615,12 +615,12 @@ struct Lexer {
 			i++ ;
 		}
 		if( i > 0 ) {
-			if( !inline ) {
+			if( _search_code ) {
+				return parseInlineString() ;
+			} else {
 				Tok* tk = NewTok(Tok.Type.String, cast(string) _ptr[0..i] ) ;
 				_ptr	+= i ;
 				return tk ;
-			} else {
-				return parseInlineString() ;
 			}
 		}
 		return null ;
