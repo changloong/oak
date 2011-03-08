@@ -129,8 +129,12 @@ struct Parser {
 		}
 	}
 	
-	void dump() {
+	void dump_tok( bool from_last = false ) {
+		write("\n--------- dump tok --------\n");
 		Tok* tk	= lexer._root_tok ;
+		if( from_last ) {
+			tk	= lexer._last_tok ;
+		}
 		while( tk !is null ) {
 			//auto node = parseExpr ;
 			Log("tab:%d ln:%d:%d %s = `%s`" , tk.tabs, tk.ln,tk._ln, tk.type, tk.string_value );
@@ -270,6 +274,7 @@ struct Parser {
 		L1:
 		for(  tk = peek ; tk !is null ; tk = peek ) {
 			if( _ln != _ln ) {
+				err("end attr value wrong ");
 				break ;
 			}
 			switch( tk.ty ) {
@@ -280,10 +285,12 @@ struct Parser {
 					next ;
 					break ;
 				case  Tok.Type.AttrKey :
+					Log("end one key");
 					break L1;
 				default:
 					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 					dump_next;
+					dump_tok ;
 					assert(false) ;
 			}
 		}
