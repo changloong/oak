@@ -57,4 +57,4 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=home)
   :i18n!"user.intro" div:(id=test, onclick=(${test_fn}, doClick())) \
 	p#p1.c1.c2 \
 	[user_name=${user.name}]a#user_intro(href="/user/${user.id}") \
-	[message_number=${user.msgs}]span.red
+	[message_number=${user.msgs}]span.red1

@@ -21,7 +21,7 @@ struct Lexer {
 		assert( cc !is null);
 	} body {
 		pool		= &cc.pool ;
-		_str_bu	= cc._str_bu ;
+		_str_bu		= cc._str_bu ;
 		filename	= cc .filename ;
 		
 		_ptr	= &cc.filedata[0];
@@ -91,7 +91,10 @@ struct Lexer {
 			}
 			skip_newline;
 		}
-			
+		if( _root_tok is null ) {
+			err("empty document");
+		}
+		_last_tok = _root_tok ;
 	}
 	
 	private Tok* NewTok(Tok.Type ty, string val = null ) {
@@ -103,6 +106,8 @@ struct Lexer {
 		tk.pre	= _last_tok ;
 		if( _last_tok !is null ) {
 			_last_tok.next	= tk ;
+		} else {
+			_root_tok	= tk ;
 		}
 		_last_tok	= tk ;
 		if( val !is null ) {

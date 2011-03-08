@@ -4,10 +4,15 @@ module jade.Node ;
 import jade.Jade ;
 
 package import 
+	jade.node.Block ,
+	jade.node.Comment ,
+	jade.node.Code ,
+	jade.node.DocType ,
 	jade.node.Tag ;
 
 
 abstract class Node {
+	
 	enum Type {
 		None ,
 		Attrs ,
@@ -20,6 +25,7 @@ abstract class Node {
 		Tag ,
 		Text ,
 	}
+	
 	static const string[] Type_Name = EnumMemberName!(Type) ;
 	
 	Type	ty ;
