@@ -41,6 +41,7 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=home)
     #user_list.test1.test12
       | test div 
       | multi line ${val1} \${val2}
+      a#link(href=/123/id) test
       | hehe
       // test ' \n
       - if user.login

@@ -41,13 +41,13 @@ struct Parser {
 
 		Block block	= NewTok!(Block)();
 		
-		/*
-		Tok* tk	= lexer.parse ;
+		Tok* tk	= lexer._root_tok ;
 		while( tk !is null ) {
-			auto node = parseExpr ;
+			//auto node = parseExpr ;
+			Log("%d %s = %s" , tk.tabs, tk.type, tk.string_value );
 			tk	= tk.next ;
 		}
-		*/
+		
 	}
 	
 	private N NewTok(N,T...)(T t) if( is(N==class) && BaseClassesTuple!(N).length > 0 && is( BaseClassesTuple!(N)[0] == Node) ){
