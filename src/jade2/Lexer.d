@@ -28,7 +28,7 @@ struct Lexer {
 		_end	= &cc.filedata[$-1];
 		_start	= _ptr ;
 		ln	= 1 ;
-		_ln	= 1 ;
+		_ln	= 0 ;
 	}
 	
 	string line() {
@@ -103,7 +103,7 @@ struct Lexer {
 		tk	= pool.New!(Tok)() ;
 		tk.ty	= ty ;
 		tk.ln	= ln ;
-		tk._ln	= _ln ;
+		tk._ln	= ln - _ln ;
 		tk.tabs	= _last_indent_size + _offset_tabs ;
 		tk.pre	= _last_tok ;
 		if( _last_tok !is null ) {
@@ -161,7 +161,6 @@ struct Lexer {
 		version(JADE_DEBUG_LEXER_NEWLINE)
 			Log("NewLine");
 		ln++ ;
-		_ln++ ;
 	}
 	
 	private string skip_identifier() {
@@ -249,7 +248,7 @@ struct Lexer {
 			_ptr++;
 			auto _tabs	= _last_indent_size ;
 			skip_newline;
-			_ln -- ;
+			_ln ++ ;
 			parseIndent ;
 			if( _last_indent_size < _tabs ){
 				err("expect indent at least %d tabs", _tabs);
@@ -595,7 +594,6 @@ struct Lexer {
 			
 			if( _last_indent_size <= tk.tabs ) {
 				ln-- ;
-				_ln -- ;
 				_ptr	= __ptr ;
 				break ;
 			}
