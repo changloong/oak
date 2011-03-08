@@ -196,13 +196,16 @@ struct Parser {
 		Tok* tk	= expect(Tok.Type.Tag) ;
 		assert(tk !is null);
 		auto node 	= NewNode!(Tag)( tk ) ;
+		// find id, class
 		
+		// find attrs 
 		for(  tk = peek ; tk !is null ; tk = peek ){
 			switch( tk.ty ) {
 				case Tok.Type.AttrStart:
 					auto _node	= parseAttrs() ;
 					assert(_node !is null ) ;
-					
+					assert( peek.ty is Tok.Type.AttrEnd);
+					next ;
 					break ;
 				default:
 					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
@@ -210,6 +213,8 @@ struct Parser {
 					assert(false) ;
 			}
 		}
+		// find inline text
+		
 		return node ;
 	}
 	
@@ -217,11 +222,16 @@ struct Parser {
 	Node parseAttrs() {
 		Tok* tk	= expect(Tok.Type.AttrStart) ;
 		auto node 	= NewNode!(Attrs)( tk ) ;
-		
+		auto _ln	= tk._ln ;
+		L1:
 		for(  tk = peek ; tk !is null ; tk = peek ) {
+			if( _ln != _ln ) {
+				err("end attrs wrong ");
+				break ;
+			}
 			switch( tk.ty ) {
 				case Tok.Type.AttrEnd:
-					return node ;
+					break L1;
 				case Tok.Type.AttrKey:
 					auto _node	= parseAttr();
 					assert(_node !is null );
@@ -234,7 +244,8 @@ struct Parser {
 					assert(false) ;
 			}
 		}
-		return null ;
+		Log(" ========> end attrs ");
+		return node ;
 	}
 	
 	
@@ -279,7 +290,16 @@ struct Parser {
 					assert( _node !is null );
 					node.pushChild(_node);
 					break ;
+				case  Tok.Type.String :
+					auto _node	= NewNode!(PureString)( tk ) ;
+					node.pushChild( _node ) ;
+					next ;
+					break ;
+				
 				case  Tok.Type.AttrKey :
+					break L1;
+				
+				case  Tok.Type.AttrEnd :
 					break L1;
 				
 				default:
@@ -291,7 +311,7 @@ struct Parser {
 			}
 		}
 		
-		Log(" ========> end attr value ");
+		Log(" ========> end attr value ,  end mix string");
 		return node ;
 	}
 	
