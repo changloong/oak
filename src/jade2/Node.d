@@ -8,6 +8,7 @@ package import
 	jade.node.Comment ,
 	jade.node.Code ,
 	jade.node.DocType ,
+	jade.node.Filter ,
 	jade.node.Tag ;
 
 

@@ -52,7 +52,7 @@ struct Tok {
 	static const string[] Type_Name	= EnumMemberName!(Type) ;
 	
 	Type	ty ;
-	size_t	ln ;
+	size_t	ln, _ln ;
 	size_t	tabs ;
 	Tok*	next ;
 	Tok*	pre ;

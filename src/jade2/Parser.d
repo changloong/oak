@@ -45,7 +45,7 @@ struct Parser {
 		Tok* tk	= lexer._root_tok ;
 			while( tk !is null ) {
 				//auto node = parseExpr ;
-				Log("tab:%d ln:%d %s = `%s`" , tk.tabs, tk.ln, tk.type, tk.string_value );
+				Log("tab:%d ln:%d:%d %s = `%s`" , tk.tabs, tk.ln,tk._ln, tk.type, tk.string_value );
 				tk	= tk.next ;
 			}
 		}

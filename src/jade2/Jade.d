@@ -11,8 +11,6 @@ package import
 	
 	jade.Node ,
 	
-	jade.Filter ,
-	
 	jade.Lexer ,
 	jade.Parser ,
 	jade.Compiler ;
