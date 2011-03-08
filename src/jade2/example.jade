@@ -9,6 +9,15 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=123) \${page_title}test
       |$(document.body).ready(function(){ 
       |       alert(123);
       |});
+    :css
+      .class1 {
+         font-size:12px;
+      }
+  
+    :js
+      $(document.body).ready(function(){ 
+          alert(123);
+      });
     meta(name=Content-Type, \
       {if user.login}content=text/html, {/if}\
       charset=utf-8)

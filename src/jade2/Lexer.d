@@ -579,7 +579,7 @@ struct Lexer {
 			err("expect new line");
 		}
 		
-		while(true) {
+		while( _ptr <= _end ) {
 			auto __ptr	= _ptr ;
 			skip_newline;
 			parseIndent;
@@ -1104,6 +1104,10 @@ struct Lexer {
 		}
 		Tok* tk	= NewTok(Tok.Type.FilterType, filter_type ) ;
 		
+		scope(exit){
+			parseTextBlock(tk);
+		}
+		
 		// filter arg
 		while( _ptr <= _end ) {
 			if( _ptr[0] !is '!' ) {
@@ -1215,10 +1219,7 @@ struct Lexer {
 				}
 			}
 		}
-		
-		Log("%s", line);
-		assert(false);
-		return null;
+		return tk ;
 	}
 	
 	static ptrdiff_t find_with_space(string obj)(string str){
