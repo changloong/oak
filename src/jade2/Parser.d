@@ -36,7 +36,7 @@ struct Parser {
 		_J.Exit(1);
 	}
 	
-	Tok* peek(size_t pos = 0 ) {
+	Tok* peek(ptrdiff_t pos = 0 ) {
 		Tok* tk = lexer._last_tok  ;
 		while( pos > 0 ) {
 			if( tk is null ) {
