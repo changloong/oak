@@ -175,9 +175,9 @@ struct Parser {
 		return node ;
 	}
 	
-	private Node parseExpr( Node parent ) {
+	private Node parseExpr(string _file = __FILE__, ptrdiff_t _line = __LINE__)( Node parent ) {
 		Tok* tk = peek ;
-		writefln("-%d %s ln:%d tab:%d  `%s`", __LINE__, tk.type, tk.ln, tk.tabs, tk.string_value);
+		Log!(_file,_line)("parseExpr %s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
 		switch( tk.ty ) {
 			case Tok.Type.DocType:
 				auto _node	= parseDocType() ;
