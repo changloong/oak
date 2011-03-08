@@ -22,15 +22,6 @@ struct Parser {
 		auto a = appender!string() ;
 		formattedWrite(a, "(%s:%d) ", __FILE__, _line);
 		formattedWrite(a, fmt, t);
-		formattedWrite(a, " at file:`%s` line:%d", filename, ln);
-		stderr.write("\n- ", a.data, "\n");
-		_J.Exit(1);
-	}
-	
-	void err(size_t _line = __LINE__, T...)(string fmt, T t){
-		auto a = appender!string() ;
-		formattedWrite(a, "(%s:%d) ", __FILE__, _line);
-		formattedWrite(a, fmt, t);
 		//formattedWrite(a, " at file:`%s` line:%d", filename, ln);
 		stderr.write("\n- ", a.data, "\n");
 		_J.Exit(1);
@@ -95,11 +86,22 @@ struct Parser {
 		return tk ;
 	}
 	
+	Tok* expect(Tok.Type ty){
+		Tok* tk	= this.peek ;
+		if( tk is null  ){
+			err("expected %s, but got EOF",  Tok.sType(ty), this.filename ) ;
+		}
+		if ( tk.ty is ty) {
+			return this.next ;
+		} else {
+			err("expected %s, but got %s on line:%d",  Tok.sType(ty), tk.type,  this.filename, tk.ln ) ;
+		}
+		return null ;
+	}
+	
 	void parse() {
 		lexer.parse ;
-
 		Block block	= NewTok!(Block)();
-		
 		version(JADE_DEBUG_PARSER_TOK_DUMP) {
 		Tok* tk	= lexer._root_tok ;
 			while( tk !is null ) {
@@ -114,6 +116,8 @@ struct Parser {
 	private N NewTok(N,T...)(T t) if( is(N==class) && BaseClassesTuple!(N).length > 0 && is( BaseClassesTuple!(N)[0] == Node) ){
 		N node = pool.New!(N)(t) ;
 		mixin("node.ty = Node.Type." ~ N.stringof  ~ ";" );
+		assert(node.firstChild is null ) ;
+		assert(node.next is null ) ;
 		return node ;
 	}
 	

@@ -29,8 +29,9 @@ abstract class Node {
 	
 	static const string[] Type_Name = EnumMemberName!(Type) ;
 	
-	Type	ty ;
+	Type		ty ;
 	size_t	ln ;
+	Node		next , firstChild ;
 	
 	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
 		static const _ty = ctfe_indexOf!(string)(Type_Name, name[2..$]);
