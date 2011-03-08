@@ -16,7 +16,7 @@ final class vBuffer {
 
         private {
                 ubyte[] data ;
-                int  pos , step ;
+                size_t  pos , step ;
         }
        
         final this(size_t len, size_t step = 0) in {
@@ -88,7 +88,7 @@ final class vBuffer {
                 assert( data !is null ) ;
                 assert( data.length >= pos , to!string(pos) ~ " :" ~ to!string( data.length) ~ " :" ~ to!string( _step) ) ;
         } body {
-		int _pos	= pos + _step ;
+		ptrdiff_t _pos	= pos + _step ;
 		if( _pos < 0 ) {
 			return false ;
 		}
@@ -106,7 +106,7 @@ final class vBuffer {
                 assert( data !is null ) ;
                 assert( data.length >= pos ) ;
         } body {
-                int len = data.length ;
+                ptrdiff_t len = data.length ;
                 if( len - pos >= size ) {
                         return ;
                 }
@@ -128,7 +128,7 @@ final class vBuffer {
                 if( tmp is null ) {
                         return this ;
                 }
-                int len = tmp.length ;
+                ptrdiff_t len = tmp.length ;
                 if( len > 0 ) {
                         expand(len);
                         memcpy( &data[pos], &tmp[0], len);
@@ -147,7 +147,7 @@ final class vBuffer {
                 if( tmp is null ) {
                         return 0 ;
                 }
-                int len = tmp.length ;
+                ptrdiff_t len = tmp.length ;
                 if( len > 0 ) {
                         expand(len);
                         memcpy( &data[pos], &tmp[0], len);
@@ -230,13 +230,13 @@ final class vBuffer {
                 assert(from.length <= to.length ) ;
 
                 while( true ) {
-                        int pos = tmp.length ;
-                        int index       = 0 ;
-                        foreach(int i, _tmp; from) {
+                        ptrdiff_t pos = tmp.length ;
+                        ptrdiff_t index       = 0 ;
+                        foreach(ptrdiff_t i, _tmp; from) {
                                 if( _tmp is null || _tmp.length is 0 ) {
                                         continue ;
                                 }
-                                int _pos        = indexOf( tmp, _tmp);
+                                ptrdiff_t _pos        = indexOf( tmp, _tmp);
                                 if( _pos < pos && _pos > 0  ) {
                                         pos     = _pos ;
                                         index   = i ;
@@ -287,8 +287,8 @@ final class vBuffer {
 
 	
 	final void unstrip(string inp){
-		int len = inp.length ;
-		for(int i = 0; i < len; i++){
+		ptrdiff_t len = inp.length ;
+		for(ptrdiff_t i = 0; i < len; i++){
 			if( inp[i] is '\\' ){
 				opCall("\\\\");
 			} else if( inp[i] is '\"' ){
@@ -304,8 +304,8 @@ final class vBuffer {
 	}
 
 	final void strip( string inp){
-		int len = inp.length ;
-		for(int i = 0; i < len; i++){
+		ptrdiff_t len = inp.length ;
+		for(ptrdiff_t i = 0; i < len; i++){
 			if( inp[i] is '\\' ){
 				i++;
 				if( i is len  ) {

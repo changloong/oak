@@ -91,7 +91,7 @@ struct Pool {
 		static assert( is(Pool_Alloc_This==class), typeof(this).stringof ~ ".Allocator only for class" );
 		enum Pool_Alloc_Size	= __traits(classInstanceSize, Pool_Alloc_This) ;
 		static assert( is(Pool_Alloc_This==class) ) ;
-		final new(uint size, Pool* pool, uint _size) {
+		final new(size_t size, Pool* pool, size_t _size) {
 			return pool.alloc(_size) ;
 		}
 	}

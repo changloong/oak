@@ -37,6 +37,8 @@ struct Parser {
 	}
 	
 	void parse() {
+		lexer.parse ;
+
 		Block block	= NewTok!(Block)();
 		
 		/*

@@ -446,7 +446,7 @@ struct Lexer {
 			return false ;
 		}
 		
-		int len ;
+		ptrdiff_t len ;
 		L1:
 		while( (len = _end - _ptr) >= 0 ) {
 			
@@ -633,7 +633,7 @@ struct Lexer {
 	
 	Tok* parseDocType() {
 		assert(_ptr[0] is '!' ) ;
-		int len = _end - _ptr ;
+		ptrdiff_t len = _end - _ptr ;
 		if(  len < 3 || _ptr[1] !is '!' || _ptr[2] !is '!' ){
 			err("expect doctype token");
 		}

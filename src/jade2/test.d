@@ -6,21 +6,24 @@ version(JADE_TEST) :
 import jade.Jade ;
 
 
-void main(){
+void main(string[] args ){
 	string file = `example.jade`;
 	auto data = cast(string) std.file.read(file);
-	
+	int count = 1 ;
+        if( args.length > 1 ) {
+                count = ctfe_a2i( args[1] );
+        }
+
 	StopWatch sw;
 	sw.start;
 	scope(exit){
 		sw.stop;
-		Log(" use time = %dms", sw.peek.msecs );
+		Log("%d times use time = %dms", count, sw.peek.msecs );
 	}
 	
 	Compiler cc ;
 	
-	
-	for(int i =0 ; i < 1 ; i++) {
+	for(int i =0 ; i < count ; i++) {
 		cc.Init(file, data) ;
 		cc.compile ;
 	}
