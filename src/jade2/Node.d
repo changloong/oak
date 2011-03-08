@@ -31,7 +31,7 @@ abstract class Node {
 	
 	Type		ty ;
 	size_t	ln ;
-	Node		next , firstChild ;
+	Node		next , firstChild , lastChild ;
 	
 	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
 		static const _ty = ctfe_indexOf!(string)(Type_Name, name[2..$]);
@@ -42,6 +42,17 @@ abstract class Node {
 	string type(){
 		assert( ty < Type_Name.length && ty >= 0 );
 		return Type_Name[ty] ;
+	}
+	
+	void pushChild(Node node) {
+		if( firstChild is null ) {
+			firstChild	= node ;
+			lastChild	= node ;
+		} else {
+			assert(lastChild !is null) ;
+			lastChild.next	= node ;
+			lastChild	= node ;
+		}
 	}
 	
 	mixin Pool.Allocator ;
