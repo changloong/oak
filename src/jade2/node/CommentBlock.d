@@ -4,7 +4,9 @@ module jade.node.CommentBlock ;
 import jade.Jade ;
 
 final class CommentBlock : Node {
-	this(Tok* tk){
-		assert(false);
+	bool 	isHide ;
+	
+	this(Tok* tk) {
+		isHide	= tk.bool_value ;
 	}
 }

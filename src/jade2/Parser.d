@@ -644,7 +644,25 @@ struct Parser {
 		auto _ln	= tk._ln ;
 		auto _tab	= tk.tabs ;
 		
-		assert(false);
-		return null ;
+		// find inline text
+		tk	= peek ;
+		if( tk !is null && tk._ln is _ln ) {
+			// tack all child string 
+			auto _node	= parseMixString() ;
+			assert( _node !is null);
+			node.pushChild(_node);
+		}
+		
+		// find all child 
+		L3:
+		for(  tk = peek ; tk !is null ; tk = peek ){
+			if( tk.tabs <= _tab ) {
+				break ;
+			}
+			auto _node = parseExpr();
+			assert(_node !is null);
+			node.pushChild(_node);
+		}
+		return node ;
 	}
 }
