@@ -4,7 +4,11 @@ module jade.node.Comment ;
 import jade.Jade ;
 
 final class Comment : Node {
+	bool isHide ;
+	
 	this(Tok* tk){
-		assert(false);
+		assert(tk !is null);
+		isHide	= tk.bool_value ;
+		tk.dump;
 	}
 }

@@ -20,10 +20,13 @@ package import
 	jade.node.DocType ,
 	
 	jade.node.Each ,
+	jade.node.IfCode ,
 	
 	jade.node.Filter ,
 	jade.node.FilterArgs,
 	
+	jade.node.TagClass ,
+	jade.node.TagClasses ,
 	jade.node.Tag ;
 
 
@@ -45,6 +48,8 @@ abstract class Node {
 		CommentBlock ,
 		DocType ,
 		Tag ,
+		TagClass,
+		TagClasses,
 		
 		Var ,
 		
@@ -52,6 +57,7 @@ abstract class Node {
 		FilterArgs,
 		
 		InlineIf ,
+		IfCode ,
 		Each ,
 	}
 	

@@ -220,16 +220,27 @@ struct Parser {
 			case Tok.Type.CommentBlock:
 				node	= parseCommentBlock;
 				assert(node !is null);
-				next() ;
+				break;
+
+			case Tok.Type.CommentStart:
+				node	= parseComment;
+				assert(node !is null);
+				tk	= peek ;
+				assert(tk !is null);
+				assert(tk.ty is Tok.Type.CommentEnd);
+				next();
 				break;
 			
 			case Tok.Type.Each_Object:
 				node	= parseEach ;
 				assert(node !is null);
-				assert(false);
 				break;
 			
-			 
+			case Tok.Type.IfCode:
+				node	= parseIfCode ;
+				assert(node !is null);
+				assert(false);
+				break;
 			
 			default:
 				dump_next();
@@ -265,11 +276,13 @@ struct Parser {
 					break ;
 					
 				case Tok.Type.Class:
-					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
-					assert(false) ;
-					assert(false) ;
-				
+					if( node.classes is null ) {
+						node.classes	= NewNode!(TagClasses)() ;
+					}
+					auto _node	=  NewNode!(TagClass)(tk) ;
+					node.classes.pushChild( _node ) ;
+					next();
+					break;
 				default:
 					break L1;
 			}
@@ -653,6 +666,49 @@ struct Parser {
 		return node ;
 	}
 	
+	Node parseComment(){
+		Tok* tk	= expect(Tok.Type.CommentStart) ;
+		assert(tk !is null);
+		auto node	=  NewNode!(Comment)( tk ) ;
+		auto _ln	= tk._ln ;
+		auto _tab	= tk.tabs ;
+		
+		// find all child 
+		L1:
+		for(  tk = peek ; tk !is null ; tk = peek ){
+			if( tk.tabs <= _tab ) {
+				break ;
+			}
+			auto _node = parseExpr();
+			assert(_node !is null);
+			node.pushChild(_node);
+		}
+		
+		assert(false);
+		
+		return node ;
+	}
+	
+	Node parseIfCode(){
+		Tok* tk	= expect(Tok.Type.IfCode) ;
+		assert(tk !is null);
+		auto node	=  NewNode!(IfCode)( tk ) ;
+		auto _ln	= tk._ln ;
+		auto _tab	= tk.tabs ;
+		
+		// find inline text
+		tk	= peek ;
+		if( tk !is null && tk._ln is _ln ) {
+			// tack all child string 
+			auto _node	= parseMixString() ;
+			assert( _node !is null);
+			node.pushChild(_node);
+		}
+		
+		return node ;
+	}
+	
+	
 	Node parseCommentBlock(){
 		Tok* tk	= expect(Tok.Type.CommentBlock) ;
 		assert(tk !is null);
@@ -719,18 +775,13 @@ struct Parser {
 			tk	= peek() ;
 		}
 		
-		if( node.key is null ) {
-			err("missing each key");
-		}
-		
 		if( node.value is null ) {
 			err("missing each value");
 		}
 		
 		if( tk !is null ) {
 			tk.dump();
-		} 
-		assert(false);
+		}
 		
 		// find all child 
 		L1:
@@ -743,7 +794,6 @@ struct Parser {
 			node.pushChild(_node);
 		}
 		
-		assert(false);
 		return node ;
 	}
 }

@@ -20,6 +20,8 @@ final class Tag : Node {
 	
 	string		tag , id ;
 	bool		isEmbed ;
+	TagClasses	classes ;
+	Attrs		attrs ;
 	
 	this(Tok* tk) {
 		tag	= tk.string_value ;
