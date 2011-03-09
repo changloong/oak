@@ -1,13 +1,14 @@
 
-module jade.node.IfCode ;
+module jade.node.ElseIfCode ;
 
 import jade.Jade ;
 
-final class IfCode : Node {
+final class ElseIfCode : Node {
 	
 	string 		cond ;
 	ElseIfCode	elseif ;
 	ElseCode	elseBlock ;
+
 	
 	this(Tok* tk) {
 		assert(tk !is null);

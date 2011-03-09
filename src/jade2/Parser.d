@@ -239,7 +239,6 @@ struct Parser {
 			case Tok.Type.IfCode:
 				node	= parseIfCode ;
 				assert(node !is null);
-				assert(false);
 				break;
 			
 			default:
@@ -673,29 +672,6 @@ struct Parser {
 		auto _ln	= tk._ln ;
 		auto _tab	= tk.tabs ;
 		
-		// find all child 
-		L1:
-		for(  tk = peek ; tk !is null ; tk = peek ){
-			if( tk.tabs <= _tab ) {
-				break ;
-			}
-			auto _node = parseExpr();
-			assert(_node !is null);
-			node.pushChild(_node);
-		}
-		
-		assert(false);
-		
-		return node ;
-	}
-	
-	Node parseIfCode(){
-		Tok* tk	= expect(Tok.Type.IfCode) ;
-		assert(tk !is null);
-		auto node	=  NewNode!(IfCode)( tk ) ;
-		auto _ln	= tk._ln ;
-		auto _tab	= tk.tabs ;
-		
 		// find inline text
 		tk	= peek ;
 		if( tk !is null && tk._ln is _ln ) {
@@ -708,6 +684,100 @@ struct Parser {
 		return node ;
 	}
 	
+	Node parseIfCode(){
+		Tok* tk	= expect(Tok.Type.IfCode) ;
+		assert(tk !is null);
+		auto node	=  NewNode!(IfCode)( tk ) ;
+		auto _ln	= tk._ln ;
+		auto _tab	= tk.tabs ;
+		
+		// find all child 
+		for(  tk = peek ; tk !is null ; tk = peek ){
+			if( tk.tabs <= _tab ) {
+				break ;
+			}
+			auto _node = parseExpr();
+			assert(_node !is null);
+			node.pushChild(_node);
+		}
+
+		// need find elseif
+		tk	= peek ;
+		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.ElseIf  ) {
+			// take elseif block
+			node.elseif = parseElseIfCode ;
+			assert(false);
+		}
+		
+		// need find elseif
+		tk	= peek ;
+		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.Else  ) {
+			// take else block
+			node.elseBlock	= parseElseCode ;
+			assert(false);
+		}
+		
+		dump_next();
+		assert(false);
+		return node ;
+	}
+	
+	ElseIfCode parseElseIfCode(){
+		Tok* tk	= expect(Tok.Type.ElseIfCode) ;
+		assert(tk !is null);
+		auto node	=  NewNode!(ElseIfCode)( tk ) ;
+		auto _ln	= tk._ln ;
+		auto _tab	= tk.tabs ;
+		
+		// find all child 
+		for(  tk = peek ; tk !is null ; tk = peek ){
+			if( tk.tabs <= _tab ) {
+				break ;
+			}
+			auto _node = parseExpr();
+			assert(_node !is null);
+			node.pushChild(_node);
+		}
+		
+		// need find elseif
+		tk	= peek ;
+		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.ElseIf  ) {
+			// take elseif block
+			node.elseif = parseElseIfCode ;
+			assert(false);
+		}
+		
+		// need find elseif
+		tk	= peek ;
+		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.Else  ) {
+			// take else block
+			node.elseBlock	= parseElseCode ;
+			assert(false);
+		}
+		
+		assert(false);
+		return node ;
+	}
+	
+	ElseCode parseElseCode(){
+		Tok* tk	= expect(Tok.Type.ElseCode) ;
+		assert(tk !is null);
+		auto node	=  NewNode!(ElseCode)( tk ) ;
+		auto _ln	= tk._ln ;
+		auto _tab	= tk.tabs ;
+		
+		// find all child 
+		for(  tk = peek ; tk !is null ; tk = peek ){
+			if( tk.tabs <= _tab ) {
+				break ;
+			}
+			auto _node = parseExpr();
+			assert(_node !is null);
+			node.pushChild(_node);
+		}
+		
+		return node ;
+	}
 	
 	Node parseCommentBlock(){
 		Tok* tk	= expect(Tok.Type.CommentBlock) ;

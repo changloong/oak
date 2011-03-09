@@ -21,6 +21,8 @@ package import
 	
 	jade.node.Each ,
 	jade.node.IfCode ,
+	jade.node.ElseIfCode,
+	jade.node.ElseCode,
 	
 	jade.node.Filter ,
 	jade.node.FilterArgs,
@@ -58,6 +60,8 @@ abstract class Node {
 		
 		InlineIf ,
 		IfCode ,
+		ElseIfCode ,
+		ElseCode ,
 		Each ,
 	}
 	
