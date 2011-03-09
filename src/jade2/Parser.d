@@ -272,7 +272,9 @@ struct Parser {
 		tk	= peek ;
 		if( tk !is null && tk._ln is _ln ) {
 			// tack all child string 
-			parseMixString(node) ;
+			auto _node	= parseMixString() ;
+			assert( _node !is null);
+			node.pushChild(_node);
 			assert(false);
 		}
 		
@@ -402,27 +404,42 @@ struct Parser {
 					node.pushChild( _node ) ;
 					next() ;
 					break ;
+				case Tok.Type.Var :
+					auto _node	= NewNode!(Var)( tk ) ;
+					node.pushChild( _node ) ;
+					next() ;
+					break ;
+				
+				case Tok.Type.ElseIf :
+					assert(false);
+					break ;
+				case Tok.Type.Else :
+					assert(false);
+					break ;
 				
 				case Tok.Type.EnfIf  :
 					find_end	= true ;
 					next() ;
 					break L1 ;
+				
 				default:
-					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
-					dump_next();
-					assert(false) ;
+					break L1;
 			}
 		}
 		if( !find_end ) {
 			err("missing InlineIf end on line: %d", node.ln );	
 		}
+		
 		dump_next();
 		Log(" ========> end if ");
 		return node ;
 	}
 	
-	void parseMixString(Node parent) {
-		Tok* tk	= peek ;
+	Node parseMixString() {
+		Tok* tk		= peek ;
+		
+		auto node	= NewNode!(MixString)( tk ) ;
+	
 		auto _ln	= tk._ln ;
 		L1:
 		for(  ; tk !is null ; tk = peek ) {
@@ -432,28 +449,40 @@ struct Parser {
 			switch( tk.ty ) {
 				case Tok.Type.String :
 					auto _node	= NewNode!(PureString)( tk ) ;
-					parent.pushChild( _node ) ;
+					node.pushChild( _node ) ;
+					next() ;
+					break ;
+				case Tok.Type.Var  :
+					auto _node	= NewNode!(Var)( tk ) ;
+					node.pushChild( _node ) ;
 					next() ;
 					break ;
 				
 				case Tok.Type.If  :
 					auto _node	= parseInlineIf() ;
 					assert( _node !is null );
-					parent.pushChild(_node);
+					node.pushChild(_node);
 					break ;
 				
 				default:
-					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
-					assert(false) ;
+					break L1;
 			}
 		}
+		
+		if( tk !is null ) {
+			dump_next();
+			Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
+		}
+		
+		Log(" ========> end mix string ");
+		
+		return node ;
 	}
 	
-	Node parseFilter() {
+	Filter parseFilter() {
 		Tok* tk	= expect(Tok.Type.FilterType) ;
 		assert(tk !is null);
-		Node node	=  NewNode!(Filter)( tk ) ;
+		auto node	=  NewNode!(Filter)( tk ) ;
 		auto _ln	= tk._ln ;
 		auto _tab	= tk.tabs ;
 		
@@ -465,7 +494,20 @@ struct Parser {
 			}
 			switch( tk.ty ) {
 				case Tok.Type.FilterArgStart :
-					assert(false);
+					if( node.args is null ) {
+						node.args = NewNode!(FilterArgs)();
+					}
+					next();
+					auto _node	= parseMixString() ;
+					assert( _node !is null);
+					node.args.pushChild( _node );
+					// skip FilterArgEnd
+					tk	= peek ;
+					assert(tk !is null );
+					assert( tk.ty is Tok.Type.FilterArgEnd);
+					next();
+					break ;
+					
 				default:
 					dump_next();
 					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
