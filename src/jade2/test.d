@@ -18,7 +18,7 @@ void main(string[] args ){
 	sw.start;
 	scope(exit){
 		sw.stop;
-		writefln("%d times use time = %dus", count, sw.peek.usecs );
+		writefln("%d times use time = %dms", count, sw.peek.msecs );
 	}
 	
 	Compiler cc ;

@@ -107,6 +107,10 @@ abstract class Node {
 		return firstChild is null ;
 	}
 	
+	void compileD(vBuffer bu){
+		assert(false);
+	}
+	
 	mixin Pool.Allocator ;
 }
 

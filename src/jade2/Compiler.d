@@ -51,6 +51,8 @@ struct Compiler {
 		pool.Clear ;
 		parser.Init(&this) ;
 		parser.parse ;
+		
+		Log("%s", parser.root.type);
 	}
 	
 }
