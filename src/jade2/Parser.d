@@ -68,13 +68,13 @@ struct Parser {
 			Log!(_file, _line)("peek = null ");
 			return  ;
 		}
-		Log!(_file, _line)("peek = %s ln:%d:%d tab=%d `%s`",  tk.type, tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
+		Log!(_file, _line)("peek = %s ln:%d:%d tab=%d `%s`",  tk.type(), tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
 		tk	= tk.next ;
 		if( tk is null ) {
 			Log!(_file, _line)("next = null ");
 			return  ;
 		}
-		Log!(_file, _line)("next = %s ln:%d:%d tab=%d `%s`",  tk.type, tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
+		Log!(_file, _line)("next = %s ln:%d:%d tab=%d `%s`",  tk.type(), tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
 	}
 	
 	Tok* peekSibling(Tok* tk = null) {
@@ -116,7 +116,7 @@ struct Parser {
 			next() ;
 			return tk ;
 		} else {
-			err("expected %s, but got %s on line:%d",  Tok.sType(ty), tk.type,  this.filename, tk.ln ) ;
+			err("expected %s, but got %s on line:%d",  Tok.sType(ty), tk.type(),  this.filename, tk.ln ) ;
 		}
 		return null ;
 	}
@@ -125,17 +125,15 @@ struct Parser {
 		lexer.parse ;
 		root = NewNode!(Block)();
 		
-		for( auto node	= parseExpr(root); node !is null; node	= parseExpr(root)) {}
-		
-		version(JADE_DEBUG_PARSER_TOK_DUMP1) {
-			dump ;
+		for( auto node	= parseExpr(); node !is null; node = parseExpr()) {
+			root.pushChild(node);
 		}
 	}
 	
-	void dump_tok(string _file = __FILE__, ptrdiff_t _line = __LINE__)( bool from_last = false ) {
+	void dump_tok(string _file = __FILE__, ptrdiff_t _line = __LINE__)( bool from_last_tok = false ) {
 		writefln("\n--------- dump tok --------\n%s:%d", _file, _line);
 		Tok* tk	= lexer._root_tok ;
-		if( from_last ) {
+		if( from_last_tok ) {
 			tk	= lexer._last_tok ;
 		}
 		while( tk !is null ) {
@@ -175,47 +173,46 @@ struct Parser {
 		return node ;
 	}
 	
-	private Node parseExpr(string _file = __FILE__, ptrdiff_t _line = __LINE__)( Node parent ) {
+	private Node parseExpr(string _file = __FILE__, ptrdiff_t _line = __LINE__)() {
 		Tok* tk = peek ;
-		Log!(_file,_line)("parseExpr %s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
+		if( tk is null ) {
+			return null ;
+		}
+		Log!(_file,_line)("parseExpr %s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
+		Node node ;
 		switch( tk.ty ) {
 			case Tok.Type.DocType:
-				auto _node	= parseDocType() ;
-				parent.pushChild(_node);
-				return _node;
+				node	= parseDocType() ;
+				break;
 			case Tok.Type.Tag:
-				auto _node	= parseTag() ;
-				parent.pushChild(_node);
-				return _node;
+				node	= parseTag() ;
+				break;
 			
 			case Tok.Type.String:
-				auto _node	= NewNode!(PureString)( tk ) ;
-				parent.pushChild(_node);
+				node	= NewNode!(PureString)( tk ) ;
 				next() ;
-				return _node;
+				break;
+			
 			case Tok.Type.Var:
-				auto _node	= NewNode!(Var)( tk ) ;
-				parent.pushChild(_node);
+				node	= NewNode!(Var)( tk ) ;
 				next() ;
-				return _node;
+				break;
 			case Tok.Type.If:
-				auto _node	= parseInlineIf;
-				parent.pushChild(_node);
+				node	= parseInlineIf;
 				next() ;
-				return _node;
+				break;
 			
 			case Tok.Type.FilterType :
-				auto _node	= parseFilter ;
-				parent.pushChild(_node);
+				node	= parseFilter ;
 				next() ;
-				return _node;
+				break;
 			
 			default:
 				dump_next();
-				Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
+				Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
 				assert(false) ;
 		}
-		return null ;
+		return node ;
 	}
 	
 	Node parseDocType(){
@@ -241,7 +238,7 @@ struct Parser {
 				case Tok.Type.Id:
 					
 				case Tok.Type.Class:dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
+					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
 					assert(false) ;
 					assert(false) ;
 				
@@ -283,7 +280,9 @@ struct Parser {
 			if( tk.tabs <= _tab ) {
 				break ;
 			}
-			parseExpr(node);
+			auto _node = parseExpr();
+			assert(_node !is null);
+			node.pushChild(_node);
 		}
 
 		return node ;
@@ -311,7 +310,7 @@ struct Parser {
 		
 				default:
 					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
+					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
 					assert(false) ;
 			}
 		}
@@ -338,7 +337,7 @@ struct Parser {
 					break L1;
 				default:
 					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
+					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
 					assert(false) ;
 			}
 		}
@@ -376,7 +375,7 @@ struct Parser {
 				default:
 					assert( tk is  peek) ;
 					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value);
+					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
 					assert(false) ;
 			}
 		}
@@ -407,7 +406,7 @@ struct Parser {
 					next() ;
 					break L1 ;
 				default:
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
+					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
 					dump_next();
 					assert(false) ;
 			}
@@ -443,7 +442,7 @@ struct Parser {
 				
 				default:
 					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
+					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
 					assert(false) ;
 			}
 		}
@@ -467,7 +466,7 @@ struct Parser {
 					assert(false);
 				default:
 					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
+					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
 					assert(false) ;
 			}
 		}
@@ -482,7 +481,7 @@ struct Parser {
 				
 				default:
 					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
+					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
 					assert(false) ;
 			}
 		}
@@ -493,12 +492,12 @@ struct Parser {
 			if( tk.tabs <= _tab ) {
 				break ;
 			}
-			auto _node = parseExpr(node);
+			auto _node = parseExpr();
+			assert(_node !is null);
 			assert( _node.isVar || _node.isInlineIf || _node.isPureString) ;
+			node.pushChild(_node);
 		}
 		
-		//dump_next();
-		Log("%s ln:%d tab:%d  `%s`", tk.type, tk.ln, tk.tabs, tk.string_value );
 		//assert(false) ;
 		Log(" ==============> end filter ");
 		
