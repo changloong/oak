@@ -29,8 +29,8 @@ package import
 
 
 public void Log( string file= __FILE__, int line = __LINE__, T...)(T t){//
-	std.stdio.write(file, ":", line, " ");
-	std.stdio.writefln(t);
+	//std.stdio.write(file, ":", line, " ");
+	//std.stdio.writefln(t);
 }
 
 ptrdiff_t ctfe_indexOf(T)(T[] a, T v){

@@ -57,9 +57,9 @@ struct Parser {
 		tk	= tk.next ;
 		lexer._last_tok = tk ;
 		if( tk is null ) {
-			writefln("* %s:%d move to next tok = null ", _file, _line );
+			Log!(_file, _line)("move to next tok = null " );
 		} else {
-			writefln("* %s:%d move to next tok = %s ln:%d tab:%d  `%s` ", _file, _line , tk.type(), tk.ln, tk.tabs, tk.string_value);
+			Log!(_file, _line)("move to next tok = %s ln:%d tab:%d  `%s` ", tk.type(), tk.ln, tk.tabs, tk.string_value);
 		}
 		return tk ;
 	}
