@@ -960,7 +960,7 @@ struct Lexer {
 				err("expected Code");
 			}
 			if( _ptr[0] is '\r' || _ptr[0] is '\n' ) {
-				tk	= NewTok(Tok.Type.ElseIfCode, parseLineString);
+				tk	= NewTok(Tok.Type.ElseCode, parseLineString);
 				return tk ;
 			}
 			auto code_type2	=  _ptr[ 0 .. safeFind!(const(char))(_ptr, &code_line[$-1], ' ') ];

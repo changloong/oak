@@ -217,6 +217,10 @@ struct Parser {
 			
 			case Tok.Type.If:
 				node	= parseInlineIf;
+				tk	= peek;
+				assert(tk !is null);
+				assert(tk.ty is Tok.Type.IfEnd  );
+				assert( node !is null );
 				next() ;
 				break;
 			
@@ -483,9 +487,14 @@ struct Parser {
 			switch( tk.ty ) {
 				case  Tok.Type.If :
 					auto _node	= parseInlineIf() ;
+					tk	= peek;
+					assert(tk !is null);
+					assert(tk.ty is Tok.Type.IfEnd  );
 					assert( _node !is null );
 					node.pushChild(_node);
+					next();
 					break ;
+		
 				case  Tok.Type.String :
 					auto _node	= NewNode!(PureString)( tk ) ;
 					node.pushChild( _node ) ;
@@ -536,14 +545,27 @@ struct Parser {
 					break ;
 				
 				case Tok.Type.ElseIf :
-					assert(false);
+					auto _node	= NewNode!(InlineElseIf)( tk ) ;
+					node.pushChild( _node ) ;
+					next() ;
 					break ;
+				
 				case Tok.Type.Else :
-					assert(false);
+					auto _node	= NewNode!(InlineElse)( tk ) ;
+					node.pushChild( _node ) ;
+					next() ;
+					break ;
+				
+				case Tok.Type.If :
+					auto _node	= parseInlineIf ;
+					tk	= peek;
+					assert(tk !is null);
+					assert(tk.ty is Tok.Type.IfEnd  );
+					node.pushChild( _node ) ;
+					next() ;
 					break ;
 				
 				case Tok.Type.IfEnd  :
-					next() ;
 					break L1 ;
 				
 				default:
@@ -581,9 +603,12 @@ struct Parser {
 					break ;
 				
 				case Tok.Type.If  :
-					auto _node	= parseInlineIf() ;
+					auto _node	= parseInlineIf() ;					tk	= peek;
+					assert(tk !is null);
+					assert(tk.ty is Tok.Type.IfEnd  );
 					assert( _node !is null );
 					node.pushChild(_node);
+					next();
 					break ;
 				
 				default:
@@ -715,7 +740,6 @@ struct Parser {
 		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.ElseIf  ) {
 			// take elseif block
 			node.elseif = parseElseIfCode ;
-			assert(false);
 		}
 		
 		// need find else
@@ -723,7 +747,6 @@ struct Parser {
 		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.ElseCode  ) {
 			// take else block
 			node.elseBlock	= parseElseCode ;
-			assert(false);
 		}
 		
 		return node ;
@@ -751,7 +774,6 @@ struct Parser {
 		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.ElseIf  ) {
 			// take elseif block
 			node.elseif = parseElseIfCode ;
-			assert(false);
 		}
 		
 		// need find else
@@ -759,7 +781,6 @@ struct Parser {
 		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.ElseCode  ) {
 			// take else block
 			node.elseBlock	= parseElseCode ;
-			assert(false);
 		}
 		
 		return node ;

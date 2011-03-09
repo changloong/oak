@@ -11,6 +11,8 @@ package import
 	jade.node.MixString ,
 	jade.node.PureString ,
 	jade.node.InlineIf ,
+	jade.node.InlineElseIf,
+	jade.node.InlineElse,
 	jade.node.Var ,
 	
 	jade.node.Block ,
@@ -59,6 +61,8 @@ abstract class Node {
 		FilterArgs,
 		
 		InlineIf ,
+		InlineElseIf ,
+		InlineElse ,
 		IfCode ,
 		ElseIfCode ,
 		ElseCode ,
