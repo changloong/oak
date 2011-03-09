@@ -19,6 +19,8 @@ package import
 	jade.node.Code ,
 	jade.node.DocType ,
 	
+	jade.node.Each ,
+	
 	jade.node.Filter ,
 	jade.node.FilterArgs,
 	

@@ -1,4 +1,4 @@
-//: \$dmd2 -J. -unittest \+..\src\xtpl\Buffer.d -O -inline -release
+//: \$dmd2 -J. \+..\src\xtpl\Buffer.d -O -inline -release
 
 module tpl2.test ;
 
@@ -104,7 +104,7 @@ template Tpl_Jade(string name, T, string _file = __FILE__, size_t _line = _LINE_
 
 	static const string render_arg = "tpl://render::" ~ T._class_loc ~ "::"  ~ name ~ ":"  ~ T._file[0..$] ~ "#" ~ ctfe_i2a(T._line) ~ "," ~ _file[0..$] ~ "#" ~ ctfe_i2a(_line)  ;
 	static const string render_src = import( render_arg ) ;
-	// pragma(msg, render_src) ;
+	pragma(msg, render_src) ;
 	
 	mixin(render_src) ;
 	
@@ -143,7 +143,7 @@ void main() {
 	
 	for( int i = 0; i < 400_0000 ; i++ ) {
 		bu.clear;
-		//u.login	= !u.login ;
+		u.login	= !u.login ;
 		if( i %3 ) u.admin	= ! u.admin ;
 		obj.render(bu);
 		if( i is 0 ) {

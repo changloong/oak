@@ -56,9 +56,11 @@ struct Parser {
 		}
 		tk	= tk.next ;
 		lexer._last_tok = tk ;
-		
-		writefln("* %s:%d move to next tok", _file, _line);
-
+		if( tk is null ) {
+			writefln("* %s:%d move to next tok = null ", _file, _line );
+		} else {
+			writefln("* %s:%d move to next tok = %s ln:%d tab:%d  `%s` ", _file, _line , tk.type(), tk.ln, tk.tabs, tk.string_value);
+		}
 		return tk ;
 	}
 	
@@ -138,7 +140,7 @@ struct Parser {
 		}
 		while( tk !is null ) {
 			//auto node = parseExpr ;
-			writefln("tab:%d ln:%d:%d %s = `%s`" , tk.tabs, tk.ln,tk._ln, tk.type, tk.string_value );
+			writefln("tab:%d ln:%d:%d %s = `%s`" , tk.tabs, tk.ln,tk._ln, tk.type(), tk.string_value );
 			tk	= tk.next ;
 		}
 	}
@@ -204,6 +206,12 @@ struct Parser {
 				node	= NewNode!(Var)( tk ) ;
 				next() ;
 				break;
+	
+			case Tok.Type.Code:
+				node	= NewNode!(Code)( tk ) ;
+				next() ;
+				break;
+			
 			case Tok.Type.If:
 				node	= parseInlineIf;
 				next() ;
@@ -214,6 +222,14 @@ struct Parser {
 				assert(node !is null);
 				next() ;
 				break;
+			
+			case Tok.Type.Each_Object:
+				node	= parseEach ;
+				assert(node !is null);
+				assert(false);
+				break;
+			
+			 
 			
 			default:
 				dump_next();
@@ -663,6 +679,24 @@ struct Parser {
 			assert(_node !is null);
 			node.pushChild(_node);
 		}
+		return node ;
+	}
+	
+	Node parseEach(){
+		Tok* tk	= expect(Tok.Type.Each_Object) ;
+		assert(tk !is null);
+		auto node	=  NewNode!(Each)( tk ) ;
+		auto _ln	= tk._ln ;
+		auto _tab	= tk.tabs ;
+		
+		tk	= peek ;
+		// find each type
+
+		
+		// find each key
+		// find each value
+		
+		assert(false);
 		return node ;
 	}
 }
