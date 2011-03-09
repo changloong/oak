@@ -833,7 +833,7 @@ struct Lexer {
 				if( _ptr >= _end ) {
 					err("expected AttrValue") ;
 				}
-				NewTok(Tok.Type.AttrValue) ;
+				NewTok(Tok.Type.AttrValueStart) ;
 				char _stop_char	 ;
 				if(  _ptr <= _end ) {
 					if(  _ptr[0] is '(' ) {
@@ -847,6 +847,7 @@ struct Lexer {
 					}
 				}
 				parseInlineString( _stop_char ) ;
+				NewTok(Tok.Type.AttrValueEnd) ;
 			}
 			
 			if( scan_comma ) {

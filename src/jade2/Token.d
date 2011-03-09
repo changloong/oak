@@ -18,7 +18,8 @@ struct Tok {
 		AttrStart ,
 		AttrEnd ,
 		AttrKey ,
-		AttrValue ,
+		AttrValueStart ,
+		AttrValueEnd ,
 
 		Var ,
 		If ,

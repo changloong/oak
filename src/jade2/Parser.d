@@ -304,20 +304,32 @@ struct Parser {
 				break ;
 			}
 			switch( tk.ty ) {
-				case Tok.Type.AttrEnd:
-					break L1;
+				
 				case Tok.Type.AttrKey:
 					auto _node	= parseAttr();
 					assert(_node !is null );
 					// push to attrs 
+					node.pushChild(_node);
+					tk	= peek ;
+					assert( tk !is null);
+					assert( tk.ty is Tok.Type.AttrValueEnd );
+				
+					// one attr end, more attr to go
+					next();
 					break ;
 		
-				default:
+				case Tok.Type.If:
+					//  a if attrs block
 					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
-					assert(false) ;
+					assert(false);
+					break;
+				
+				default:
+					// end attrs
+					break L1;
 			}
 		}
+		dump_next();
 		Log(" ========> end attrs ");
 		return node ;
 	}
@@ -335,9 +347,12 @@ struct Parser {
 				break ;
 			}
 			switch( tk.ty ) {
-				case  Tok.Type.AttrValue :
+				case  Tok.Type.AttrValueStart :
 					node.value	= parseAttrValue ;
 					assert( node.value !is null ) ;
+					tk	= peek ;
+					assert( tk !is null);
+					assert( tk.ty is Tok.Type.AttrValueEnd );
 					break L1;
 				default:
 					dump_next();
@@ -349,7 +364,7 @@ struct Parser {
 	}
 	
 	MixString parseAttrValue() {
-		Tok* tk	= expect(Tok.Type.AttrValue) ;
+		Tok* tk	= expect(Tok.Type.AttrValueStart) ;
 		auto node 	= NewNode!(MixString)( tk ) ;
 		auto _ln	= tk._ln ;
 		L1:
@@ -370,10 +385,7 @@ struct Parser {
 					next() ;
 					break ;
 				
-				case  Tok.Type.AttrKey :
-					break L1;
-				
-				case  Tok.Type.AttrEnd :
+				case  Tok.Type.AttrValueEnd :
 					break L1;
 				
 				default:
@@ -391,11 +403,11 @@ struct Parser {
 		Tok* tk	= expect(Tok.Type.If) ;
 		auto node 	= NewNode!(InlineIf)( tk ) ;
 		
-		bool	find_end	= false ;
 		auto _ln	= tk._ln ;
 		L1:
 		for(  tk = peek ; tk !is null ; tk = peek ) {
 			if( tk._ln !is _ln ) {
+				err("missing InlineIf end on line: %d", node.ln );
 				break ;
 			}
 			switch( tk.ty ) {
@@ -418,16 +430,13 @@ struct Parser {
 					break ;
 				
 				case Tok.Type.EnfIf  :
-					find_end	= true ;
 					next() ;
 					break L1 ;
 				
 				default:
-					break L1;
+					dump_next();
+					err("missing InlineIf end on line: %d", node.ln );
 			}
-		}
-		if( !find_end ) {
-			err("missing InlineIf end on line: %d", node.ln );	
 		}
 		
 		dump_next();
