@@ -28,6 +28,8 @@ package import
 	
 	jade.node.Filter ,
 	jade.node.FilterArgs,
+	jade.node.FilterTagArg ,
+	jade.node.FilterTagArgs ,
 	
 	jade.node.TagClass ,
 	jade.node.TagClasses ,
@@ -59,6 +61,8 @@ abstract class Node {
 		
 		Filter ,
 		FilterArgs,
+		FilterTagArg,
+		FilterTagArgs,
 		
 		InlineIf ,
 		InlineElseIf ,

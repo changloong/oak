@@ -46,8 +46,9 @@ struct Tok {
 		FilterTagKey ,
 		FilterTagValueStart ,
 		FilterTagValueEnd ,
-		FilterTagStart ,
-		FilterTagEnd ,
+		FilterTagArgStart ,
+		FilterTagArgEnd ,
+		FilterTagKeyValueEnd ,
 	}
 	
 	static const string[] Type_Name	= EnumMemberName!(Type) ;

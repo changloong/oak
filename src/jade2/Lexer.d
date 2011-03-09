@@ -1195,6 +1195,7 @@ struct Lexer {
 			if ( _tag_key is null ) {
 				err("expected filter tag key" );
 			}
+			// =============================================================================> start tag arg 
 			NewTok(Tok.Type.FilterTagKey, _tag_key) ;
 			
 			// find =
@@ -1228,17 +1229,19 @@ struct Lexer {
 			
 			// find filter tag
 			if( _ptr[0] !is '[' ) {
-				NewTok(Tok.Type.FilterTagStart) ;
+				NewTok(Tok.Type.FilterTagArgStart) ;
 				Tok* _tk	= parseTagWithIdClass(true);
 				if( _tk is null ) {
 					err("expected filter tag" );
 				}
-				NewTok(Tok.Type.FilterTagEnd) ;
+				NewTok(Tok.Type.FilterTagArgEnd) ;
 				
 				if( !scan_skip_line ) {
 					skip_space() ;
 				}
 			}
+			NewTok(Tok.Type.FilterTagKeyValueEnd);
+			// =============================================================================> end tag arg 
 		}
 		return tk ;
 	}

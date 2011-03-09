@@ -262,7 +262,7 @@ struct Parser {
 		return NewNode!(DocType)( tk ) ;
 	}
 	
-	Node parseTag(){
+	Tag parseTag(){
 		Tok* tk	= expect(Tok.Type.Tag) ;
 		assert(tk !is null);
 		auto node 	= NewNode!(Tag)( tk ) ;
@@ -579,7 +579,7 @@ struct Parser {
 		return node ;
 	}
 	
-	Node parseMixString() {
+	MixString parseMixString() {
 		Tok* tk		= peek ;
 		
 		auto node	= NewNode!(MixString)( tk ) ;
@@ -656,29 +656,57 @@ struct Parser {
 					break ;
 					
 				default:
-					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
-					assert(false) ;
+					break L1;
 			}
 		}
 		
-		// find filter tag
+		// find tag
 		L2:
 		for( tk = peek  ; tk !is null ; tk = peek ) {
 			if( tk._ln !is _ln ) {
 				break ;
 			}
 			switch( tk.ty ) {
-				
+				case Tok.Type.Tag:
+					node.tag	= parseTag ;
+					break;
+
 				default:
-					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
-					assert(false) ;
+					break L2;
 			}
 		}
 		
-		// find filter text ,  hasVar
+		// find sub filter arg tag
 		L3:
+		for( tk = peek  ; tk !is null ; tk = peek ) {
+			if( tk._ln !is _ln ) {
+				break ;
+			}
+			switch( tk.ty ) {
+				case Tok.Type.FilterTagKey:
+					
+					auto _node	= parseFilterTagArg ;
+					tk  		= peek ;
+					assert( tk !is null);
+					assert( tk.ty is Tok.Type.FilterTagKeyValueEnd );
+					assert(_node !is null);
+					if( node.tag_args is null ) {
+						node.tag_args = NewNode!(FilterTagArgs)( tk ) ;
+					}
+					node.tag_args .pushChild(_node);
+					next();
+					break ;
+
+				default:
+					tk.dump;
+					assert(false);
+					break L3;
+			}
+		}
+		
+		
+		// find child text , hasVar
+		L4:
 		for(  tk = peek ; tk !is null ; tk = peek ){
 			if( tk.tabs <= _tab ) {
 				break ;
@@ -696,6 +724,63 @@ struct Parser {
 		//assert(false) ;
 		Log(" ==============> end filter ");
 		
+		return node ;
+	}
+	
+	Node parseFilterTagArg(){
+		Tok* tk		= expect(Tok.Type.FilterTagKey) ;
+		assert(tk !is null);
+		auto node	=  NewNode!(FilterTagArg)( tk ) ;
+		auto _ln	= tk._ln ;
+		auto _tab	= tk.tabs ;
+		
+		tk	= peek ;
+		// find FilterTagValueStart
+		if( tk is null || tk.ty !is Tok.Type.FilterTagValueStart ) {
+			err("missing filter tag arg value start");
+		}
+		next();
+		
+		node.value	= parseMixString() ;
+		if( node.value is null ) {
+			err("missing filter tag arg value");
+		}
+		
+		
+		tk	= peek ;
+		if( tk is null || tk.ty !is Tok.Type.FilterTagValueEnd ) {
+			err("missing filter tag arg value end");
+		}
+		next();
+		
+
+		// find FilterTagArgStart
+		tk	= peek ;
+		if( tk !is null && tk.ty is Tok.Type.FilterTagArgStart ) {
+			next();
+			L1:
+			for(tk	= peek ; tk !is null ; tk	= peek  ) {
+				if( tk.ty is Tok.Type.FilterTagArgStart  ) {
+					break ;
+				}
+				if( tk._ln !is _ln ) {
+					break ;
+				}
+				if( tk.tabs < _tab ) {
+					break ;
+				}
+				if( tk.ty !=  Tok.Type.Tag ) {
+					break ;
+				}
+				node.tag	= parseTag() ;
+				assert( node.tag !is null) ;
+			}
+			tk	= peek ;
+			if( tk is null || tk.ty !is Tok.Type.FilterTagArgEnd ) {
+				err("missing filter tag arg end");
+			}
+			next();
+		}
 		return node ;
 	}
 	
