@@ -52,7 +52,7 @@ struct Compiler {
 		parser.Init(&this) ;
 		parser.parse ;
 		
-		Log("%s", parser.root.type);
+		parser.root.asD(_ret_bu);
 	}
 	
 }

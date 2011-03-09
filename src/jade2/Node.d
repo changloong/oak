@@ -107,8 +107,15 @@ abstract class Node {
 		return firstChild is null ;
 	}
 	
-	void compileD(vBuffer bu){
-		assert(false);
+	void asD(vBuffer bu){
+		Log("`%s`",  cast(string) bu.slice);
+		assert(false, this.type);
+	}
+	
+	void eachD(vBuffer bu) {
+		for(Node n = firstChild ; n !is null ; n = n.next ) {
+			n.asD(bu);
+		}
 	}
 	
 	mixin Pool.Allocator ;
