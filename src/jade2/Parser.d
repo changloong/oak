@@ -125,6 +125,9 @@ struct Parser {
 	
 	void parse() {
 		lexer.parse ;
+		
+		// dump_tok(); assert(false);
+		
 		root = NewNode!(Block)();
 		
 		for( auto node	= parseExpr(); node !is null; node = parseExpr()) {
@@ -489,6 +492,12 @@ struct Parser {
 					next() ;
 					break ;
 				
+				case  Tok.Type.Var :
+					auto _node	= NewNode!(Var)( tk ) ;
+					node.pushChild( _node ) ;
+					next() ;
+					break ;
+				
 				case  Tok.Type.AttrValueEnd :
 					break L1;
 				
@@ -709,16 +718,14 @@ struct Parser {
 			assert(false);
 		}
 		
-		// need find elseif
+		// need find else
 		tk	= peek ;
-		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.Else  ) {
+		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.ElseCode  ) {
 			// take else block
 			node.elseBlock	= parseElseCode ;
 			assert(false);
 		}
 		
-		dump_next();
-		assert(false);
 		return node ;
 	}
 	
@@ -747,15 +754,14 @@ struct Parser {
 			assert(false);
 		}
 		
-		// need find elseif
+		// need find else
 		tk	= peek ;
-		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.Else  ) {
+		if( tk !is null && tk.tabs is _tab && tk.ty is Tok.Type.ElseCode  ) {
 			// take else block
 			node.elseBlock	= parseElseCode ;
 			assert(false);
 		}
 		
-		assert(false);
 		return node ;
 	}
 	
