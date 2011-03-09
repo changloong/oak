@@ -690,11 +690,58 @@ struct Parser {
 		auto _tab	= tk.tabs ;
 		
 		tk	= peek ;
+		if( tk is null ) {
+			err("missing each key");
+		}
 		// find each type
-
-		
+		if( tk.ty is Tok.Type.Each_Type ) {
+			node.type	= tk.string_value ;
+			next();
+			tk	= peek() ;
+		}
+		if( tk is null ) {
+			err("missing each key");
+		}
 		// find each key
+		if( tk.ty is Tok.Type.Each_Key ) {
+			node.key	= tk.string_value ;
+			next();
+			tk	= peek() ;
+		}
+		
+		if( tk is null ) {
+			err("missing each value");
+		}
 		// find each value
+		if( tk.ty is Tok.Type.Each_Value ) {
+			node.value	= tk.string_value ;
+			next();
+			tk	= peek() ;
+		}
+		
+		if( node.key is null ) {
+			err("missing each key");
+		}
+		
+		if( node.value is null ) {
+			err("missing each value");
+		}
+		
+		if( tk !is null ) {
+			tk.dump();
+		} 
+		assert(false);
+		
+		// find all child 
+		L1:
+		for(  tk = peek ; tk !is null ; tk = peek ){
+			if( tk.tabs <= _tab ) {
+				break ;
+			}
+			auto _node = parseExpr();
+			assert(_node !is null);
+			node.pushChild(_node);
+		}
 		
 		assert(false);
 		return node ;
