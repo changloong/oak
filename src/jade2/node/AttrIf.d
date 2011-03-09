@@ -5,8 +5,9 @@ import jade.Jade ;
 
 final class AttrIf : Node {
 	
+	string		cond ;
 	
-	this() {
-		
+	this(Tok* tk) {
+		cond	= tk.string_value ;
 	}
 }
