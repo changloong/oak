@@ -209,6 +209,12 @@ struct Parser {
 				next() ;
 				break;
 			
+			case Tok.Type.CommentBlock:
+				node	= parseCommentBlock;
+				assert(node !is null);
+				next() ;
+				break;
+			
 			default:
 				dump_next();
 				Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
@@ -238,8 +244,12 @@ struct Parser {
 			}
 			switch( tk.ty ) {
 				case Tok.Type.Id:
+					node.tag = tk.string_value ;
+					next();
+					break ;
 					
-				case Tok.Type.Class:dump_next();
+				case Tok.Type.Class:
+					dump_next();
 					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
 					assert(false) ;
 					assert(false) ;
@@ -275,7 +285,6 @@ struct Parser {
 			auto _node	= parseMixString() ;
 			assert( _node !is null);
 			node.pushChild(_node);
-			assert(false);
 		}
 		
 		// find all child 
@@ -308,11 +317,11 @@ struct Parser {
 				case Tok.Type.AttrKey:
 					auto _node	= parseAttr();
 					assert(_node !is null );
-					// push to attrs 
-					node.pushChild(_node);
 					tk	= peek ;
 					assert( tk !is null);
 					assert( tk.ty is Tok.Type.AttrValueEnd );
+					// push to attrs 
+					node.pushChild(_node);
 				
 					// one attr end, more attr to go
 					next();
@@ -320,8 +329,15 @@ struct Parser {
 		
 				case Tok.Type.If:
 					//  a if attrs block
-					dump_next();
-					assert(false);
+					auto _node	= parseAttrIfBlock() ;
+					assert(_node !is null );
+					tk	= peek ;
+					assert( tk !is null);
+					assert( tk.ty is Tok.Type.IfEnd );
+					// push to attrs 
+					node.pushChild(_node);
+					// one attr if end, more attr to go
+					next();
 					break;
 				
 				default:
@@ -334,6 +350,66 @@ struct Parser {
 		return node ;
 	}
 	
+	
+	Node parseAttrIfBlock() {
+		Tok* tk		= expect(Tok.Type.If) ;
+		auto node 	= NewNode!(InlineIf)( tk ) ;
+		
+		auto _ln	= tk._ln ;
+		L1:
+		for(  tk = peek ; tk !is null ; tk = peek ) {
+			if( tk._ln !is _ln ) {
+				err("missing InlineIf end on line: %d", node.ln );
+				break ;
+			}
+			switch( tk.ty ) {
+				
+				case Tok.Type.AttrKey:
+					auto _node	= parseAttr();
+					assert(_node !is null );
+					tk	= peek ;
+					assert( tk !is null);
+					assert( tk.ty is Tok.Type.AttrValueEnd );
+					// push to attrs 
+					node.pushChild(_node);
+				
+					// one attr end, more attr to go
+					next();
+					break ;
+				
+				case Tok.Type.If:
+					//  a if attrs block
+					auto _node	= parseAttrIfBlock() ;
+					assert(_node !is null );
+					tk	= peek ;
+					assert( tk !is null);
+					assert( tk.ty is Tok.Type.IfEnd );
+					// push to attrs 
+					node.pushChild(_node);
+					// one attr if end, more attr to go
+					next();
+					break;
+
+				case Tok.Type.ElseIf :
+					assert(false);
+					break ;
+				case Tok.Type.Else :
+					assert(false);
+					break ;
+				
+				case Tok.Type.IfEnd  :
+					break L1 ;
+				
+				default:
+					dump_next();
+					err("missing InlineIf end on line: %d", node.ln );
+			}
+		}
+		
+		dump_next();
+		Log(" ========> end attr if ");
+		return node ;
+	}
 	
 	Node parseAttr() {
 		Tok* tk	= expect(Tok.Type.AttrKey) ;
@@ -400,7 +476,7 @@ struct Parser {
 	}
 	
 	Node parseInlineIf() {
-		Tok* tk	= expect(Tok.Type.If) ;
+		Tok* tk		= expect(Tok.Type.If) ;
 		auto node 	= NewNode!(InlineIf)( tk ) ;
 		
 		auto _ln	= tk._ln ;
@@ -429,7 +505,7 @@ struct Parser {
 					assert(false);
 					break ;
 				
-				case Tok.Type.EnfIf  :
+				case Tok.Type.IfEnd  :
 					next() ;
 					break L1 ;
 				
@@ -559,5 +635,16 @@ struct Parser {
 		Log(" ==============> end filter ");
 		
 		return node ;
+	}
+	
+	Node parseCommentBlock(){
+		Tok* tk	= expect(Tok.Type.CommentBlock) ;
+		assert(tk !is null);
+		auto node	=  NewNode!(CommentBlock)( tk ) ;
+		auto _ln	= tk._ln ;
+		auto _tab	= tk.tabs ;
+		
+		assert(false);
+		return null ;
 	}
 }

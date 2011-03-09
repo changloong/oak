@@ -25,7 +25,7 @@ struct Tok {
 		If ,
 		ElseIf ,
 		Else ,
-		EnfIf ,
+		IfEnd ,
 
 		Code ,	
 		
@@ -74,6 +74,10 @@ struct Tok {
 		// Log!(_file, _line)("this=%x", cast(void*) &this);
 		assert( ty < Type_Name.length && ty >= 0 );
 		return Type_Name[ty] ;
+	}
+	
+	void dump(string _file = __FILE__, ptrdiff_t _line = __LINE__)(){
+		Log!(_file,_line)("%s ln:%d tab:%d  `%s`", type(), ln, tabs, string_value );
 	}
 	
 	static string sType(Tok.Type ty){

@@ -18,7 +18,7 @@ final class Tag : Node {
 			`hr` ,
 		] ;
 	
-	string		tag ;
+	string		tag , id ;
 	bool		isEmbed ;
 	
 	this(Tok* tk) {

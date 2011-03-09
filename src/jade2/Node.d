@@ -6,6 +6,7 @@ import jade.Jade ;
 package import 
 	jade.node.Attrs ,
 	jade.node.Attr ,
+	jade.node.AttrIf ,
 	
 	jade.node.MixString ,
 	jade.node.PureString ,
@@ -14,6 +15,7 @@ package import
 	
 	jade.node.Block ,
 	jade.node.Comment ,
+	jade.node.CommentBlock,
 	jade.node.Code ,
 	jade.node.DocType ,
 	
@@ -30,6 +32,7 @@ abstract class Node {
 		
 		Attrs ,
 		Attr ,
+		AttrIf ,
 		
 		MixString ,
 		PureString ,
@@ -37,6 +40,7 @@ abstract class Node {
 		Block ,
 		Code ,
 		Comment ,
+		CommentBlock ,
 		DocType ,
 		Tag ,
 		

@@ -317,7 +317,7 @@ struct Lexer {
 							while(_val.length && _val[0] is ' ') _val = _val[1..$];
 							while(_val.length && _val[$-1] is ' ') _val = _val[0..$-1];
 							if( _val.length is 2 && _val[0] is 'i' && _val[1] is 'f' ) {
-								return  NewTok(Tok.Type.EnfIf ) ;
+								return  NewTok(Tok.Type.IfEnd ) ;
 							}
 						}
 						err("inline code error `%s`", val );
