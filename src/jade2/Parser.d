@@ -26,8 +26,7 @@ struct Parser {
 		formattedWrite(a, "(%s:%d) ", __FILE__, _line);
 		formattedWrite(a, fmt, t);
 		//formattedWrite(a, " at file:`%s` line:%d", filename, ln);
-		stderr.write("\n- ", a.data, "\n");
-		_J.Exit(1);
+		throw new Exception( a.data );
 	}
 	
 	Tok* peek(ptrdiff_t pos = 0 ) {
@@ -56,6 +55,7 @@ struct Parser {
 		}
 		tk	= tk.next ;
 		lexer._last_tok = tk ;
+		version(JADE_DEBUG_PARSER)
 		if( tk is null ) {
 			Log!(_file, _line)("move to next tok = null " );
 		} else {
@@ -67,16 +67,19 @@ struct Parser {
 	void dump_next(string _file = __FILE__, ptrdiff_t _line = __LINE__)(){
 		Tok* tk = lexer._last_tok  ;
 		if( tk is null ) {
-			Log!(_file, _line)("peek = null ");
+			version(JADE_DEBUG_PARSER)
+				Log!(_file, _line)("peek = null ");
 			return  ;
 		}
-		Log!(_file, _line)("peek = %s ln:%d:%d tab=%d `%s`",  tk.type(), tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
+		version(JADE_DEBUG_PARSER)
+			Log!(_file, _line)("peek = %s ln:%d:%d tab=%d `%s`",  tk.type(), tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
 		tk	= tk.next ;
 		if( tk is null ) {
 			Log!(_file, _line)("next = null ");
 			return  ;
 		}
-		Log!(_file, _line)("next = %s ln:%d:%d tab=%d `%s`",  tk.type(), tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
+		version(JADE_DEBUG_PARSER)
+			Log!(_file, _line)("next = %s ln:%d:%d tab=%d `%s`",  tk.type(), tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
 	}
 	
 	Tok* peekSibling(Tok* tk = null) {
@@ -167,8 +170,8 @@ struct Parser {
 			if( node.ln is 0 ) {
 				node.ln	= t[0].ln ;
 			}
-			
-			Log!(_file, _line)(" ===> New %s , ln:%d:%d tab:%d `%s` ",  N.stringof , t[0].ln, t[0]._ln, t[0].tabs, t[0].string_value);
+			version(JADE_DEBUG_PARSER)
+				Log!(_file, _line)(" ===> New %s , ln:%d:%d tab:%d `%s` ",  N.stringof , t[0].ln, t[0]._ln, t[0].tabs, t[0].string_value);
 		}  else {
 			node = pool.New!(N)(t) ;
 		}
@@ -183,7 +186,8 @@ struct Parser {
 		if( tk is null ) {
 			return null ;
 		}
-		Log!(_file,_line)("parseExpr %s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
+		version(JADE_DEBUG_PARSER)
+			Log!(_file,_line)("parseExpr %s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
 		Node node ;
 		switch( tk.ty ) {
 			
@@ -380,8 +384,10 @@ struct Parser {
 					break L1;
 			}
 		}
-		dump_next();
-		Log(" ========> end attrs ");
+		version(JADE_DEBUG_PARSER) {
+			dump_next();
+			Log(" ========> end attrs ");
+		}
 		return node ;
 	}
 	
@@ -440,9 +446,10 @@ struct Parser {
 					err("missing InlineIf end on line: %d", node.ln );
 			}
 		}
-		
-		dump_next();
-		Log(" ========> end attr if ");
+		version(JADE_DEBUG_PARSER){
+			dump_next();
+			Log(" ========> end attr if ");
+		}
 		return node ;
 	}
 	
@@ -517,7 +524,8 @@ struct Parser {
 					assert(false) ;
 			}
 		}
-		Log(" ========> end attr value ,  end mix string");
+		version(JADE_DEBUG_PARSER)
+			Log(" ========> end attr value ,  end mix string");
 		return node ;
 	}
 	
@@ -573,9 +581,10 @@ struct Parser {
 					err("missing InlineIf end on line: %d", node.ln );
 			}
 		}
-		
-		dump_next();
-		Log(" ========> end if ");
+		version(JADE_DEBUG_PARSER){
+			dump_next();
+			Log(" ========> end if ");
+		}
 		return node ;
 	}
 	
@@ -616,12 +625,14 @@ struct Parser {
 			}
 		}
 		
-		if( tk !is null ) {
-			dump_next();
-			Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
+		version(JADE_DEBUG_PARSER) {
+			tk	= peek ;
+			if( tk !is null ) {
+				dump_next();
+				Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value );
+			}
+			Log(" ========> end mix string ");
 		}
-		
-		Log(" ========> end mix string ");
 		
 		return node ;
 	}
@@ -722,7 +733,9 @@ struct Parser {
 		}
 		
 		//assert(false) ;
-		Log(" ==============> end filter ");
+		version(JADE_DEBUG_PARSER) {
+			Log(" ==============> end filter ");
+		}
 		
 		return node ;
 	}
@@ -772,6 +785,7 @@ struct Parser {
 				if( tk.ty !=  Tok.Type.Tag ) {
 					break ;
 				}
+				assert( node.tag is null );
 				node.tag	= parseTag() ;
 				assert( node.tag !is null) ;
 			}
@@ -959,10 +973,6 @@ struct Parser {
 		
 		if( node.value is null ) {
 			err("missing each value");
-		}
-		
-		if( tk !is null ) {
-			tk.dump();
 		}
 		
 		// find all child 

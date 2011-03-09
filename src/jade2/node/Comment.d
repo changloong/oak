@@ -9,6 +9,5 @@ final class Comment : Node {
 	this(Tok* tk){
 		assert(tk !is null);
 		isHide	= tk.bool_value ;
-		tk.dump;
 	}
 }
