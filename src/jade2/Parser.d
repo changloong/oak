@@ -181,13 +181,20 @@ struct Parser {
 		Log!(_file,_line)("parseExpr %s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
 		Node node ;
 		switch( tk.ty ) {
+			
+			// not move next node
 			case Tok.Type.DocType:
 				node	= parseDocType() ;
 				break;
 			case Tok.Type.Tag:
 				node	= parseTag() ;
 				break;
+			case Tok.Type.FilterType :
+				node	= parseFilter ;
+				break;
 			
+			
+			// move next node
 			case Tok.Type.String:
 				node	= NewNode!(PureString)( tk ) ;
 				next() ;
@@ -199,11 +206,6 @@ struct Parser {
 				break;
 			case Tok.Type.If:
 				node	= parseInlineIf;
-				next() ;
-				break;
-			
-			case Tok.Type.FilterType :
-				node	= parseFilter ;
 				next() ;
 				break;
 			
@@ -496,6 +498,10 @@ struct Parser {
 			assert(_node !is null);
 			assert( _node.isVar || _node.isInlineIf || _node.isPureString) ;
 			node.pushChild(_node);
+		}
+		
+		if( tk !is null && tk.ty is Tok.Type.FilterArgStart  ) {
+			assert(false);
 		}
 		
 		//assert(false) ;
