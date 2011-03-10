@@ -31,9 +31,9 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=home)
     /- 123
       -- int i = 0 ;
     - each   val in o
-      li: a ${val}
+       li: a ${val}
     - each  i,v in o
-     li: a ${i} => ${v}
+      li: a ${i} => ${v}
     - each  int i,v in o
       li: a ${i} => ${v}
   

@@ -13,7 +13,7 @@ final class Each : Node {
 	
 	
 	void asD(vBuffer bu){
-		bu("\nforach(");
+		bu("\nforeach(");
 		if( type !is null ) {
 			bu(type)(' ')(key)(',')(value);
 		} else if( key !is null ){
