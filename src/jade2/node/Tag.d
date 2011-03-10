@@ -26,6 +26,32 @@ final class Tag : Node {
 	this(Tok* tk) {
 		tag	= tk.string_value ;
 		isEmbed	= tk.bool_value ;
+	}
+	
+	void asD(vBuffer bu ) {
+		bu('<') ;
+		string _tag	= tag[0] is '*'  ? "div" : tag ;
+		bu(_tag);
+		bool isFindAttr = false ;
 		
+		if( id !is null ) {
+			bu(" id=\"")(id)("\"") ;
+		}
+		
+		if( classes !is null ) {
+			classes.asD(bu);
+		}
+		
+		if( attrs !is null ) {
+			attrs.eachD(bu);
+		}
+		
+		if( empty ) {
+			bu(" />");
+		} else {
+			bu('>');
+			eachD(bu);
+			bu("</")(_tag)(">");
+		}
 	}
 }

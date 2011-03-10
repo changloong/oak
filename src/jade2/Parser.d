@@ -306,8 +306,8 @@ struct Parser {
 			}
 			switch( tk.ty ) {
 				case Tok.Type.AttrStart:
-					auto _node	= parseAttrs() ;
-					assert(_node !is null ) ;
+					node.attrs	= parseAttrs() ;
+					assert(node.attrs !is null ) ;
 					assert( peek.ty is Tok.Type.AttrEnd);
 					next() ;
 					break L2;
@@ -341,7 +341,7 @@ struct Parser {
 	}
 	
 	
-	Node parseAttrs() {
+	Attrs parseAttrs() {
 		Tok* tk	= expect(Tok.Type.AttrStart) ;
 		auto node 	= NewNode!(Attrs)( tk ) ;
 		auto _ln	= tk._ln ;

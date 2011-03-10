@@ -5,7 +5,4 @@ import jade.Jade ;
 
 final class Attrs : Node {
 	
-	this() {
-		
-	}
 }

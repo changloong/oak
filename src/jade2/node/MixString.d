@@ -5,7 +5,7 @@ import jade.Jade ;
 
 final class MixString : Node {
 	
-	this() {
-		
+	void asD(vBuffer bu) {
+		eachD(bu);
 	}
 }

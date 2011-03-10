@@ -12,4 +12,10 @@ final class Attr : Node {
 		assert(tk !is null);
 		key	= tk.string_value ;
 	}
+	
+	void asD(vBuffer bu){
+		bu(' ')(key)("=\"");
+		value.asD(bu);
+		bu('"');
+	}
 }

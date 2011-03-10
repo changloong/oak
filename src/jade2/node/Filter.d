@@ -15,4 +15,8 @@ final class Filter : Node {
 		type	= tk.string_value ;
 		hasVar	= tk.bool_value ;
 	}
+	
+	void asD(vBuffer bu) {
+		
+	}
 }

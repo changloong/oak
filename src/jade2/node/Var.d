@@ -8,4 +8,9 @@ final class Var : Node {
 	this(Tok* tk) {
 		value	= tk.string_value ;
 	}
+	
+	
+	void asD(vBuffer bu) {
+		bu("${")(value)('}');
+	}
 }

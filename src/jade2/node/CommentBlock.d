@@ -9,4 +9,8 @@ final class CommentBlock : Node {
 	this(Tok* tk) {
 		isHide	= tk.bool_value ;
 	}
+	
+	void asD(vBuffer bu) {
+		
+	}
 }
