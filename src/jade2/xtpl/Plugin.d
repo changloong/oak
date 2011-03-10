@@ -1,7 +1,7 @@
 
-module xtpl.Plugin ;
+module jade.xtpl.Plugin ;
 
-import xtpl.all , std.c.string, core.stdc.stdio ;
+import jade.xtpl.all ;
 
 __gshared	string[] project_paths ;
 
@@ -65,7 +65,7 @@ export extern(C) size_t plugin_lib_export(size_t ty, void* data) {
 __gshared ubyte[1024 * 512 ] _tpl_global_buffer ;
 
 void tpl_print(string _file = __FILE__, size_t _line = __LINE__, T...)(string fmt, T t) {
-	scope bu =  new XTpl_Buffer(_tpl_global_buffer) ;
+	scope bu =  new vBuffer(_tpl_global_buffer) ;
 	formattedWrite(bu, " *) %s#%d ", _file[0..$-2], _line);
 	static if(T.length > 0 ) {
 		formattedWrite(bu, fmt, t);
@@ -80,7 +80,7 @@ void tpl_print(string _file = __FILE__, size_t _line = __LINE__, T...)(string fm
 alias tpl_print log ;
 
 void tpl_error(string _file = __FILE__, size_t _line = __LINE__, T...)(string fmt, T t) {
-	scope bu =  new XTpl_Buffer(_tpl_global_buffer) ;
+	scope bu =  new vBuffer(_tpl_global_buffer) ;
 	formattedWrite(bu, "%s#%d ", _file[0..$-2], _line);
 	static if(T.length > 0 ) {
 		formattedWrite(bu, fmt, t);
@@ -99,12 +99,12 @@ export extern(C) size_t plugin_lib_import(char* in_name, char** out_error , void
 		if(  ret is null || ret.length is 0 ) {
 			return 0 ;	
 		}
-		scope bu	= new XTpl_Buffer(_tpl_global_buffer);
+		scope bu	= new vBuffer(_tpl_global_buffer);
 		bu(ret);
 		*out_buffer =  cast(char*)  _tpl_global_buffer.ptr ;
 		return ret.length ;
 	} catch(Exception e) {
-		scope bu =  new XTpl_Buffer(_tpl_global_buffer) ;
+		scope bu =  new vBuffer(_tpl_global_buffer) ;
 		bu.clear ;
 		bu(e.toString)('\0');
 		*out_error	= cast(char*)  _tpl_global_buffer.ptr ;

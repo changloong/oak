@@ -1,14 +1,10 @@
 
-module xtpl.Template ;
+module jade.xtpl.Template ;
 
 import 
-	std.file,
-	jade.Jade,
-	xtpl.all;
+	jade.xtpl.all;
 
 pragma(lib, "pcre");
-
-alias  xtpl.Plugin.log log;
 
 class XTpl {
 	static __gshared _tpl_protocol	= "tpl://" ;
@@ -191,14 +187,14 @@ class XTpl {
 	size_t		_offset ;
 	
 	string 		_tuple_loc ;
-	XTpl_Buffer		_tuple_bu ;
+	vBuffer		_tuple_bu ;
 	size_t		_tuple_len ;
 	
 	public this(char[] name, char[] loc) {
 		check_var_name(name, loc);
 		_name		= cstring_dup( name.ptr ) ;
 		_loc		= cstring_dup( loc.ptr ) ;
-		_tuple_bu	= new XTpl_Buffer(1024, 1024);
+		_tuple_bu	= new vBuffer(1024, 1024);
 	}
 	
 	private XTpl_Var getVar(char[][] args){
@@ -276,7 +272,7 @@ class XTpl {
 			("\tprivate alias typeof(this) _This ; \n")
 		;
 		ubyte[1024 * 16] _tmp_bu ;
-		scope bu	= new XTpl_Buffer(_tmp_bu);
+		scope bu	= new vBuffer(_tmp_bu);
 
 		XTpl_Var[] var_list	= new XTpl_Var[_tuple_len] ;
 		foreach(ref var; _vars) {

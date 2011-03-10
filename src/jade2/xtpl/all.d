@@ -1,16 +1,16 @@
 
-module xtpl.all ;
+module jade.xtpl.all ;
 
 package import 
 	jade.Jade ,
-	xtpl.Vars ,
-	xtpl.Template ,
-	xtpl.Plugin ,
-	xtpl.Buffer ;
+	jade.xtpl.Vars ,
+	jade.xtpl.Template ,
+	jade.xtpl.Plugin ;
 
 
 package import 
-	std.algorithm,
+	std.c.string,
+	core.stdc.stdio,
 	std.traits,
 	std.exception,
 	std.format,

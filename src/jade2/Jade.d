@@ -27,6 +27,10 @@ package import
 	std.traits,
 	std.stdio;
 
+version(JADE_XTPL) {
+	package import  jade.xtpl.all ;
+}
+
 
 public void Log( string file= __FILE__, int line = __LINE__, T...)(T t){//
 	std.stdio.write(file, ":", line, " ");

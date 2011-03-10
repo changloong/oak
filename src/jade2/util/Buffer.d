@@ -3,6 +3,8 @@ module jade.util.Buffer ;
 
 
 import 
+	std.range,
+	std.algorithm,
 	std.array,
 	std.conv,
 	std.string,
@@ -10,7 +12,7 @@ import
 	
 import std.c.string : memcpy;
 
-final class vBuffer {
+final class vBuffer  : OutputRange!(char)  {
         alias typeof(this)      This;
         static const MaxLen             = int.max >> 4 ;
 
@@ -236,7 +238,7 @@ final class vBuffer {
                                 if( _tmp is null || _tmp.length is 0 ) {
                                         continue ;
                                 }
-                                ptrdiff_t _pos        = indexOf( tmp, _tmp);
+                                ptrdiff_t _pos        = std.algorithm.indexOf( tmp, _tmp);
                                 if( _pos < pos && _pos > 0  ) {
                                         pos     = _pos ;
                                         index   = i ;
@@ -335,6 +337,20 @@ final class vBuffer {
 				opCall(inp[i]);
 			}
 		}
+	}
+	
+	final void put(char val){
+		expand(1) ;
+		data[pos] = val ;
+		pos	+=      1 ;
+	}
+	
+	final void put(string val){
+		opCall(val);
+	}
+	
+	final void put(char[] val){
+		opCall(val);
 	}
 }
 
