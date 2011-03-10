@@ -14,7 +14,7 @@ final class IfCode : Node {
 		cond	= tk.string_value ;
 	}
 	
-	
+	version(JADE_XTPL)
 	void asD(vBuffer bu){
 		bu("\nif (")(cond)(") { \n");
 		eachD(bu);

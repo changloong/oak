@@ -11,7 +11,7 @@ final class Each : Node {
 		obj	= tk.string_value ;
 	}
 	
-	
+	version(JADE_XTPL)
 	void asD(vBuffer bu){
 		bu("\nforeach(");
 		if( type !is null ) {

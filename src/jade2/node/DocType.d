@@ -28,6 +28,7 @@ final class DocType : Node {
 		type	= tk.string_value ;
 	}
 	
+	version(JADE_XTPL)
 	void asD(vBuffer bu) {
 		int i = 0 ;
 		foreach(int j, ref m; DocTypeMap.maps ) {

@@ -107,11 +107,14 @@ abstract class Node {
 		return firstChild is null ;
 	}
 	
+	
+	version(JADE_XTPL) 
 	void asD(vBuffer bu){
 		Log("`%s`",  cast(string) bu.slice);
 		assert(false, this.type);
 	}
 	
+	version(JADE_XTPL)
 	void eachD(vBuffer bu) {
 		for(Node n = firstChild ; n !is null ; n = n.next ) {
 			n.asD(bu);

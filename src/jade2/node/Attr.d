@@ -13,6 +13,7 @@ final class Attr : Node {
 		key	= tk.string_value ;
 	}
 	
+	version(JADE_XTPL) 
 	void asD(vBuffer bu){
 		bu(' ')(key)("=\"");
 		value.asD(bu);

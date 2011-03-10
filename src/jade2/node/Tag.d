@@ -28,6 +28,7 @@ final class Tag : Node {
 		isEmbed	= tk.bool_value ;
 	}
 	
+	version(JADE_XTPL)
 	void asD(vBuffer bu ) {
 		bu('<') ;
 		string _tag	= tag[0] is '*'  ? "div" : tag ;

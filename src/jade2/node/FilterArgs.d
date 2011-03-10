@@ -5,7 +5,6 @@ import jade.Jade ;
 
 final class FilterArgs : Node {
 	
-	
 	this() {
 		
 	}
