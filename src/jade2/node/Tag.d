@@ -39,16 +39,19 @@ final class Tag : Node {
 		}
 		
 		if( classes !is null ) {
-			bu(" class=\"") ;
-			assert(false) ;
+			classes.asD(bu);
 		}
 		
 		if( attrs !is null ) {
 			attrs.eachD(bu);
-			assert(false) ;
 		}
-		bu('>');
-		eachD(bu);
-		bu("</")(_tag)(">");
+		
+		if( empty ) {
+			bu(" />");
+		} else {
+			bu('>');
+			eachD(bu);
+			bu("</")(_tag)(">");
+		}
 	}
 }

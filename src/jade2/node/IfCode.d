@@ -13,4 +13,17 @@ final class IfCode : Node {
 		assert(tk !is null);
 		cond	= tk.string_value ;
 	}
+	
+	
+	void asD(vBuffer bu){
+		bu("\nif (")(cond)(") { \n");
+		eachD(bu);
+		if( elseif !is null ) {
+			elseif.asD(bu);
+		}
+		if( elseBlock !is null ) {
+			elseBlock.asD(bu);
+		}
+		bu("\n}\n");
+	}
 }

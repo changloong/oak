@@ -53,6 +53,8 @@ struct Compiler {
 		parser.parse ;
 		
 		parser.root.asD(_ret_bu);
+		
+		Log("`%s`",  cast(string) _ret_bu.slice);
 	}
 	
 }
