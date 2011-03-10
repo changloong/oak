@@ -42,8 +42,7 @@ struct Lexer {
 		formattedWrite(a, "(%s:%d) ", __FILE__, _line);
 		formattedWrite(a, fmt, t);
 		formattedWrite(a, " at file:`%s` line:%d", filename, ln);
-		stderr.write("\n- ", a.data, "\n");
-		_J.Exit(1);
+		throw new Exception(a.data);
 	}
 	
 	void parse() {

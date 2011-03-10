@@ -37,24 +37,21 @@ struct Compiler {
 		if( _str_bu is null ) {
 			_str_bu	= new vBuffer(1024, 1024) ;
 		}
+		
 		if( _ret_bu is null ) {
 			_ret_bu	= new vBuffer(1024, 1024) ;
 		}
 	}
 	
-	void compile() in {
+	Node compile() in {
 		assert(filename !is null);
 		assert(filedata !is null);
 	} body {
 		_str_bu.clear ;
-		_ret_bu.clear ;
 		pool.Clear ;
 		parser.Init(&this) ;
 		parser.parse ;
-		
-		parser.root.asD(_ret_bu);
-		
-		Log("`%s`",  cast(string) _ret_bu.slice);
+		return parser.root ; 
 	}
 	
 }

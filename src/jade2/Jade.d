@@ -33,14 +33,6 @@ public void Log( string file= __FILE__, int line = __LINE__, T...)(T t){//
 	std.stdio.writefln(t);
 }
 
-ptrdiff_t ctfe_indexOf(T)(T[] a, T v){
-	foreach(int i, _v ; a ){
-		if( _v == v ) {
-			return i ;
-		}
-	}
-	return - 1;
-}
 
 package string[] EnumMemberName(T)() if(is(T==enum)){
 	alias traits_allMembers!(T) names;
@@ -55,12 +47,14 @@ extern(C){
 	private void exit(ptrdiff_t);
 }
 
-struct _J {
-	static void Exit(ptrdiff_t ret){
-		exit(ret);
+ptrdiff_t ctfe_indexOf(T)(T[] a, T v){
+	foreach(int i, _v ; a ){
+		if( _v == v ) {
+			return i ;
+		}
 	}
+	return - 1;
 }
-
 
 uint ctfe_a2i(T) (T[] s, int radix = 10){
         uint value;

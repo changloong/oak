@@ -300,9 +300,9 @@ class XTpl {
 		
 		_tuple_bu("\n\t void render(Buffer ob){\n assert(ob !is null); ");
 	
-		jade.compile ;
+		auto root	= jade.compile ;
 		
-		_tuple_bu(jade.js);
+		
 		
 		_tuple_bu("\t}\n");
 		_tuple_bu("} \n");
