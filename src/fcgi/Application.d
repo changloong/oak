@@ -23,7 +23,7 @@ class FCGI_Application  {
 	}
 	
 	private void _run(T)(T cb) {
-		log("%d", _id) ;
+		log(" thread id = `%d` ", _id) ;
 		FCGI_Request req	= new FCGI_Request(_withExceptions, _id) ;
 		fd_type	fd	= -1 ;
 		while( true ) {

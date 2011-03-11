@@ -12,22 +12,26 @@ import
 	
 import std.c.string : memcpy;
 
-final class vBuffer  : OutputRange!(char)  {
-        alias typeof(this)      This;
-        static const MaxLen             = int.max >> 4 ;
+private alias OutputRange!(char) out_range ;
 
-        private {
+final class vBuffer  :  out_range {
+	        alias typeof(this)	This;
+        static enum MaxLen	= int.max >> 4 ;
+	
+	private {
                 ubyte[] data ;
-                size_t  pos , step ;
+                ptrdiff_t  pos , step ;
         }
-       
-        final this(size_t len, size_t step = 0) in {
-                assert( len > 0 );     
-        } out{
-                assert( data !is null ) ;
+	
+        final this(size_t len, size_t step = 1024 ) in {
+                assert( len >= 0 );
+                assert( step >= 0 );
+        } out {
                 assert( data.length >= pos ) ;
         } body {
-                this.data               = new ubyte[len] ;
+		if( len > 0 ) {
+             		this.data               = new ubyte[len] ;
+		}
                 this.step               = step ;
                 this.pos                = 0 ;
         }
@@ -39,58 +43,48 @@ final class vBuffer  : OutputRange!(char)  {
                 assert( data.length >= pos ) ;
         } body {
                 data            = cast(ubyte[]) tmp ;
-                this.step       = 0 ;
+                this.step       = tmp.length ;
                 this.pos        = 0 ;
         }
-       
+	
         final void clear()  in{
-                assert( data !is null ) ;
                 assert( data.length >= pos ) ;
         } out{
-                assert( data !is null ) ;
                 assert( data.length >= pos ) ;
         } body {
                 pos     = 0 ;
         }
-       
+	
         final size_t length () in{
-                assert( data !is null ) ;
                 assert( data.length >= pos ) ;
         } out{
-                assert( data !is null ) ;
                 assert( data.length >= pos ) ;
         } body  {
                 return pos ;
         }
        
         final ubyte[] slice ()  in{
-                assert( data !is null ) ;
                 assert( data.length >= pos ) ;
         } out{
-                assert( data !is null ) ;
                 assert( data.length >= pos ) ;
         } body {
                 return data [0 .. pos] ;
         }
        
         final ubyte[] space ()  in{
-                assert( data !is null ) ;
                 assert( data.length >= pos ) ;
         } out{
-                assert( data !is null ) ;
                 assert( data.length >= pos ) ;
         } body {
                 return data [pos..$] ;
         }
-       
-        final bool move(int _step)  in{
-                assert( data !is null ) ;
+	
+        final bool move(size_t _step)  in{
                 assert( data.length >= pos ) ;
         } out{
-                assert( data !is null ) ;
                 assert( data.length >= pos , to!string(pos) ~ " :" ~ to!string( data.length) ~ " :" ~ to!string( _step) ) ;
         } body {
-		ptrdiff_t _pos	= pos + _step ;
+		size_t _pos	= pos + _step ;
 		if( _pos < 0 ) {
 			return false ;
 		}
@@ -100,192 +94,70 @@ final class vBuffer  : OutputRange!(char)  {
 		pos	= _pos ;
 		return true ;
         }
-       
-        final private void expand (size_t size) in{
-                assert( data !is null ) ;
+	
+        final private void expand(string _file = __FILE__, ptrdiff_t _line = __LINE__ )(size_t size) in{
                 assert( data.length >= pos ) ;
+		assert( size < 1024 * 1024 * 1024 );
         } out{
-                assert( data !is null ) ;
                 assert( data.length >= pos ) ;
         } body {
-                ptrdiff_t len = data.length ;
+                size_t len = data.length ;
                 if( len - pos >= size ) {
                         return ;
                 }
                 assert(step > 0 );
                 while( len - pos < size ) {
                         len     +=      step ;
-                        assert( len < MaxLen ) ;
+			assert( len < MaxLen ) ;
                 }
                 data.length     = len ;
-        }
-       
-        final This putString(void[] tmp) in {
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ;
-        } out{
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ; 
-        } body{
-                if( tmp is null ) {
-                        return this ;
-                }
-                ptrdiff_t len = tmp.length ;
-                if( len > 0 ) {
-                        expand(len);
-                        memcpy( &data[pos], &tmp[0], len);
-                        pos     +=      len ;
-                }
-                return this ;
+		assert(len is  data.length );
         }
 	
-        final size_t append(void[] tmp) in {
-                assert( data !is null ) ;
+        final size_t append(string _file = __FILE__, ptrdiff_t _line = __LINE__ )(const void* buffer, size_t len) in {
                 assert( data.length >= pos ) ;
         } out{
-                assert( data !is null ) ;
                 assert( data.length >= pos ) ; 
         } body{
-                if( tmp is null ) {
+                if( buffer is null ) {
                         return 0 ;
                 }
-                ptrdiff_t len = tmp.length ;
                 if( len > 0 ) {
-                        expand(len);
-                        memcpy( &data[pos], &tmp[0], len);
+                        expand!(_file, _line)(len);
+                        memcpy( &data[pos], buffer, len);
                         pos     +=      len ;
                 }
                 return len ;
         }
-       
-        final private This putByte(T)(T t)  in{
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ;
-        } out{
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ;
-        } body {
-                static assert(T.sizeof is 1) ;
-                expand(1) ;
-                data[pos]       = t ;
-                pos     +=      1 ;
-                return this ;
-        }
-       
-        final private This putInteger(T)(T t)  in{
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ;
-        } out{
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ;
-        } body  {
-                static assert( isIntegral!(T)  ) ;
-                //char[66] tmp    = void;
-                string _tmp     =  to!string(t);
-                append( cast(void[]) _tmp) ;
-                return this ;
-        }
-
-        final private This putFloat(T)(T t) in{
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ;
-        } out{
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ;
-        } body  {
-                static assert( isFloatingPoint!(T) );
-                //char[66] tmp    = void;
-                string _tmp     = to!string(t);
-                append( cast(void[])  _tmp) ;
-                return this ;
-        }
-       
-        final private This putInt(T)(T t,  char[] fmt)  in{
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ;
-        } out{
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ;
-        } body {
-                static assert( isIntegral!(T)  || isPointer!(T)  ) ;
-               // char[66] tmp    = void;
-                string _tmp     = std.string.format (fmt, t) ;
-                append(cast(void[])_tmp) ;
-                return this ;
-        }
-       
-        final ubyte[] opSlice (size_t start, size_t end) in{
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ;
-        } out{
-                assert( data !is null ) ;
-                assert( data.length >= pos ) ;
-        } body {
-                assert (start <= pos);
-                return data [start .. end] ;
-        }
-       
-        final This replace(char[] tmp, char[][] from, char[][] to){
-                if( tmp is null || tmp.length is 0 ){
-                        return this ;
-                }
-                assert(from.length <= to.length ) ;
-
-                while( true ) {
-                        ptrdiff_t pos = tmp.length ;
-                        ptrdiff_t index       = 0 ;
-                        foreach(ptrdiff_t i, _tmp; from) {
-                                if( _tmp is null || _tmp.length is 0 ) {
-                                        continue ;
-                                }
-                                ptrdiff_t _pos        = std.algorithm.countUntil( tmp, _tmp);
-                                if( _pos < pos && _pos > 0  ) {
-                                        pos     = _pos ;
-                                        index   = i ;
-                                }
-                        }
-                        if( pos is  tmp.length ) {
-                                putString(tmp);
-                                break ;
-                        }
-                        putString(tmp[ 0 .. pos ] ) ;
-                        putString( to[index] ) ;
-
-                        tmp     = tmp[ pos + from[ index ] .length .. $] ;
-                       
-                }
-                return this ;
-        }
 	
-	final This opCall(string tmp){
-		putString(cast(char[]) tmp);
-		return this ;
+	final string toString(){
+		return cast(string) slice ;
 	}
 
-        alias length            readable ;
-        alias putString         opCall ;
-       
-        alias putByte!(char)    opCall ;
-
-        alias putInteger!(short)        opCall ;
-        alias putInteger!(ushort)       opCall ;
-        alias putInteger!(int)  opCall ;
-        alias putInteger!(uint) opCall ;
-        alias putInteger!(long) opCall ;
-        alias putInteger!(ulong)        opCall ;
-       
-        alias putFloat!(float)  opCall ;
-        alias putFloat!(double) opCall ;
-       
-        alias putInt!(void*)    opCall ;
-        alias putInt!(byte)     opCall ;
-        alias putInt!(ubyte)    opCall ;
-        alias putInt!(short)    opCall ;
-        alias putInt!(ushort)   opCall ;
-        alias putInt!(int)      opCall ;
-        alias putInt!(uint)     opCall ;
-        alias putInt!(long)     opCall ;
-        alias putInt!(ulong)    opCall ;
+	final This opCall(T_, string _file = __FILE__, ptrdiff_t _line = __LINE__ )(T_ val){
+		alias Unqual!(T_) T ;
+		static if( is(T==char) ) {
+			expand(1) ;
+			data[pos]       = val ;
+			pos     +=      1 ;
+		} else static if( is(T==wchar) || is(T==dchar) ) {
+			static assert(false);
+		} else static if( isNumeric!(T) ){
+			string _tmp = to!string(val) ;
+			append!(_file, _line)(_tmp.ptr, _tmp.length ) ;
+		} else static if( isSomeString!(T) ){
+			append!(_file, _line)(val.ptr, val.length * typeof(val[0]).sizeof ) ;
+		} else static if( isArray!(T) && ( is( typeof(val[0]) == ubyte) || is( typeof(val[0]) == void)  ) ){
+			append!(_file, _line)(val.ptr, val.length ) ;
+		} else {
+			static assert(false);
+		}
+		return this ;
+	}
+	
+	ptrdiff_t capability() {
+		return data.length ;
+	}
 	
 	final void put(char val){
 		expand(1) ;
@@ -299,10 +171,6 @@ final class vBuffer  : OutputRange!(char)  {
 	
 	final void put(char[] val){
 		opCall(val);
-	}
-	
-	final string toString(){
-		return cast(string) slice ;
 	}
 	
 	final void unstrip(string inp){

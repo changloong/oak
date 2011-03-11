@@ -18,9 +18,8 @@ html(lang=en)
         p please 
           a#login login
       // test 
-      ul
+      table(border=1)
         - each string key, string value in req.header
-          li ${key} = > ${value}
-      ol
-        - each string key, value in env
-          li ${key} = > ${value}
+          tr
+            th ${key} 
+            td ${value}

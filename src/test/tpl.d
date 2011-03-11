@@ -1,4 +1,5 @@
-//: \$dmd2 -J. \+..\jade\util\Buffer.d \+..\fcgi -O -inline -release -unittest
+//: \$dmd2 -J. \+..\jade\util\Buffer.d \+..\fcgi -O -inline -release
+// -debug -g -unittest
 
 module tpl2.test ;
 
@@ -181,9 +182,9 @@ class MyApp : FCGI_Application {
 		
 		tpl.assign!("page_title", __FILE__, __LINE__)( page_title );
 		
-		tpl.assign!("env", __FILE__, __LINE__)(environment.toAA);
+		// tpl.assign!("env", __FILE__, __LINE__)(environment.toAA);
 		
-		bu		= new vBuffer(1024, 1024) ;
+		bu		= new vBuffer(1024 * 32, 1024 * 512 ) ;
 		
 	}
 	
@@ -210,16 +211,22 @@ class MyApp : FCGI_Application {
 		
 		auto obj	= jade.compile(tpl);
 
-		obj.render(bu);
-		scope(exit){
+		for( int i =0; i < 1 ; i++) {
 			bu.clear;
+			assert(bu.length is 0);
+			obj.render(bu);
+			assert( bu.capability < 1024 * 1024 * 12 );
 		}
+		
 		sw.stop;
 		
 		stdout ("Content-type: text/html\r\n");
 		stdout ("RenderTime: ")(sw.peek.msecs)("ms\r\n");
+		stdout ("Content-Length: ")( bu.length)("\r\n");
 		stdout("\r\n");
 		stdout(bu.slice);
+		
+		bu.clear;
 		
 		return 0 ;
 	}

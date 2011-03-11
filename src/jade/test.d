@@ -9,7 +9,8 @@ import jade.Jade ;
 void main(string[] args ){
 	string file = `example.jade`;
 	auto data = cast(string) std.file.read(file);
-	int count = 1 ;
+	
+	int count = 40000 ;
         if( args.length > 1 ) {
                 count = ctfe_a2i( args[1] );
         }
