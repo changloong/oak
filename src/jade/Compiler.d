@@ -30,9 +30,6 @@ struct Compiler {
 	string		filename ;
 	asType		_astype ;
 	
-	void delegate(Each) check_each ;
-	void delegate(Var) check_var ;
-	
 	~this(){
 		pool.__dtor ;
 	}
@@ -49,16 +46,15 @@ struct Compiler {
 		if( _ret_bu is null ) {
 			_ret_bu	= new vBuffer(1024, 1024) ;
 		}
-		if( check_each is null ) {
-			check_each = &empty_check_each;
-		}
-		if( check_var is null ) {
-			check_var = &empty_check_var ;
-		}
 	}
 	
-	void empty_check_each(Each){}
-	void empty_check_var(Var){}
+	void check_each(Each node){
+		
+	}
+	
+	void check_var(Var var){
+		
+	}
 	
 	string compile() in {
 		assert(filename !is null);

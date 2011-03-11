@@ -12,11 +12,12 @@ final class Each : Node {
 	}
 	
 	void asD(Compiler* cc){
+		
+		
 		cc.asLine(this.ln);
+		cc.check_each(this);
 		cc.asCode("foreach(");
-		
-		
-		
+	
 		if( key !is null ){
 			if( type !is null ) {
 				cc.asCode(type).asCode(' ');
@@ -29,7 +30,6 @@ final class Each : Node {
 		}
 
 		cc.asCode(value);
-		
 		cc.asCode(';').asCode(obj).asCode(") { \n");
 		eachD(cc);
 		cc.asCode("}\n");

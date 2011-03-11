@@ -8,13 +8,6 @@ html(lang=en)
       | test  
       | multi line 
       | hehe
-      // test ' \n
-      ul
-        - each string key, string value in req.header
-          li ${key} = > ${value}
-      ol
-        - each string key, value in env
-          li ${key} = > ${value}
       p user.id = ${user.id}
       - if user.login
         p welcome 
@@ -24,3 +17,10 @@ html(lang=en)
       - else
         p please 
           a#login login
+      // test 
+      ul
+        - each string key, string value in req.header
+          li ${key} = > ${value}
+      ol
+        - each string key, value in env
+          li ${key} = > ${value}
