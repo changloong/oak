@@ -15,8 +15,8 @@ final class Attr : Node {
 	
 	version(JADE_XTPL) 
 	void asD(XTpl tpl){
-		tpl.asString(' ').asString(key).asString("=\"");
+		tpl.asString(" ").asString(key).asString("=\"");
 		value.asD(tpl);
-		tpl.asString('"');
+		tpl.asString("\"");
 	}
 }

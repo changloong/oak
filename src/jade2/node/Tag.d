@@ -30,7 +30,7 @@ final class Tag : Node {
 	
 	version(JADE_XTPL)
 	void asD(XTpl tpl) {
-		tpl.asString('<') ;
+		tpl.asString("<") ;
 		string _tag	= tag[0] is '*'  ? "div" : tag ;
 		tpl.asString(_tag);
 		bool isFindAttr = false ;
@@ -50,7 +50,7 @@ final class Tag : Node {
 		if( empty ) {
 			tpl.asString(" />");
 		} else {
-			tpl.asString('>');
+			tpl.asString(">");
 			eachD(tpl);
 			tpl.asString("</").asString(_tag).asString(">");
 		}

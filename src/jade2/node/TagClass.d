@@ -11,6 +11,6 @@ final class TagClass : Node {
 	
 	version(JADE_XTPL)
 	void asD(XTpl tpl){
-		tpl.asString(value).asString(' ');
+		tpl.asString(value).asString(" ");
 	}
 }

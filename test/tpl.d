@@ -136,7 +136,7 @@ void main() {
 	
 	
 	auto obj = jade.compile(tpl);
-	auto bu = new XTpl_Buffer(1024, 1024);
+	auto bu = new Buffer(1024, 1024);
 	
 	StopWatch sw;
 	sw.start;

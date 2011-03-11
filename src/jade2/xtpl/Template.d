@@ -323,6 +323,7 @@ class XTpl {
 		auto root	= jade.compile ;
 		_astype	= asType.None ;
 		root.asD(this);
+		FinishLastOut;
 		
 		
 		_tuple_bu("\t}\n");
@@ -343,7 +344,7 @@ class XTpl {
 	private void FinishLastOut(){
 		switch(_astype){
 			case asType.String:
-				_tuple_bu('"');
+				_tuple_bu("\");\n");
 			case asType.Var:
 				break;
 			case asType.None:
@@ -355,21 +356,15 @@ class XTpl {
 		}
 	}
 	
-	public typeof(this) asString(T)(T val, bool unstrip = true ){
+	public typeof(this) asString(string val, bool unstrip = true ){
 		if( _astype !is asType.String  ){
 			FinishLastOut() ;
-			if( _astype is asType.Code || _astype is asType.None ) {
+			if( _astype !is asType.String ) {
 				_tuple_bu("\n  ob(\"");
-			} else if( _astype is asType.Var ){
-				_tuple_bu("\n\t(\"");
 			}
 		}
 		if( unstrip ) {
-			static if( is(T==char) ) {
-				_tuple_bu(val);
-			} else {
-				_tuple_bu.unstrip(val);
-			}
+			_tuple_bu.unstrip(val);
 		} else {
 			_tuple_bu( val) ;
 		}
@@ -377,19 +372,14 @@ class XTpl {
 		return this ;
 	}
 	
-	public typeof(this) asVar(T)(T val, bool unstrip = false ){
+	public typeof(this) asVar(string val, bool unstrip = false ){
 		if( _astype !is asType.Var ) {
 			FinishLastOut ;
-			if( _astype is asType.Code || _astype is asType.None ) {
-				_tuple_bu("\n  ob(");
-			} else if( _astype is asType.String ){
-				_tuple_bu(")\n\t(");
-			}
 		}
 		if( unstrip ) {
-			_tuple_bu(val)(")") ;
+			_tuple_bu("ob(")(val)(");\n") ;
 		} else {
-			_tuple_bu(val)(")") ;
+			_tuple_bu("ob(")(val)(");\n") ;
 		}
 		_astype	=  asType.Var ;
 		return this ;
