@@ -306,8 +306,8 @@ final class vBuffer  : OutputRange!(char)  {
 	}
 	
 	final void unstrip(string inp){
-		int len = inp.length ;
-		for(int i = 0; i < len; i++){
+		ptrdiff_t len = inp.length ;
+		for(ptrdiff_t i = 0; i < len; i++){
 			if( inp[i] is '\\' ){
 				opCall("\\\\");
 			} else if( inp[i] is '\"' ){
@@ -323,8 +323,8 @@ final class vBuffer  : OutputRange!(char)  {
 	}
 
 	final void strip( string inp){
-		int len = inp.length ;
-		for(int i = 0; i < len; i++){
+		ptrdiff_t len = inp.length ;
+		for(ptrdiff_t i = 0; i < len; i++){
 			if( inp[i] is '\\' ){
 				i++;
 				if( i is len  ) {
