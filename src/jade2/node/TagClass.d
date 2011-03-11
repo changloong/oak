@@ -10,7 +10,7 @@ final class TagClass : Node {
 	}
 	
 	version(JADE_XTPL)
-	void asD(vBuffer bu){
-		bu(value)(' ');
+	void asD(XTpl tpl){
+		tpl.asString(value).asString(' ');
 	}
 }

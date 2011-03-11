@@ -29,30 +29,30 @@ final class Tag : Node {
 	}
 	
 	version(JADE_XTPL)
-	void asD(vBuffer bu ) {
-		bu('<') ;
+	void asD(XTpl tpl) {
+		tpl.asString('<') ;
 		string _tag	= tag[0] is '*'  ? "div" : tag ;
-		bu(_tag);
+		tpl.asString(_tag);
 		bool isFindAttr = false ;
 		
 		if( id !is null ) {
-			bu(" id=\"")(id)("\"") ;
+			tpl.asString(" id=\"").asString(id).asString("\"") ;
 		}
 		
 		if( classes !is null ) {
-			classes.asD(bu);
+			classes.asD(tpl);
 		}
 		
 		if( attrs !is null ) {
-			attrs.eachD(bu);
+			attrs.eachD(tpl);
 		}
 		
 		if( empty ) {
-			bu(" />");
+			tpl.asString(" />");
 		} else {
-			bu('>');
-			eachD(bu);
-			bu("</")(_tag)(">");
+			tpl.asString('>');
+			eachD(tpl);
+			tpl.asString("</").asString(_tag).asString(">");
 		}
 	}
 }

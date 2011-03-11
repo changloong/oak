@@ -12,19 +12,19 @@ final class Each : Node {
 	}
 	
 	version(JADE_XTPL)
-	void asD(vBuffer bu){
-		bu("\nforeach(");
+	void asD(XTpl tpl){
+		tpl.asCode("\nforeach(");
 		if( type !is null ) {
-			bu(type)(' ')(key)(',')(value);
+			tpl.asCode(type).asCode(' ').asCode(key).asCode(',').asCode(value);
 		} else if( key !is null ){
-			bu(key)(',')(value);
+			tpl.asCode(key).asCode(',').asCode(value);
 		} else {
-			bu(value);
+			tpl.asCode(value);
 		}
 		
-		bu(';')(obj)(") { \n");
+		tpl.asCode(';').asCode(obj).asCode(") { \n");
 		
-		eachD(bu);
-		bu("\n}\n");
+		eachD(tpl);
+		tpl.asCode("\n}\n");
 	}
 }

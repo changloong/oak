@@ -6,6 +6,17 @@ import
 
 pragma(lib, "pcre");
 
+
+private {
+	enum OutType {
+		None,
+		Code ,
+		String ,
+		Var ,
+	}
+}
+
+
 class XTpl {
 	static __gshared _tpl_protocol	= "tpl://" ;
 	static __gshared _OK_message	= cast(char[]) "tpl::ok" ;
@@ -299,7 +310,6 @@ class XTpl {
 		auto root	= jade.compile ;
 		
 		
-		
 		_tuple_bu("\t}\n");
 		_tuple_bu("} \n");
 		_tuple_bu("private alias xtpl_tuple_")(_name)(" _tpl_struct ;\n");
@@ -309,5 +319,17 @@ class XTpl {
 	
 	public string toString(){
 		return _name ;
+	}
+
+	public typeof(this) asString(T)(T t){
+		return this ;
+	}
+	
+	public typeof(this) asVar(T)(T t){
+		return this ;
+	}
+	
+	public typeof(this) asCode(T)(T t){
+		return this ;
 	}
 }

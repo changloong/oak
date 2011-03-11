@@ -3,23 +3,10 @@ module jade.Compiler ;
 
 import jade.Jade ;
 
-private {
-	
-	enum OutType {
-		None,
-		Code ,
-		String ,
-		Var ,
-	}
-
-}
-
-
 
 struct Compiler {
 	Pool		pool ;
 	vBuffer		_str_bu ;
-	vBuffer		_ret_bu ;
 	Parser		parser ;
 	string		filedata ;
 	string		filename ;
@@ -38,9 +25,6 @@ struct Compiler {
 			_str_bu	= new vBuffer(1024, 1024) ;
 		}
 		
-		if( _ret_bu is null ) {
-			_ret_bu	= new vBuffer(1024, 1024) ;
-		}
 	}
 	
 	Node compile() in {

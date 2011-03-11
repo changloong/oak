@@ -12,12 +12,12 @@ final class Comment : Node {
 	}
 	
 	version(JADE_XTPL)
-	void asD(vBuffer bu){
+	void asD(XTpl tpl){
 		if( isHide ) {
 			return ;
 		}
-		bu("<!-- ");
-		eachD(bu);
-		bu(" -->");
+		tpl.asString("<!-- ");
+		eachD(tpl);
+		tpl.asString(" -->");
 	}
 }

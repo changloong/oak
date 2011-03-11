@@ -12,10 +12,10 @@ final class InlineIf : Node {
 	}
 	
 	version(JADE_XTPL)
-	void asD(vBuffer bu){
-		bu("\nif (")(cond)("){\n");
-		eachD(bu);
-		bu("\n}\n");
+	void asD(XTpl tpl){
+		tpl.asCode("\nif (").asCode(cond).asCode("){\n");
+		eachD(tpl);
+		tpl.asCode("\n}\n");
 	}
 	
 }

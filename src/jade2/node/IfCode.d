@@ -15,15 +15,15 @@ final class IfCode : Node {
 	}
 	
 	version(JADE_XTPL)
-	void asD(vBuffer bu){
-		bu("\nif (")(cond)(") { \n");
-		eachD(bu);
+	void asD(XTpl tpl){
+		tpl.asCode("\nif (").asCode(cond).asCode(") { \n");
+		eachD(tpl);
 		if( elseif !is null ) {
-			elseif.asD(bu);
+			elseif.asD(tpl);
 		}
 		if( elseBlock !is null ) {
-			elseBlock.asD(bu);
+			elseBlock.asD(tpl);
 		}
-		bu("\n}\n");
+		tpl.asCode("\n}\n");
 	}
 }

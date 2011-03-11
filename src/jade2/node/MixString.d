@@ -6,7 +6,7 @@ import jade.Jade ;
 final class MixString : Node {
 	
 	version(JADE_XTPL)
-	void asD(vBuffer bu) {
-		eachD(bu);
+	void asD(XTpl tpl) {
+		eachD(tpl);
 	}
 }
