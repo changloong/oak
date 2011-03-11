@@ -947,19 +947,21 @@ struct Parser {
 		
 		tk	= peek ;
 		if( tk is null ) {
-			err("missing each key");
+			err("missing each key, tk is null");
 		}
 		// find each type
 		if( tk.ty is Tok.Type.Each_Type ) {
+			assert( tk.string_value !is null ) ;
 			node.type	= tk.string_value ;
 			next();
 			tk	= peek ;
 		}
 		if( tk is null ) {
-			err("missing each key");
+			err("missing each key, tk is null");
 		}
 		// find each key
 		if( tk.ty is Tok.Type.Each_Key ) {
+			assert( tk.string_value !is null ) ;
 			node.key	= tk.string_value ;
 			next();
 			tk	= peek ;
@@ -968,23 +970,25 @@ struct Parser {
 		
 		// find each value type
 		if( tk.ty is Tok.Type.Each_Type ) {
+			assert( tk.string_value !is null ) ;
 			node.value_type  = tk.string_value ;
 			next();
 			tk	= peek ;
 		}
 		
 		if( tk is null ) {
-			err("missing each value");
+			err("missing each value, tk is null");
 		}
 		// find each value
 		if( tk.ty is Tok.Type.Each_Value ) {
+			assert( tk.string_value !is null ) ;
 			node.value	= tk.string_value ;
 			next();
 			tk	= peek ;
 		}
 		
 		if( node.value is null ) {
-			err("missing each value");
+			err("missing each value,  `%s`", tk.type() );
 		}
 		
 		// find all child 

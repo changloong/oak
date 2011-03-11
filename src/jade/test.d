@@ -10,7 +10,7 @@ void main(string[] args ){
 	string file = `example.jade`;
 	auto data = cast(string) std.file.read(file);
 	
-	int count = 40000 ;
+	int count = 1 ;
         if( args.length > 1 ) {
                 count = ctfe_a2i( args[1] );
         }
