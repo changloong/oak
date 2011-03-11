@@ -164,19 +164,19 @@ class XTpl {
 			}
 		}
 		
-		if( std.algorithm.indexOf(buildin_type , cast(string) var) >= 0 ){
+		if( std.algorithm.countUntil(buildin_type , cast(string) var) >= 0 ){
 			tpl_error("var name `%s` on loc:(%s) is a buildin type", var, loc );
 		}
 		
-		if( std.algorithm.indexOf(inner_type, cast(string) var) >= 0 ){
+		if( std.algorithm.countUntil(inner_type, cast(string) var) >= 0 ){
 			tpl_error("var name `%s` on loc:(%s) is a type", var, loc );
 		}
 		
-		if( std.algorithm.indexOf(inner_vars, cast(string) var) >= 0 ){
+		if( std.algorithm.countUntil(inner_vars, cast(string) var) >= 0 ){
 			tpl_error("var name `%s` on loc:(%s) is already been used as inner var, please use other name", var, loc );
 		}
 		
-		if( std.algorithm.indexOf(key_words, cast(string) var) >= 0 ){
+		if( std.algorithm.countUntil(key_words, cast(string) var) >= 0 ){
 			tpl_error("var name `%s` on loc:(%s) is a key word, please use other name", var, loc );
 		}
 		

@@ -238,7 +238,7 @@ final class vBuffer  : OutputRange!(char)  {
                                 if( _tmp is null || _tmp.length is 0 ) {
                                         continue ;
                                 }
-                                ptrdiff_t _pos        = std.algorithm.indexOf( tmp, _tmp);
+                                ptrdiff_t _pos        = std.algorithm.countUntil( tmp, _tmp);
                                 if( _pos < pos && _pos > 0  ) {
                                         pos     = _pos ;
                                         index   = i ;
