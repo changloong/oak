@@ -466,4 +466,17 @@ struct HTTP_Header {
 	string key(uint i)(){
 		return HTTP_Header.tupleof[i].stringof[ HTTP_Header.stringof.length + 3 .. $];
 	}
+	
+	int opApply(scope int delegate(ref string, ref string) dg){
+		int result;
+		foreach( int i , _field; this.tupleof ) {
+			const _name = HTTP_Header.tupleof[i].stringof[ HTTP_Header.stringof.length + 3 .. $];
+			result	= dg(_name, this.tupleof[i] ) ;
+			if( result ) {
+				goto L2 ;
+			}
+		}
+		L2:
+		return result;
+	}
 }

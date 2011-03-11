@@ -1,4 +1,4 @@
-//: \$dmd2 -J. \+..\jade\util\Buffer.d \+..\fcgi -O -inline -release
+//: \$dmd2 -J. \+..\jade\util\Buffer.d \+..\fcgi -O -inline -release -unittest
 
 module tpl2.test ;
 
@@ -83,19 +83,43 @@ class Tpl(string TplName, string _class_file = __FILE__, size_t _class_line = __
 		writefln("S.opDispatch('%s', %s)", s, i);
 	}
 	
-	static string type_of(T)() if( !isAssociativeArray!(T) ) {
-		return T.stringof ;
-	}
-	
 	static string type_of(T : V[K], K, V)() if( isAssociativeArray!(T) ) {
 		return type_of!(K) ~ "[" ~ type_of!(V) ~ "]" ; 
 	}
 	
+	static string type_of(T)() if( !isPointer!(T) && !isAssociativeArray!(T) ) {
+		return T.stringof ;
+	}
+	
+	static string type_of(T)() if( isPointer!(T) ) {
+		return type_of(pointerTarget!(T)) ~ "*" ;
+	}
+	
+	/*
+	static template each_type(T : V[K], K, V) if( isAssociativeArray!(T) ) {
+		alias K Key ;
+		alias V Value ;
+	}
+	*/
 
 	typeof(this) assign(string name, string __file = __FILE__, size_t __line = __LINE__, T)(T t){
 		static const string _method_loc =  name ~ ":"  ~ _file[0..$] ~ "#" ~ ctfe_i2a(_line) ~ "," ~ __file[0..$] ~ "#" ~ ctfe_i2a(__line) ;
 		
 		enum _type = type_of!(T) ;
+		
+		static if( isArray!(T) ) {
+			// ForeachType
+		} else	static if( isPointer!(T) && isArray!( pointerTarget!(T) ) ) {
+			
+		} else static if( isAssociativeArray!(T) ) {
+			
+		} else static if( isPointer!(T) && isAssociativeArray!( pointerTarget!(T) )  ) {
+			
+		} else static if( isIterable!(T)  ) {
+			static assert( is(T==class) || is(T==struct), T.stringof );
+			// opApply
+			//__traits(getMember, T, )
+		}
 		
 		static const tpl_var_id_offset_size	= import( "tpl://assign::" ~ _class_loc ~ "::"  ~ ( _method_loc ~ ":" ~  _type ~ ":" ~ typeid(T).stringof[1..$] ~ ":" ~ T.sizeof.stringof ) );
 		static const list = ctfe_split(tpl_var_id_offset_size, ':');
@@ -151,15 +175,16 @@ class MyApp : FCGI_Application {
 		tpl	= new MyTpl ;
 		u	= new User ;
 		
+		static assert(isPointer!( typeof(&u) ));
+		
 		tpl.assign!("user", __FILE__, __LINE__)(u);
 		
 		tpl.assign!("page_title", __FILE__, __LINE__)( page_title );
 		
-		auto env	= environment.toAA ;
-		tpl.assign!("env", __FILE__, __LINE__)(env);
+		tpl.assign!("env", __FILE__, __LINE__)(environment.toAA);
 		
-		bu		= new vBuffer(1024, 1024);
-
+		bu		= new vBuffer(1024, 1024) ;
+		
 	}
 	
 	int run(FCGI_Request req) {
@@ -170,12 +195,16 @@ class MyApp : FCGI_Application {
 		auto stdout = req.stdout ;
 		assert( stdout !is null);
 		
+		StopWatch sw;
+		sw.start;
 		
 		u.login	= !u.login ;
 		u.id ++ ;
 		if( u.id % 3 is 0 ) {
 			u.admin	= !u.admin ;
 		}
+		
+		tpl.assign!"req"( req );
 		
 		mixin Tpl_Jade!("./example.jade", typeof(tpl) , __FILE__, __LINE__) jade ;
 		
@@ -185,8 +214,10 @@ class MyApp : FCGI_Application {
 		scope(exit){
 			bu.clear;
 		}
+		sw.stop;
 		
 		stdout ("Content-type: text/html\r\n");
+		stdout ("RenderTime: ")(sw.peek.msecs)("ms\r\n");
 		stdout("\r\n");
 		stdout(bu.slice);
 		
@@ -197,5 +228,39 @@ class MyApp : FCGI_Application {
 
 void main() {
 	auto conn	= new shared(FCGI_Connection)(null, "1983" );
-	FCGI_Application.loop!MyApp(conn, true, 2) ;
+	FCGI_Application.loop!MyApp(conn, true, 1) ;
+}
+
+unittest{
+
+	int[] test_i ;
+	static assert( isIterable!( typeof(test_i) ));
+	static assert( !isIterable!( typeof(&test_i) ));
+	int[int] test_aa ;
+	static assert( isIterable!( typeof(test_aa) ));
+	auto test_aa_ptr = &test_aa;
+	static assert( !isIterable!( typeof(test_aa_ptr) ));
+	
+	struct test_b {
+		alias int delegate(ref int)  dg_ty;
+		int opApply(dg_ty  dg) {
+			return 0;
+		}
+	}
+	test_b b;
+	static assert( isIterable!( typeof(b) ));
+	auto b_ptr = &b ;
+	static assert( !isIterable!( typeof( b_ptr ) ) );
+	
+	class test_c {
+		alias int delegate(ref int)  dg_ty;
+		int opApply(dg_ty  dg) {
+			return 0;
+		}
+	}
+	test_c c = new test_c ;
+	static assert( isIterable!( typeof(c) ));
+	auto c_ptr = &c ;
+	static assert( !isIterable!( typeof( c_ptr ) ) ) ;
+
 }

@@ -4,7 +4,7 @@ module jade.node.Each ;
 import jade.Jade ;
 
 final class Each : Node {
-	string type, key, value, obj ;
+	string type, key, value, value_type, obj ;
 	
 	this(Tok* tk){
 		assert(tk !is null);
@@ -15,14 +15,20 @@ final class Each : Node {
 		cc.asLine(this.ln);
 		cc.asCode("foreach(");
 		
-		if( type !is null ) {
-			cc.asCode(type).asCode(' ').asCode(key).asCode(',').asCode(value);
-		} else if( key !is null ){
-			cc.asCode(key).asCode(',').asCode(value);
-		} else {
-			cc.asCode(value);
-		}
 		
+		
+		if( key !is null ){
+			if( type !is null ) {
+				cc.asCode(type).asCode(' ');
+			}
+			cc.asCode(key).asCode(',');
+		} 
+
+		if( value_type !is null ) {
+			cc.asCode(value_type).asCode(' ');
+		}
+
+		cc.asCode(value);
 		
 		cc.asCode(';').asCode(obj).asCode(") { \n");
 		eachD(cc);

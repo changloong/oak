@@ -1051,7 +1051,7 @@ struct Lexer {
 				}
 				skip_space ;
 			} else {
-				//no _each_type
+				//no _each_type	
 				_each_key	= _each_type ;
 				_each_type	= null ;
 			}
@@ -1062,6 +1062,26 @@ struct Lexer {
 			// skip ,
 			_ptr++;
 			skip_space ;
+			
+			// find _each_value_type
+			string _each_value_type = null ;
+	
+			for(auto __ptr = _ptr;  __ptr <= _end && __ptr[0] !is '\r' && __ptr[0] !is '\n'; __ptr++){
+				if( __ptr[0] is '\t' || __ptr[0] is ' ') {
+					auto __ptr2 = __ptr ;
+					while( __ptr2 <= _end && __ptr2[0] !is '\r' && __ptr2[0] !is '\n' ) {
+						if( __ptr2[0] !is '\t' && __ptr2[0] !is ' ' ) {
+							break;
+						}
+						__ptr2++;
+					}
+					if( __ptr2 - _each_line.ptr !is _each_in ) {
+						_each_value_type	= cast(string) _ptr[ 0 .. __ptr - _ptr ] ;
+						_ptr	= __ptr2 ;
+					}
+					break ;
+				}
+			}
 			
 			// find _each_value 
 			string _each_value = skip_identifier ;
@@ -1092,6 +1112,10 @@ struct Lexer {
 				NewTok(Tok.Type.Each_Type, _each_type);
 			}
 			NewTok(Tok.Type.Each_Key, _each_key);
+			if( _each_value_type !is null ) {
+				NewTok(Tok.Type.Each_Type, _each_type);
+			}
+			
 			NewTok(Tok.Type.Each_Value, _each_value);
 			
 			// Log("`%s` `%s` , `%s` in `%s`", _each_type, _each_key, _each_value, _each_obj);

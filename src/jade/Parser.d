@@ -965,6 +965,14 @@ struct Parser {
 			tk	= peek ;
 		}
 		
+		
+		// find each value type
+		if( tk.ty is Tok.Type.Each_Type ) {
+			node.value_type  = tk.string_value ;
+			next();
+			tk	= peek ;
+		}
+		
 		if( tk is null ) {
 			err("missing each value");
 		}
