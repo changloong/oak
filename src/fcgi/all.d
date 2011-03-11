@@ -22,6 +22,8 @@ package import
 	std.traits,
 	std.stdio;
 
+pragma(lib, "fcgi");
+pragma(lib, "ws2_32");
 
 class LogSyncClass{}
 	

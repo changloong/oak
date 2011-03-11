@@ -17,6 +17,11 @@ class FCGI_Application  {
 		_id	= id ;
 	}
 	
+	int run(FCGI_Request req) {
+		
+		return 0 ;
+	}
+	
 	private void _run(T)(T cb) {
 		log("%d", _id) ;
 		FCGI_Request req	= new FCGI_Request(_withExceptions, _id) ;
@@ -55,10 +60,20 @@ class FCGI_Application  {
 	}
 	
 	private static void _Run_Enter(alias T)() {
-		Thread _td	= Thread.getThis ;
-		size_t  thread_id	= to!int( _td.name ) ;
-		FCGI_Application app	= new FCGI_Application(thread_id);
-		app._run(&T);
+		static if( is(T==class) ) {
+			static assert(  BaseClassesTuple!(T).length > 0 && is( BaseClassesTuple!(T)[0] == FCGI_Application) );
+				
+			Thread _td		= Thread.getThis ;
+			size_t  thread_id	= to!int( _td.name ) ;
+			auto app	= new T(thread_id);
+			app._run(&T.run);
+			
+		} else {
+			Thread _td		= Thread.getThis ;
+			size_t  thread_id	= to!int( _td.name ) ;
+			FCGI_Application app	= new FCGI_Application(thread_id);
+			app._run(&T);
+		}
 	}
 	
 	public static int loop(alias T)(shared(FCGI_Connection) conn, bool withExceptions = true, ubyte initialThreads = 1) {
@@ -69,6 +84,7 @@ class FCGI_Application  {
 		}
 		assert(!_app_conn.isCGI);
 		_withExceptions	= withExceptions ;
+
 		alias _Run_Enter!(T) _RunFn ;
 		synchronized (_app_conn) {
 			_app_threads	= new Thread[ initialThreads] ;
@@ -81,6 +97,7 @@ class FCGI_Application  {
 				_td.join ;
 			}
 		}
+	
 		return 0 ;
 	}
 }

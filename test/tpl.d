@@ -1,8 +1,8 @@
-//: \$dmd2 -J. \+..\src\jade2\util\Buffer.d -O -inline -release
+//: \$dmd2 -J. \+..\src\jade2\util\Buffer.d -O -inline -release \+..\src\fcgi
 
 module tpl2.test ;
 
-import std.stdio, std.conv, std.traits, jade.util.Buffer , std.datetime ;
+import std.stdio, std.conv, std.traits, jade.util.Buffer , std.datetime,  fcgi4d.all ;
 
 
 alias vBuffer Buffer;
@@ -123,33 +123,63 @@ class User {
 	string 	name = "Chang Long" ;
 }
 
-void main() {
 
-	auto tpl = new Tpl!("UserList", __FILE__, __LINE__) ;
+class MyApp : FCGI_Application {
+	alias Tpl!("UserList", __FILE__, __LINE__) MyTpl ;
 	
-	auto u = new User ;
-	tpl.assign!("user", __FILE__, __LINE__)(u);
+	MyTpl	tpl ;
+	User	u ;
+	string	page_title	= "test page"[] ;
+	vBuffer bu ;
+	void delegate(vBuffer ob) render;
 	
-	tpl.assign!("page_title", __FILE__, __LINE__)( "test page"[] );
-	
-	mixin Tpl_Jade!("./example.jade", typeof(tpl) , __FILE__, __LINE__) jade ;
-	
-	
-	auto obj = jade.compile(tpl);
-	auto bu = new Buffer(1024, 1024);
-	
-	StopWatch sw;
-	sw.start;
-	
-	for( int i = 0; i < 100_0000 ; i++ ) {
-		bu.clear;
-		u.login	= !u.login ;
-		if( i %3 ) u.admin	= ! u.admin ;
-		obj.render(bu);
-		if( i is 0 ) {
-			writefln("%s", bu);
-		}
+	public this(size_t id) {
+		super(id) ;
+		
+		tpl	= new MyTpl ;
+		u	= new User ;
+		
+		tpl.assign!("user", __FILE__, __LINE__)(u);
+		
+		tpl.assign!("page_title", __FILE__, __LINE__)( page_title );
+		
+		mixin Tpl_Jade!("./example.jade", typeof(tpl) , __FILE__, __LINE__) jade ;
+		
+		auto obj	= jade.compile(tpl);
+		render		= &obj.render;
+		
+		bu		= new Buffer(1024, 1024);
+		
+		log("new MyApp");
 	}
 	
-	writefln("user %d ms ", sw.peek.msecs);
+	int run(FCGI_Request req) {
+		log("new req");
+		assert( render !is null);
+		assert( render.ptr !is null);
+		assert( render.funcptr !is null);
+		assert( bu !is null);
+		
+		assert( req !is null);
+		auto stdout = req.stdout ;
+		assert( stdout !is null);
+		
+		bu.clear ;
+		//render(bu);
+		assert(false);
+		
+		stdout ("Content-type: text/html\r\n");
+		stdout("\r\n");
+		//stdout(bu.slice);
+		
+		stdout("123");
+		
+		return 0 ;
+	}
+}
+
+
+void main() {
+	auto conn	= new shared(FCGI_Connection)(null, "1983" );
+	FCGI_Application.loop!MyApp(conn, true, 3) ;
 }
