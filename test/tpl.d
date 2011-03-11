@@ -1,4 +1,4 @@
-//: \$dmd2 -J. \+..\src\jade2\util\Buffer.d -O -inline -release \+..\src\fcgi
+//: \$dmd2 -J. \+..\src\jade2\util\Buffer.d \+..\src\fcgi -debug -g
 
 module tpl2.test ;
 
@@ -104,7 +104,7 @@ template Tpl_Jade(string name, T, string _file = __FILE__, size_t _line = _LINE_
 
 	static const string render_arg = "tpl://render::" ~ T._class_loc ~ "::"  ~ name ~ ":"  ~ T._file[0..$] ~ "#" ~ ctfe_i2a(T._line) ~ "," ~ _file[0..$] ~ "#" ~ ctfe_i2a(_line)  ;
 	static const string render_src = import( render_arg ) ;
-	pragma(msg, render_src) ;
+	// pragma(msg, render_src) ;
 	
 	mixin(render_src) ;
 	
@@ -131,7 +131,8 @@ class MyApp : FCGI_Application {
 	User	u ;
 	string	page_title	= "test page"[] ;
 	vBuffer bu ;
-	void delegate(vBuffer ob) render;
+	void delegate(vBuffer ob) render ;
+	
 	
 	public this(size_t id) {
 		super(id) ;
@@ -148,13 +149,12 @@ class MyApp : FCGI_Application {
 		auto obj	= jade.compile(tpl);
 		render		= &obj.render;
 		
-		bu		= new Buffer(1024, 1024);
-		
-		log("new MyApp");
+		bu		= new vBuffer(1024, 1024);
+
 	}
 	
 	int run(FCGI_Request req) {
-		log("new req");
+	
 		assert( render !is null);
 		assert( render.ptr !is null);
 		assert( render.funcptr !is null);
@@ -164,15 +164,21 @@ class MyApp : FCGI_Application {
 		auto stdout = req.stdout ;
 		assert( stdout !is null);
 		
-		bu.clear ;
-		//render(bu);
-		assert(false);
+		
+		u.login	= !u.login ;
+		u.id ++ ;
+		if( u.id % 3 is 0 ) {
+			u.admin	= !u.admin ;
+		}
+		
+		render(bu);
+		scope(exit){
+			bu.clear;
+		}
 		
 		stdout ("Content-type: text/html\r\n");
 		stdout("\r\n");
-		//stdout(bu.slice);
-		
-		stdout("123");
+		stdout(bu.slice);
 		
 		return 0 ;
 	}
@@ -181,5 +187,5 @@ class MyApp : FCGI_Application {
 
 void main() {
 	auto conn	= new shared(FCGI_Connection)(null, "1983" );
-	FCGI_Application.loop!MyApp(conn, true, 3) ;
+	FCGI_Application.loop!MyApp(conn, true, 2) ;
 }

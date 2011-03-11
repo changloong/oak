@@ -66,7 +66,7 @@ class FCGI_Application  {
 			Thread _td		= Thread.getThis ;
 			size_t  thread_id	= to!int( _td.name ) ;
 			auto app	= new T(thread_id);
-			app._run(&T.run);
+			app._run(&app.run);
 			
 		} else {
 			Thread _td		= Thread.getThis ;

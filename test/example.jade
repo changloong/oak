@@ -5,10 +5,11 @@ html(lang=en)
     title ${page_title}
   body
     #user_list.test1
-      | test div 
+      | test  
       | multi line 
       | hehe
       // test ' \n
+      p user.id = ${user.id}
       - if user.login
         p welcome 
           a#member.profile(href=/profile/${user.id}/, target=blank) ${user.name}

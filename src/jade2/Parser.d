@@ -281,7 +281,7 @@ struct Parser {
 			}
 			switch( tk.ty ) {
 				case Tok.Type.Id:
-					node.tag = tk.string_value ;
+					node.id = tk.string_value ;
 					next();
 					break ;
 					

@@ -24,7 +24,14 @@ final class Tag : Node {
 	Attrs		attrs ;
 	
 	this(Tok* tk) {
-		tag	= tk.string_value ;
+		if( tk.ty is Tok.Type.Tag ) {
+			tag	= tk.string_value ;
+		} else if(tk.ty is Tok.Type.Id ){
+			tag	= "*" ;
+			id	= tk.string_value ;
+		}else if(tk.ty is Tok.Type.Class ){
+			throw new Exception("Error");
+		}
 		isEmbed	= tk.bool_value ;
 	}
 	
