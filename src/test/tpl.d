@@ -2,7 +2,7 @@
 
 module tpl2.test ;
 
-import std.stdio, std.conv, std.traits, jade.util.Buffer , std.datetime,  fcgi4d.all ;
+import std.stdio, std.conv, std.traits, jade.util.Buffer , std.datetime,  fcgi4d.all ,  std.process ;
 
 
 alias vBuffer Buffer;
@@ -82,11 +82,22 @@ class Tpl(string TplName, string _class_file = __FILE__, size_t _class_line = __
 	void opDispatch(string s, T)(T i) {
 		writefln("S.opDispatch('%s', %s)", s, i);
 	}
+	
+	static string type_of(T)() if( !isAssociativeArray!(T) ) {
+		return T.stringof ;
+	}
+	
+	static string type_of(T : V[K], K, V)() if( isAssociativeArray!(T) ) {
+		return type_of!(K) ~ "[" ~ type_of!(V) ~ "]" ; 
+	}
+	
 
 	typeof(this) assign(string name, string __file = __FILE__, size_t __line = __LINE__, T)(T t){
 		static const string _method_loc =  name ~ ":"  ~ _file[0..$] ~ "#" ~ ctfe_i2a(_line) ~ "," ~ __file[0..$] ~ "#" ~ ctfe_i2a(__line) ;
 		
-		static const tpl_var_id_offset_size	= import( "tpl://assign::" ~ _class_loc ~ "::"  ~ ( _method_loc ~ ":" ~  T.stringof[0..$] ~ ":" ~ typeid(T).stringof[1..$] ~ ":" ~ T.sizeof.stringof ) );
+		enum _type = type_of!(T) ;
+		
+		static const tpl_var_id_offset_size	= import( "tpl://assign::" ~ _class_loc ~ "::"  ~ ( _method_loc ~ ":" ~  _type ~ ":" ~ typeid(T).stringof[1..$] ~ ":" ~ T.sizeof.stringof ) );
 		static const list = ctfe_split(tpl_var_id_offset_size, ':');
 		static assert(list.length is 5);
 		static const id = ctfe_a2i(list[2]);
@@ -95,6 +106,7 @@ class Tpl(string TplName, string _class_file = __FILE__, size_t _class_line = __
 		// pragma(msg, tpl_var_id_offset_size);
 		assert( _tpl_tuple.length > offset + size );
 		memcpy( &_tpl_tuple[offset  ], &t, size  );
+		
 		return this ;
 	}
 
@@ -131,7 +143,6 @@ class MyApp : FCGI_Application {
 	User	u ;
 	string	page_title	= "test page"[] ;
 	vBuffer bu ;
-	void delegate(vBuffer ob) render ;
 	
 	
 	public this(size_t id) {
@@ -144,10 +155,8 @@ class MyApp : FCGI_Application {
 		
 		tpl.assign!("page_title", __FILE__, __LINE__)( page_title );
 		
-		mixin Tpl_Jade!("./example.jade", typeof(tpl) , __FILE__, __LINE__) jade ;
-		
-		auto obj	= jade.compile(tpl);
-		render		= &obj.render;
+		auto env	= environment.toAA ;
+		tpl.assign!("env", __FILE__, __LINE__)(env);
 		
 		bu		= new vBuffer(1024, 1024);
 
@@ -155,9 +164,6 @@ class MyApp : FCGI_Application {
 	
 	int run(FCGI_Request req) {
 	
-		assert( render !is null);
-		assert( render.ptr !is null);
-		assert( render.funcptr !is null);
 		assert( bu !is null);
 		
 		assert( req !is null);
@@ -171,7 +177,11 @@ class MyApp : FCGI_Application {
 			u.admin	= !u.admin ;
 		}
 		
-		render(bu);
+		mixin Tpl_Jade!("./example.jade", typeof(tpl) , __FILE__, __LINE__) jade ;
+		
+		auto obj	= jade.compile(tpl);
+
+		obj.render(bu);
 		scope(exit){
 			bu.clear;
 		}

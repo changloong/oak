@@ -9,10 +9,13 @@ html(lang=en)
       | multi line 
       | hehe
       // test ' \n
+      ul
+      - each string key, value in env
+        li ${key} = > ${value}
       p user.id = ${user.id}
       - if user.login
         p welcome 
-          a#member.profile(href=/profile/${user.id}/, target=blank) ${user.name}
+          a#member.profile:(href=/profile/${user.id}/, target=blank) span.red1 ${user.name}
       - else if user.admin
         p admin controll panel
       - else
