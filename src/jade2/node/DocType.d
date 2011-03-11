@@ -28,8 +28,7 @@ final class DocType : Node {
 		type	= tk.string_value ;
 	}
 	
-	version(JADE_XTPL)
-	void asD(XTpl tpl) {
+	void asD(Compiler* cc) {
 		int i = 0 ;
 		foreach(int j, ref m; DocTypeMap.maps ) {
 			if( m.key == type ) {
@@ -37,6 +36,6 @@ final class DocType : Node {
 				break ;
 			}
 		}
-		tpl.asString( DocTypeMap.maps[i].val ) ;
+		cc.asString( DocTypeMap.maps[i].val ) ;
 	}
 }

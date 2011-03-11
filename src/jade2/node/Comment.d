@@ -11,13 +11,12 @@ final class Comment : Node {
 		isHide	= tk.bool_value ;
 	}
 	
-	version(JADE_XTPL)
-	void asD(XTpl tpl){
+	void asD(Compiler* cc){
 		if( isHide ) {
 			return ;
 		}
-		tpl.asString("<!-- ");
-		eachD(tpl);
-		tpl.asString(" -->");
+		cc.asString("<!-- ");
+		eachD(cc);
+		cc.asString(" -->");
 	}
 }

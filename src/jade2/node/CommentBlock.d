@@ -10,8 +10,7 @@ final class CommentBlock : Node {
 		isHide	= tk.bool_value ;
 	}
 	
-	version(JADE_XTPL)
-	void asD(XTpl tpl) {
+	void asD(Compiler* cc) {
 		
 	}
 }

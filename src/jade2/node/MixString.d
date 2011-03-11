@@ -5,8 +5,7 @@ import jade.Jade ;
 
 final class MixString : Node {
 	
-	version(JADE_XTPL)
-	void asD(XTpl tpl) {
-		eachD(tpl);
+	void asD(Compiler* cc) {
+		eachD(cc);
 	}
 }

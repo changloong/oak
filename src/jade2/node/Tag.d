@@ -24,42 +24,35 @@ final class Tag : Node {
 	Attrs		attrs ;
 	
 	this(Tok* tk) {
-		if( tk.ty is Tok.Type.Tag ) {
-			tag	= tk.string_value ;
-		} else if(tk.ty is Tok.Type.Id ){
-			tag	= "*" ;
-			id	= tk.string_value ;
-		}else if(tk.ty is Tok.Type.Class ){
-			throw new Exception("Error");
-		}
+		assert(tk.ty is Tok.Type.Tag);
+		tag	= tk.string_value ;
 		isEmbed	= tk.bool_value ;
 	}
 	
-	version(JADE_XTPL)
-	void asD(XTpl tpl) {
-		tpl.asString("<") ;
+	void asD(Compiler* cc) {
+		cc.asString("<") ;
 		string _tag	= tag[0] is '*'  ? "div" : tag ;
-		tpl.asString(_tag);
+		cc.asString(_tag);
 		bool isFindAttr = false ;
 		
 		if( id !is null ) {
-			tpl.asString(" id=\"").asString(id).asString("\"") ;
+			cc.asString(" id=\"").asString(id).asString("\"") ;
 		}
 		
 		if( classes !is null ) {
-			classes.asD(tpl);
+			classes.asD(cc);
 		}
 		
 		if( attrs !is null ) {
-			attrs.eachD(tpl);
+			attrs.eachD(cc);
 		}
 		
 		if( empty ) {
-			tpl.asString(" />");
+			cc.asString(" />");
 		} else {
-			tpl.asString(">");
-			eachD(tpl);
-			tpl.asString("</").asString(_tag).asString(">");
+			cc.asString(">");
+			eachD(cc);
+			cc.asString("</").asString(_tag).asString(">");
 		}
 	}
 }

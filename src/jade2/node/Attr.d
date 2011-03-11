@@ -13,10 +13,9 @@ final class Attr : Node {
 		key	= tk.string_value ;
 	}
 	
-	version(JADE_XTPL) 
-	void asD(XTpl tpl){
-		tpl.asString(" ").asString(key).asString("=\"");
-		value.asD(tpl);
-		tpl.asString("\"");
+	void asD(Compiler* cc){
+		cc.asString(" ").asString(key).asString("=\"");
+		value.asD(cc);
+		cc.asString("\"");
 	}
 }

@@ -16,8 +16,7 @@ final class Filter : Node {
 		hasVar	= tk.bool_value ;
 	}
 	
-	version(JADE_XTPL)
-	void asD(XTpl tpl) {
+	void asD(Compiler* cc) {
 		
 	}
 }

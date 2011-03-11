@@ -11,12 +11,11 @@ final class InlineIf : Node {
 		cond	= tk.string_value ;
 	}
 	
-	version(JADE_XTPL)
-	void asD(XTpl tpl){
-		tpl.asLine(this.ln);
-		tpl.asCode("if (").asCode(cond).asCode("){\n");
-		eachD(tpl);
-		tpl.asCode("}\n");
+	void asD(Compiler* cc){
+		cc.asLine(this.ln);
+		cc.asCode("if (").asCode(cond).asCode("){\n");
+		eachD(cc);
+		cc.asCode("}\n");
 	}
 	
 }

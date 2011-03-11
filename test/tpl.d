@@ -1,4 +1,4 @@
-//: \$dmd2 -J. \+..\src\jade2\util\Buffer.d \+..\src\fcgi -debug -g
+//: \$dmd2 -J. \+..\src\jade2\util\Buffer.d \+..\src\fcgi -O -inline -release
 
 module tpl2.test ;
 

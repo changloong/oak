@@ -10,22 +10,7 @@ pragma(lib, "pcre");
 
 
 class XTpl {
-		
-	package {
-		enum asType {
-			None,
-			Code ,
-			String ,
-			Var ,
-		}
-		static const string[] asType_Name	= EnumMemberName!(asType) ;
-		
-		static string sType(asType ty){
-			assert( ty >=0 && ty <= asType_Name.length );
-			return asType_Name[ty];
-		}
-	}
-	
+
 	static __gshared _tpl_protocol	= "tpl://" ;
 	static __gshared _OK_message	= cast(char[]) "tpl::ok" ;
 	static __gshared Compiler	jade ;
@@ -209,7 +194,6 @@ class XTpl {
 	vBuffer		_tuple_bu ;
 	size_t		_tuple_len ;
 	string		_tpl_file ;
-	asType		_astype ;
 	
 	public this(char[] name, char[] loc) {
 		check_var_name(name, loc);
@@ -326,11 +310,8 @@ class XTpl {
 		
 		_tuple_bu("\n\t void render(Buffer ob){\n\tassert(ob !is null);\n ");
 	
-		auto root	= jade.compile ;
-		_astype	= asType.None ;
-		root.asD(this);
-		FinishLastOut;
-		
+		_tuple_bu(jade.compile) ;
+
 		
 		_tuple_bu("\t}\n");
 		_tuple_bu("} \n");
@@ -342,68 +323,5 @@ class XTpl {
 	public string toString(){
 		return _name ;
 	}
-	
-	private string type(){
-		return asType_Name[_astype] ;
-	}
-	
-	private void FinishLastOut(){
-		switch(_astype){
-			case asType.String:
-				_tuple_bu("\");\n");
-			case asType.Var:
-				break;
-			case asType.None:
-				break;
-			case asType.Code:
-				break;
-			default:
-				assert(false,type );
-		}
-	}
-	
-	public typeof(this) asLine(size_t ln){
-		FinishLastOut() ;
-		_astype	=  asType.None ;
-		_tuple_bu ("\n#line ")(ln)(" \"")(_tpl_file)("\" \n") ;
-		return this ;
-	}
-	
-	public typeof(this) asString(string val, bool unstrip = true ){
-		if( _astype !is asType.String){
-			FinishLastOut() ;
-			if( _astype !is asType.String ) {
-				_tuple_bu("\tob(\"");
-			}
-		}
-		if( unstrip ) {
-			_tuple_bu.unstrip(val);
-		} else {
-			_tuple_bu( val) ;
-		}
-		_astype	=  asType.String ;
-		return this ;
-	}
-	
-	public typeof(this) asVar(string val, bool unstrip = false ){
-		if( _astype is asType.String ) {
-			FinishLastOut ;
-		}
-		if( unstrip ) {
-			_tuple_bu("\tob(")(val)(");\n") ;
-		} else {
-			_tuple_bu("\tob(")(val)(");\n") ;
-		}
-		_astype	=  asType.Var ;
-		return this ;
-	}
-	
-	public typeof(this) asCode(T)(T val){
-		if( _astype is asType.String ) {
-			FinishLastOut ;
-		}
-		_tuple_bu(val);
-		_astype	= asType.Code ;
-		return this ;
-	}
+
 }

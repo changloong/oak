@@ -5,10 +5,9 @@ import jade.Jade ;
 
 final class TagClasses : Node {
 	
-	version(JADE_XTPL)
-	void asD(XTpl tpl){
-		tpl.asString(" class=\"");
-		eachD(tpl);
-		tpl.asString("\"");
+	void asD(Compiler* cc){
+		cc.asString(" class=\"");
+		eachD(cc);
+		cc.asString("\"");
 	}
 }

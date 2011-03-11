@@ -9,8 +9,7 @@ final class PureString : Node {
 		value	= tk.string_value ;
 	}
 	
-	version(JADE_XTPL)
-	void asD(XTpl tpl) {
-		tpl.asString(value);
+	void asD(Compiler* cc) {
+		cc.asString(value);
 	}
 }

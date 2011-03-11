@@ -27,7 +27,7 @@ package import
 	std.traits,
 	std.stdio;
 
-version(JADE_XTPL) {
+version(JADE_XTPL1) {
 	package import  jade.xtpl.all ;
 }
 

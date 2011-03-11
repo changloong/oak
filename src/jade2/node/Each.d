@@ -11,22 +11,21 @@ final class Each : Node {
 		obj	= tk.string_value ;
 	}
 	
-	version(JADE_XTPL)
-	void asD(XTpl tpl){
-		tpl.asLine(this.ln);
-		tpl.asCode("foreach(");
+	void asD(Compiler* cc){
+		cc.asLine(this.ln);
+		cc.asCode("foreach(");
 		
 		if( type !is null ) {
-			tpl.asCode(type).asCode(' ').asCode(key).asCode(',').asCode(value);
+			cc.asCode(type).asCode(' ').asCode(key).asCode(',').asCode(value);
 		} else if( key !is null ){
-			tpl.asCode(key).asCode(',').asCode(value);
+			cc.asCode(key).asCode(',').asCode(value);
 		} else {
-			tpl.asCode(value);
+			cc.asCode(value);
 		}
 		
 		
-		tpl.asCode(';').asCode(obj).asCode(") { \n");
-		eachD(tpl);
-		tpl.asCode("}\n");
+		cc.asCode(';').asCode(obj).asCode(") { \n");
+		eachD(cc);
+		cc.asCode("}\n");
 	}
 }

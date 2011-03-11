@@ -108,15 +108,13 @@ abstract class Node {
 	}
 	
 	
-	version(JADE_XTPL) 
-	void asD(XTpl tpl){
+	void asD(Compiler* cc){
 		assert(false, this.type);
 	}
 	
-	version(JADE_XTPL)
-	void eachD(XTpl tpl) {
+	void eachD(Compiler* cc) {
 		for(Node n = firstChild ; n !is null ; n = n.next ) {
-			n.asD(tpl);
+			n.asD(cc);
 		}
 	}
 	

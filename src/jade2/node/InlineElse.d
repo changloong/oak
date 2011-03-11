@@ -5,10 +5,9 @@ import jade.Jade ;
 
 final class InlineElse : Node {
 	
-	version(JADE_XTPL)
-	void asD(XTpl tpl){
-		tpl.asLine(this.ln);
-		tpl.asCode("} else {\n");
-		eachD(tpl);
+	void asD(Compiler* cc){
+		cc.asLine(this.ln);
+		cc.asCode("} else {\n");
+		eachD(cc);
 	}
 }
