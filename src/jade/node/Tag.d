@@ -3,18 +3,9 @@ module jade.node.Tag ;
 
 import jade.Jade ;
 
-struct Tag {
-	mixin Node.Child!(typeof(this))	node ;
+final class Tag : Node {
 	
-	string	name ;
-	Attrs	attrs ;
-	
-	Node*	text ;
-	Node*	code ;
-	Node*	block ;
-	
-	
-	static const string[] self_closing_tags = 
+	static const string[] self_closing = 
 		[
 			`meta`,
 			`img` ,
@@ -27,20 +18,41 @@ struct Tag {
 			`hr` ,
 		] ;
 	
-	static const string[] block_tags = 
-		[
-			`html`,
-			`head`,
-			`body` ,
-			`div` ,
-			`p` ,
-			`form` ,
-			`div` ,
-			`table` ,
-			`tbody` ,
-			`tr` ,
-			`h1` ,
-			`h2` ,
-			`h3` ,
-		] ;
+	string		tag , id ;
+	bool		isEmbed ;
+	TagClasses	classes ;
+	Attrs		attrs ;
+	
+	this(Tok* tk) {
+		assert(tk.ty is Tok.Type.Tag);
+		tag	= tk.string_value ;
+		isEmbed	= tk.bool_value ;
+	}
+	
+	void asD(Compiler* cc) {
+		cc.asString("<") ;
+		string _tag	= tag[0] is '*'  ? "div" : tag ;
+		cc.asString(_tag);
+		bool isFindAttr = false ;
+		
+		if( id !is null ) {
+			cc.asString(" id=\"").asString(id).asString("\"") ;
+		}
+		
+		if( classes !is null ) {
+			classes.asD(cc);
+		}
+		
+		if( attrs !is null ) {
+			attrs.eachD(cc);
+		}
+		
+		if( empty ) {
+			cc.asString(" />");
+		} else {
+			cc.asString(">");
+			eachD(cc);
+			cc.asString("</").asString(_tag).asString(">");
+		}
+	}
 }

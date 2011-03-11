@@ -1,11 +1,14 @@
 
-module jade.node.Code;
+module jade.node.Code ;
 
 import jade.Jade ;
 
-struct Code {
-	mixin Node.Child!(typeof(this)) node ;
+final class Code : Node {
 		
-	Node*		block ;
-	bool		isVar ;
+	string 	code ;
+	
+	this(Tok* tk) {
+		assert(tk !is null);
+		code	= tk.string_value ;
+	}
 }

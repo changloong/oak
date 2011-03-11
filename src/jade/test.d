@@ -5,21 +5,31 @@ version(JADE_TEST) :
 
 import jade.Jade ;
 
-void main(){
+
+void main(string[] args ){
 	string file = `example.jade`;
 	auto data = cast(string) std.file.read(file);
-	
+	int count = 1 ;
+        if( args.length > 1 ) {
+                count = ctfe_a2i( args[1] );
+        }
+
 	StopWatch sw;
 	sw.start;
 	scope(exit){
 		sw.stop;
-		log(" use time=", sw.peek.msecs, "ms" );
+		writefln("%d times use time = %dms", count, sw.peek.msecs );
 	}
 	
-	Compiler compiler;
-	compiler.Init(file, data );
-	compiler.compile ;
+	Compiler cc ;
 	
-	log("result:\n", compiler.js ) ;
+	for(int i =0 ; i < count ; i++) {
+		cc.Init(file, data) ;
+		auto code	= cc.compile ;
+		if( i is 0  ){
+			writefln(code);
+			// cc.parser.dump_tok ;
+		}
+	}
 	
 }

@@ -4,104 +4,121 @@ module jade.Node ;
 import jade.Jade ;
 
 package import 
-	jade.node.Attrs,
+	jade.node.Attrs ,
+	jade.node.Attr ,
+	jade.node.AttrIf ,
+	
+	jade.node.MixString ,
+	jade.node.PureString ,
+	jade.node.InlineIf ,
+	jade.node.InlineElseIf,
+	jade.node.InlineElse,
+	jade.node.Var ,
+	
 	jade.node.Block ,
-	jade.node.Code ,
 	jade.node.Comment ,
+	jade.node.CommentBlock,
+	jade.node.Code ,
 	jade.node.DocType ,
+	
 	jade.node.Each ,
+	jade.node.IfCode ,
+	jade.node.ElseIfCode,
+	jade.node.ElseCode,
+	
 	jade.node.Filter ,
-	jade.node.Tag ,
-	jade.node.Text ;
-
-private enum NodeType {
-	None ,
-	// Attrs ,
-	Block ,
-	Code ,
-	Comment ,
-	DocType ,
-	Each ,
-	Filter ,
-	Tag ,
-	Text ,
-}
-
-struct Node {
-	alias jade.Node.Node This;
-	public alias NodeType Type;
+	jade.node.FilterArgs,
+	jade.node.FilterTagArg ,
+	jade.node.FilterTagArgs ,
 	
+	jade.node.TagClass ,
+	jade.node.TagClasses ,
+	jade.node.Tag ;
 
-	Type	tp = Type.None ;
-	string	val ;
-	bool	escape ;
+
+abstract class Node {
+	
+	enum Type {
+		None ,
+		
+		Attrs ,
+		Attr ,
+		AttrIf ,
+		
+		MixString ,
+		PureString ,
+		
+		Block ,
+		Code ,
+		Comment ,
+		CommentBlock ,
+		DocType ,
+		Tag ,
+		TagClass,
+		TagClasses,
+		
+		Var ,
+		
+		Filter ,
+		FilterArgs,
+		FilterTagArg,
+		FilterTagArgs,
+		
+		InlineIf ,
+		InlineElseIf ,
+		InlineElse ,
+		IfCode ,
+		ElseIfCode ,
+		ElseCode ,
+		Each ,
+	}
+	
+	static const string[] Type_Name = EnumMemberName!(Type) ;
+	
+	Type		ty ;
 	size_t	ln ;
+	Tok*		_tok ;
+	Node		next , firstChild , lastChild ;
 	
-	
-	static const nodes_offset = jade.Node.Node.ln.offsetof + ln.sizeof ;
-
-	union {
-		// Attrs		attrs ;
-		Block		block ;
-		Code		code ;
-		Comment		comment ;
-		DocType		doctype ;
-		Each		each ;
-		Filter		filter ;
-		Tag		tag ;
-		Text		text ;
-	}
-	
-	bool isNone(){
-		return tp is Type.None ;
-	}
-	//bool isAttrs(){return tp is Type.Attrs ;}
-	bool isBlock(){
-		return tp is Type.Block ;
-	}
-	bool isCode(){
-		return tp is Type.Code ;
-	}
-	bool isComment(){
-		return tp is Type.Comment ;
-	}
-	bool isDocType(){
-		return tp is Type.DocType ;
-	}
-	bool isEach(){
-		return tp is Type.Each ;
-	}
-	bool isFilter(){
-		return tp is Type.Filter ;
-	}
-	bool isTag(){
-		return tp is Type.Tag ;
-	}
-	bool isText(){
-		return tp is Type.Text ;
+	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
+		static const _ty = ctfe_indexOf!(string)(Type_Name, name[2..$]);
+		static assert(_ty >=0 ,  typeof(this).stringof ~ "." ~ name ~ " is not exists");
+		return _ty is ty ;
 	}
 	
 	string type(){
-		static const members = EnumNames!(Node.Type)  ;
-		return members[tp];
+		assert( ty < Type_Name.length && ty >= 0 );
+		return Type_Name[ty] ;
 	}
 	
-	template Child(T) if(is(T==struct)) {
-		alias T	This ;
-		
-		Node* parent(){
-			void*	_parent	= (cast(void*) &this) - Node.nodes_offset ;
-			return cast(Node*) _parent ;
+	void pushChild(Node node) {
+		if( firstChild is null ) {
+			assert(lastChild is null) ;
+			firstChild	= node ;
+			lastChild	= node ;
+		} else {
+			assert(lastChild !is null) ;
+			lastChild.next	= node ;
+			lastChild	= node ;
 		}
-		
 	}
 	
-	static Node* New(Type tp)(){
-		Node*	node = new Node;
-		node.tp	= tp ;
-		return node ;
+	bool empty() {
+		return firstChild is null ;
 	}
 	
+	
+	void asD(Compiler* cc){
+		assert(false, this.type);
+	}
+	
+	void eachD(Compiler* cc) {
+		for(Node n = firstChild ; n !is null ; n = n.next ) {
+			n.asD(cc);
+		}
+	}
+	
+	mixin Pool.Allocator ;
 }
 
 

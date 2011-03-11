@@ -1,9 +1,22 @@
 
-module jade.node.Comment;
+module jade.node.Comment ;
 
 import jade.Jade ;
 
-struct Comment {
-	mixin Node.Child!(typeof(this)) node ;
-	bool isPublic ;
+final class Comment : Node {
+	bool isHide ;
+	
+	this(Tok* tk){
+		assert(tk !is null);
+		isHide	= tk.bool_value ;
+	}
+	
+	void asD(Compiler* cc){
+		if( isHide ) {
+			return ;
+		}
+		cc.asString("<!-- ");
+		eachD(cc);
+		cc.asString(" -->");
+	}
 }

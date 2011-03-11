@@ -3,7 +3,11 @@ module jade.util.Pcre ;
 
 import std.string, std.conv, std.traits ;
 
+version(JADE_PCRE):
+
 import jade.Jade ;
+
+pragma(lib , "pcre");
 
 enum : int {
 	PCRE_CASELESS           =0x00000001,
@@ -116,8 +120,8 @@ private {
 	struct real_pcre ;
 	alias real_pcre	pcre ;
 	alias char*	PCRE_SPTR ;
-	alias uint		PCRE_ULONG ;
-	alias int		PCRE_INT;
+	alias size_t		PCRE_ULONG ;
+	alias ptrdiff_t		PCRE_INT;
 	
 	struct pcre_extra {
 		PCRE_ULONG	flags;		/* Bits for which fields are set */
@@ -212,7 +216,6 @@ struct RegExp {
 			free ;
 			return false ;
 		}
-		study ;
 		_options	= options ;
 		return true ;
 	}
@@ -233,22 +236,22 @@ struct RegExp {
 		return pcre_get_stringnumber(_pcre, cast(char*)std.string.toStringz(gname));
 	}
 	
-	bool each(string subject, ExecCb dg, int pos = 0) {
-		int len = subject.length ;
+	bool each(string subject, ExecCb dg, ptrdiff_t pos = 0) {
+		ptrdiff_t len = subject.length ;
 		PCRE_INT[Len*2]	vec;
 		string[Len]		ma ;
 		static assert( ma.length * 2 is vec.length );
-		int num	= 0 ;
-		int index	= 0 ;
+		ptrdiff_t num	= 0 ;
+		ptrdiff_t index	= 0 ;
 		while( pos < len ) {
 			num	= pcre_exec(_pcre, _pcrex, cast(char*)std.string.toStringz(subject), len,  pos, 0, &vec[0],  vec.length ) ;
 			if( num != _capture ) {
 				break ;
 			}
 			PCRE_INT* _pvec = &vec[0] ;
-			for(int i = 0 ; i < num; i ++ ){
-				int _from	= _pvec[0] ;
-				int _to	= _pvec[1] ;
+			for(ptrdiff_t i = 0 ; i < num; i ++ ){
+				ptrdiff_t _from	= _pvec[0] ;
+				ptrdiff_t _to	= _pvec[1] ;
 				_pvec	+=	 2 ;
 				/*
 				if( _from > _to || subject.length < _from || subject.length < _to ) {
@@ -288,15 +291,14 @@ struct RegExp {
 	}
 	
 	void replace(T)(vBuffer buf, string subject, T _to) {
-		int i	= 0 ;
+		ptrdiff_t i	= 0 ;
 		buf.clear ;
 		bool ret = each(subject, (string[] ms) {
-			
-			int j	= &ms[0][0] - subject.ptr ;
+			ptrdiff_t j	= &ms[0][0] - subject.ptr ;
 			if( j !is i ) {
 				buf( subject[i..j] );
 			}
-			i	= &ms[0][$-1] - subject.ptr + 1 ;
+			i	= &ms[0][$-1] - subject.ptr ;
 			static if( isSomeString!(T) ){
 				buf(   _to );
 			}else static if( is(T==char) ){
@@ -313,9 +315,9 @@ struct RegExp {
 	
 	alias void delegate(string) split_dg ;
 	void split(string subject,  split_dg dg) {
-		int i	= 0 ;
+		ptrdiff_t i	= 0 ;
 		bool ret = each(subject, (string[] ms) {
-			int j	= &ms[0][0] - subject.ptr ;
+			ptrdiff_t j	= &ms[0][0] - subject.ptr ;
 			if( j !is i ) {
 				dg(subject[i..j] );
 			}
