@@ -275,6 +275,11 @@ class XTpl {
 			tpl_error("temmplate source file `%s` can't be find in %s", file, project_paths);
 		}
 		
+		if( !std.file.exists(_file_path) ) {
+			tpl_error("temmplate source file `%s` can't be find in %s", file, project_paths);
+		}
+		
+		
 		auto _file_data	= cast(string) std.file.read(_file_path);
 		jade.Init( cast(string) _file_path, _file_data);
 		
@@ -284,7 +289,6 @@ class XTpl {
 			}
 			return _tuple_bu.toString ;
 		}
-		
 		
 		_tuple_loc	= loc.idup ;
 		_tuple_len	= _vars.length ;

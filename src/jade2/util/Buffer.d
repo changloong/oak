@@ -301,6 +301,9 @@ final class vBuffer  : OutputRange!(char)  {
 		opCall(val);
 	}
 	
+	final string toString(){
+		return cast(string) slice ;
+	}
 	
 	final void unstrip(string inp){
 		int len = inp.length ;

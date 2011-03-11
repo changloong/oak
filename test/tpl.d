@@ -1,11 +1,11 @@
-//: \$dmd2 -J. \+..\src\xtpl\Buffer.d -O -inline -release
+//: \$dmd2 -J. \+..\src\jade2\util\Buffer.d -O -inline -release
 
 module tpl2.test ;
 
-import std.stdio, std.conv, std.traits, xtpl.Buffer , std.datetime ;
+import std.stdio, std.conv, std.traits, jade.util.Buffer , std.datetime ;
 
 
-alias XTpl_Buffer Buffer;
+alias vBuffer Buffer;
 
 /// compile time integer to string
 string ctfe_i2a(int i){
@@ -132,7 +132,7 @@ void main() {
 	
 	tpl.assign!("page_title", __FILE__, __LINE__)( "test page"[] );
 	
-	mixin Tpl_Jade!("../src/jade/example.jade", typeof(tpl) , __FILE__, __LINE__) jade ;
+	mixin Tpl_Jade!("./example.jade", typeof(tpl) , __FILE__, __LINE__) jade ;
 	
 	
 	auto obj = jade.compile(tpl);
