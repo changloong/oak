@@ -96,7 +96,7 @@ struct Compiler {
 	public pThis asLine(size_t ln){
 		FinishLastOut() ;
 		_astype	=  asType.None ;
-		_ret_bu ("\n#line ")(ln)(" \"")(filename)("\" \n") ;
+		_ret_bu ("#line ")(ln)(" \"")(filename)("\" \n") ;
 		return &this ;
 	}
 	

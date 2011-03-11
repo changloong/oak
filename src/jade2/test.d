@@ -25,9 +25,10 @@ void main(string[] args ){
 	
 	for(int i =0 ; i < count ; i++) {
 		cc.Init(file, data) ;
-		auto root	= cc.compile ;
+		auto code	= cc.compile ;
 		if( i is 0  ){
-			cc.parser.dump_tok ;
+			writefln(code);
+			// cc.parser.dump_tok ;
 		}
 	}
 	
