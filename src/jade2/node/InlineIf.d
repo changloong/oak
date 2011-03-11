@@ -13,9 +13,10 @@ final class InlineIf : Node {
 	
 	version(JADE_XTPL)
 	void asD(XTpl tpl){
-		tpl.asCode("\nif (").asCode(cond).asCode("){\n");
+		tpl.asLine(this.ln);
+		tpl.asCode("if (").asCode(cond).asCode("){\n");
 		eachD(tpl);
-		tpl.asCode("\n}\n");
+		tpl.asCode("}\n");
 	}
 	
 }

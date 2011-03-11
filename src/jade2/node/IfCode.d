@@ -16,7 +16,8 @@ final class IfCode : Node {
 	
 	version(JADE_XTPL)
 	void asD(XTpl tpl){
-		tpl.asCode("\nif (").asCode(cond).asCode(") { \n");
+		tpl.asLine(this.ln);
+		tpl.asCode("if (").asCode(cond).asCode(") { \n");
 		eachD(tpl);
 		if( elseif !is null ) {
 			elseif.asD(tpl);
@@ -24,6 +25,6 @@ final class IfCode : Node {
 		if( elseBlock !is null ) {
 			elseBlock.asD(tpl);
 		}
-		tpl.asCode("\n}\n");
+		tpl.asCode("}\n");
 	}
 }

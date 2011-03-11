@@ -11,6 +11,7 @@ final class Var : Node {
 	
 	version(JADE_XTPL)
 	void asD(XTpl tpl) {
+		tpl.asLine(this.ln);
 		tpl.asVar(value);
 	}
 }

@@ -13,7 +13,9 @@ final class Each : Node {
 	
 	version(JADE_XTPL)
 	void asD(XTpl tpl){
-		tpl.asCode("\nforeach(");
+		tpl.asLine(this.ln);
+		tpl.asCode("foreach(");
+		
 		if( type !is null ) {
 			tpl.asCode(type).asCode(' ').asCode(key).asCode(',').asCode(value);
 		} else if( key !is null ){
@@ -22,9 +24,9 @@ final class Each : Node {
 			tpl.asCode(value);
 		}
 		
-		tpl.asCode(';').asCode(obj).asCode(") { \n");
 		
+		tpl.asCode(';').asCode(obj).asCode(") { \n");
 		eachD(tpl);
-		tpl.asCode("\n}\n");
+		tpl.asCode("}\n");
 	}
 }

@@ -117,7 +117,7 @@ template Tpl_Jade(string name, T, string _file = __FILE__, size_t _line = _LINE_
 
 
 class User {
-	bool 	login = true;
+	bool 	login = false;
 	bool 	admin ;
 	int	id  = 3001 ;
 	string 	name = "Chang Long" ;
@@ -141,7 +141,7 @@ void main() {
 	StopWatch sw;
 	sw.start;
 	
-	for( int i = 0; i < 400_0000 ; i++ ) {
+	for( int i = 0; i < 100_0000 ; i++ ) {
 		bu.clear;
 		u.login	= !u.login ;
 		if( i %3 ) u.admin	= ! u.admin ;

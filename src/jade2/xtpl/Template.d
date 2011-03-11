@@ -208,6 +208,7 @@ class XTpl {
 	string 		_tuple_loc ;
 	vBuffer		_tuple_bu ;
 	size_t		_tuple_len ;
+	string		_tpl_file ;
 	asType		_astype ;
 	
 	public this(char[] name, char[] loc) {
@@ -279,9 +280,14 @@ class XTpl {
 			tpl_error("temmplate source file `%s` can't be find in %s", file, project_paths);
 		}
 		
-		
-		auto _file_data	= cast(string) std.file.read(_file_path);
+		auto _file_data	 = cast(string) std.file.read(_file_path);
 		jade.Init( cast(string) _file_path, _file_data);
+		
+		auto _old_tpl_file	= _tpl_file ;
+		_tpl_file		= cast(string) _file_path ;
+		scope(exit){
+			_tpl_file	= _old_tpl_file ;
+		}
 		
 		if( _tuple_len ) {
 			if( _tuple_len != _vars.length ){
@@ -293,7 +299,7 @@ class XTpl {
 		_tuple_loc	= loc.idup ;
 		_tuple_len	= _vars.length ;
 		_tuple_bu
-			("\n#line 1 \"")(_file_path)("._d\" \n")
+			("\n#line 1 \"xtpl_tuple_")(_name)(".d\" \n")
 			("static struct xtpl_tuple_")(_name)(" {\n")
 			("\tprivate alias typeof(this) _This ; \n")
 		;
@@ -356,11 +362,18 @@ class XTpl {
 		}
 	}
 	
+	public typeof(this) asLine(size_t ln){
+		FinishLastOut() ;
+		_astype	=  asType.None ;
+		_tuple_bu ("\n#line ")(ln)(" \"")(_tpl_file)("\" \n") ;
+		return this ;
+	}
+	
 	public typeof(this) asString(string val, bool unstrip = true ){
-		if( _astype !is asType.String  ){
+		if( _astype !is asType.String){
 			FinishLastOut() ;
 			if( _astype !is asType.String ) {
-				_tuple_bu("\n  ob(\"");
+				_tuple_bu("\tob(\"");
 			}
 		}
 		if( unstrip ) {
@@ -373,25 +386,21 @@ class XTpl {
 	}
 	
 	public typeof(this) asVar(string val, bool unstrip = false ){
-		if( _astype !is asType.Var ) {
+		if( _astype is asType.String ) {
 			FinishLastOut ;
 		}
 		if( unstrip ) {
-			_tuple_bu("ob(")(val)(");\n") ;
+			_tuple_bu("\tob(")(val)(");\n") ;
 		} else {
-			_tuple_bu("ob(")(val)(");\n") ;
+			_tuple_bu("\tob(")(val)(");\n") ;
 		}
 		_astype	=  asType.Var ;
 		return this ;
 	}
 	
 	public typeof(this) asCode(T)(T val){
-		FinishLastOut;
-		if( _astype !is asType.Code && _astype !is asType.None ) {
-			assert(_tuple_bu.length > 0 );
-			if( _astype is  asType.String || _astype is  asType.Var ) {
-				_tuple_bu(");\n");	
-			}
+		if( _astype is asType.String ) {
+			FinishLastOut ;
 		}
 		_tuple_bu(val);
 		_astype	= asType.Code ;
