@@ -29,7 +29,7 @@ final class DocType : Node {
 	}
 	
 	version(JADE_XTPL)
-	void asD(vBuffer bu) {
+	void asD(XTpl tpl) {
 		int i = 0 ;
 		foreach(int j, ref m; DocTypeMap.maps ) {
 			if( m.key == type ) {
@@ -37,6 +37,6 @@ final class DocType : Node {
 				break ;
 			}
 		}
-		bu( DocTypeMap.maps[i].val ) ;
+		tpl.asString( DocTypeMap.maps[i].val ) ;
 	}
 }

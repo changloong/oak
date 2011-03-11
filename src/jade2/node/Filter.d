@@ -17,7 +17,7 @@ final class Filter : Node {
 	}
 	
 	version(JADE_XTPL)
-	void asD(vBuffer bu) {
+	void asD(XTpl tpl) {
 		
 	}
 }

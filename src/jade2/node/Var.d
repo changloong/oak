@@ -10,7 +10,7 @@ final class Var : Node {
 	}
 	
 	version(JADE_XTPL)
-	void asD(vBuffer bu) {
-		bu("${")(value)('}');
+	void asD(XTpl tpl) {
+		tpl.asVar(value);
 	}
 }
