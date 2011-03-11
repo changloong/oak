@@ -38,7 +38,7 @@ public void Log( string file= __FILE__, int line = __LINE__, T...)(T t){//
 }
 
 
-package string[] EnumMemberName(T)() if(is(T==enum)){
+string[] EnumMemberName(T)() if(is(T==enum)){
 	alias traits_allMembers!(T) names;
 	string[] _names;
 	foreach(int i, name; names){

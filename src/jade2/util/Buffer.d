@@ -286,11 +286,25 @@ final class vBuffer  : OutputRange!(char)  {
         alias putInt!(uint)     opCall ;
         alias putInt!(long)     opCall ;
         alias putInt!(ulong)    opCall ;
-
+	
+	final void put(char val){
+		expand(1) ;
+		data[pos] = val ;
+		pos	+=      1 ;
+	}
+	
+	final void put(string val){
+		opCall(val);
+	}
+	
+	final void put(char[] val){
+		opCall(val);
+	}
+	
 	
 	final void unstrip(string inp){
-		ptrdiff_t len = inp.length ;
-		for(ptrdiff_t i = 0; i < len; i++){
+		int len = inp.length ;
+		for(int i = 0; i < len; i++){
 			if( inp[i] is '\\' ){
 				opCall("\\\\");
 			} else if( inp[i] is '\"' ){
@@ -306,8 +320,8 @@ final class vBuffer  : OutputRange!(char)  {
 	}
 
 	final void strip( string inp){
-		ptrdiff_t len = inp.length ;
-		for(ptrdiff_t i = 0; i < len; i++){
+		int len = inp.length ;
+		for(int i = 0; i < len; i++){
 			if( inp[i] is '\\' ){
 				i++;
 				if( i is len  ) {
@@ -337,20 +351,6 @@ final class vBuffer  : OutputRange!(char)  {
 				opCall(inp[i]);
 			}
 		}
-	}
-	
-	final void put(char val){
-		expand(1) ;
-		data[pos] = val ;
-		pos	+=      1 ;
-	}
-	
-	final void put(string val){
-		opCall(val);
-	}
-	
-	final void put(char[] val){
-		opCall(val);
 	}
 }
 

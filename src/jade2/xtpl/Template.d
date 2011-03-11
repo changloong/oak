@@ -7,17 +7,25 @@ import
 pragma(lib, "pcre");
 
 
-private {
-	enum OutType {
-		None,
-		Code ,
-		String ,
-		Var ,
-	}
-}
 
 
 class XTpl {
+		
+	package {
+		enum asType {
+			None,
+			Code ,
+			String ,
+			Var ,
+		}
+		static const string[] asType_Name	= EnumMemberName!(asType) ;
+		
+		static string sType(asType ty){
+			assert( ty >=0 && ty <= asType_Name.length );
+			return asType_Name[ty];
+		}
+	}
+	
 	static __gshared _tpl_protocol	= "tpl://" ;
 	static __gshared _OK_message	= cast(char[]) "tpl::ok" ;
 	static __gshared Compiler	jade ;
@@ -196,10 +204,11 @@ class XTpl {
 	string 		_loc ;
 	XTpl_Var[string]	_vars ;
 	size_t		_offset ;
-	
+		
 	string 		_tuple_loc ;
 	vBuffer		_tuple_bu ;
 	size_t		_tuple_len ;
+	asType		_astype ;
 	
 	public this(char[] name, char[] loc) {
 		check_var_name(name, loc);
@@ -275,6 +284,8 @@ class XTpl {
 			}
 			return _tuple_bu.toString ;
 		}
+		
+		
 		_tuple_loc	= loc.idup ;
 		_tuple_len	= _vars.length ;
 		_tuple_bu
@@ -282,8 +293,6 @@ class XTpl {
 			("static struct xtpl_tuple_")(_name)(" {\n")
 			("\tprivate alias typeof(this) _This ; \n")
 		;
-		ubyte[1024 * 16] _tmp_bu ;
-		scope bu	= new vBuffer(_tmp_bu);
 
 		XTpl_Var[] var_list	= new XTpl_Var[_tuple_len] ;
 		foreach(ref var; _vars) {
@@ -308,6 +317,8 @@ class XTpl {
 		_tuple_bu("\n\t void render(Buffer ob){\n assert(ob !is null); ");
 	
 		auto root	= jade.compile ;
+		_astype	= asType.None ;
+		root.asD(this);
 		
 		
 		_tuple_bu("\t}\n");
@@ -320,16 +331,76 @@ class XTpl {
 	public string toString(){
 		return _name ;
 	}
-
-	public typeof(this) asString(T)(T t){
+	
+	private string type(){
+		return asType_Name[_astype] ;
+	}
+	
+	private void FinishLastOut(){
+		switch(_astype){
+			case asType.String:
+				_tuple_bu('"');
+			case asType.Var:
+				break;
+			case asType.None:
+				break;
+			case asType.Code:
+				break;
+			default:
+				assert(false,type );
+		}
+	}
+	
+	public typeof(this) asString(T)(T val, bool unstrip = true ){
+		if( _astype !is asType.String  ){
+			FinishLastOut() ;
+			if( _astype is asType.Code || _astype is asType.None ) {
+				_tuple_bu("\n  ob(\"");
+			} else if( _astype is asType.Var ){
+				_tuple_bu("\n\t(\"");
+			}
+		}
+		if( unstrip ) {
+			static if( is(T==char) ) {
+				_tuple_bu(val);
+			} else {
+				_tuple_bu.unstrip(val);
+			}
+		} else {
+			_tuple_bu( val) ;
+		}
+		_astype	=  asType.String ;
 		return this ;
 	}
 	
-	public typeof(this) asVar(T)(T t){
+	public typeof(this) asVar(T)(T val, bool unstrip = false ){
+		if( _astype !is asType.Var ) {
+			FinishLastOut ;
+			if( _astype is asType.Code || _astype is asType.None ) {
+				_tuple_bu("\n  ob(");
+			} else if( _astype is asType.String ){
+				_tuple_bu(")\n\t(");
+			}
+		}
+		if( unstrip ) {
+			_tuple_bu(val)(")") ;
+		} else {
+			_tuple_bu(val)(")") ;
+		}
+		_astype	=  asType.Var ;
 		return this ;
 	}
 	
-	public typeof(this) asCode(T)(T t){
+	public typeof(this) asCode(T)(T val){
+		FinishLastOut;
+		if( _astype !is asType.Code && _astype !is asType.None ) {
+			assert(_tuple_bu.length > 0 );
+			if( _astype is  asType.String || _astype is  asType.Var ) {
+				_tuple_bu(");\n");	
+			}
+		}
+		_tuple_bu(val);
+		_astype	= asType.Code ;
 		return this ;
 	}
 }
