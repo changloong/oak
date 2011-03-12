@@ -5,21 +5,22 @@ html(lang=en)
     title ${page_title}
   body
       #user_list.test1
-      | test  
-      | multi line 
+      | test
+      | multi line
       | hehe
       p user.id = ${user.id}
       - if user.login
-        p welcome 
+        p welcome
           a#member.profile:(href=/profile/${user.id}/, target=blank) span.red1 ${user.name}
       - else if user.admin
         p admin controll panel
       - else
-        p please 
+        p please
           a#login login
-      // test 
+      // test
       table(border=1)
+        tr: th(colspan=2)
         - each string key, string value in req.header
           tr
-            th ${key} 
+            th ${key}
             td ${value}

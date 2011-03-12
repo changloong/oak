@@ -440,6 +440,7 @@ struct HTTP_Header {
 	string	HTTP_X_INSIGHT ;
 	string	HTTP_CACHE_CONTROL ;
 	string	HTTP_REFERER ;
+	string	HTTP_COOKIE ;
 	
 	void reset(){
 		foreach( int i , _field; this.tupleof ) {
