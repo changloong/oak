@@ -890,10 +890,17 @@ struct Lexer {
 							_val_left[0] is '(' && _val_right[$-1] is ')' 
 						)  {
 							if( _tk_left is _tk_right ) {
-								_tk_left.string_value	= _val_left[1..$-1];
+								_val_left	= _val_left[1..$-1] ;
+								while( _val_left.length && (_val_left[0] is ' ' || _val_left[0] is '\t' ) ) _val_left = _val_left[1..$] ;
+								while( _val_left.length && (_val_left[$-1] is ' ' || _val_left[$-1] is '\t' ) ) _val_left = _val_left[0..$-1] ;
+								_tk_left.string_value	= _val_left ;
 							} else {
-								_tk_left.string_value	= _val_left[1..$];
-								_tk_right.string_value	= _val_right[0..$-1];
+								_val_left	= _val_left[1..$] ;
+								while( _val_left.length && (_val_left[0] is ' ' || _val_left[0] is '\t' ) ) _val_left = _val_left[1..$] ;
+								_tk_left.string_value	= _val_left ;
+								_val_right	= _val_right[0..$-1];
+								while( _val_right.length && (_val_right[$-1] is ' ' || _val_right[$-1] is '\t' ) ) _val_right = _val_right[0..$-1] ;
+								_tk_right.string_value	= _val_right;
 							}
 						} 
 					}
