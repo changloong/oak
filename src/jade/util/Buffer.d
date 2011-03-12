@@ -173,6 +173,66 @@ final class vBuffer  :  out_range {
 		opCall(val);
 	}
 	
+	final void unQuote(T)(T inp, ptrdiff_t deep = 0) {
+		static if( isSomeString!(T) ) {
+			ptrdiff_t len = inp.length ;
+			if( deep < 0 || deep >= byte.max ) {
+				deep = 0 ;
+			}
+			for(ptrdiff_t i = 0; i < len; i++){
+				if( inp[i] is '\\' ) {
+					for(ptrdiff_t j = 0; j <= deep; j++) {
+						opCall(`\\`);
+					}
+				} else if( inp[i] is '\"' ) {
+					for(ptrdiff_t j = 0; j < deep; j++) {
+						opCall(`\\`);
+					}
+					opCall('\\')(inp[i]);
+				} else if( inp[i] is '\n'){
+					for(ptrdiff_t j = 0; j < deep; j++) {
+						opCall(`\\`);
+					}
+					opCall('\\')('n');
+				} else if( inp[i] is '\r'){
+					
+				} else {
+					opCall(inp[i]);
+				}
+			}
+		} else {
+			opCall(inp);
+		}
+	}
+	
+	final void escape(T)(T inp){
+		static if( isSomeString!(T) ) {
+			ptrdiff_t len = inp.length ;
+			for(ptrdiff_t i = 0; i < len; i++){
+				if( inp[i] is '\\' ){
+					opCall("\\\\");
+				} else if( inp[i] is '\"' ){
+					opCall(`&quot;`);
+				} else if( inp[i] is '>' ){
+					opCall(`&gt;`);
+				}else if( inp[i] is '<' ){
+					opCall(`&lt;`);
+				} else if( inp[i] is '\n'){
+					opCall('\\')('n');
+				} else if( inp[i] is '\r'){
+					opCall('\\')('n');
+					if( i !is len && inp[i+1] is '\n' ) {
+						i++;
+					}
+				} else {
+					opCall(inp[i]);
+				}
+			}	
+		} else {
+			opCall(inp);
+		}
+	}
+	
 	final void unstrip(string inp){
 		ptrdiff_t len = inp.length ;
 		for(ptrdiff_t i = 0; i < len; i++){

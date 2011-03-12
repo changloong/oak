@@ -375,15 +375,12 @@ struct Lexer {
 		auto __ptr = _ptr ;
 		
 		bool _stop_zero	= false ;
-		bool _stop_comma = false ;
 		bool _stop_paren = false ;
 		bool _stop_quote = false ;
 		bool _stop_bracket	= false ;
 		
-		if( _stop_char is 0 ) {
+		if( _stop_char == 0 ) {
 			_stop_zero	= true ;
-		} else if(_stop_char is ',' ){
-			_stop_comma	= true ;
 		} else if(_stop_char is ')' ){
 			_stop_paren	= true ;
 		} else if(_stop_char is '"' ){
@@ -391,7 +388,7 @@ struct Lexer {
 		} else if(_stop_char is ']' ){
 			_stop_bracket	= true ;
 		} else {
-			err("lexer bug");
+			err("lexer bug `%s`",  cast(ubyte) _stop_char);
 		}
 
 		size_t	paren_count = 0 ;
@@ -412,25 +409,24 @@ struct Lexer {
 				return false ;
 			}
 			if( !_stop_zero ) {
-				if( _stop_comma ) {
-					if( _ptr[0] is ')'   || _ptr[0] is ','  ) {
-						string_trim_right();
-						return true ;
-					}
-				} else if( _stop_paren ) {
+				if( _stop_paren ) {
 					if( _ptr[0] is ')' ) {
 						if( paren_count is 0 ) {
 							if( _ptr is _end ){
 								err("not end attr");
 							}
-							_ptr++ ;
 							string_trim_right();
 							return true ;
 						}
 						paren_count-- ;
+					} else if( _ptr[0] is ',' ) {
+						if( paren_count is 0 ) {
+							string_trim_right();
+							return true ;
+						}
 					} else if( _ptr[0] is '(' ) {
 						paren_count++ ;
-					}
+					} 
 				}  else if( _stop_quote ) {
 					if( _ptr[0] is '"' ) {
 						_ptr++;
@@ -715,7 +711,7 @@ struct Lexer {
 		skip_space ;
 		if( _ptr <= _end && _ptr[0] is '(' ) {
 			Tok* _tk_attrs	= parseAttrs() ;
-			if( _ptr !is _end && _ptr[0] !is '\r' && _ptr[0] !is '\n' && _ptr[0] !is '\t' && _ptr[0] !is ' ' ){
+			if( _ptr !is _end && _ptr[0] !is '\r' && _ptr[0] !is '\n' && _ptr[0] !is '\t' && _ptr[0] !is ' ' ) {
 				err("missing space after attributes `%s`", line);
 			}
 			skip_space ;
@@ -832,21 +828,28 @@ struct Lexer {
 				if( _ptr >= _end ) {
 					err("expected AttrValue") ;
 				}
-				NewTok(Tok.Type.AttrValueStart) ;
-				char _stop_char	 ;
-				if(  _ptr <= _end ) {
-					if(  _ptr[0] is '(' ) {
-						_ptr++ ;
-						skip_space;
-						_stop_char	= ')' ;
-					} else if( _ptr[0] is ')' ) {
-						err("expected AttrValue but `%s`", line);
-					} else {
-						_stop_char	= ',' ;
+				
+				auto __tk =  NewTok(Tok.Type.AttrValueStart) ;
+				parseInlineString( ')' ) ;
+				// add unQuota
+				for( auto _qtk = __tk.next; _qtk !is null; _qtk = _qtk.next ) {
+					switch( _qtk.ty ) {
+						case Tok.Type.Var:
+							_qtk.bool_value = true ;
+							break;
+						case Tok.Type.String:
+							_qtk.bool_value = true ;
+							break;
+						default:
+							break ;
 					}
+					
 				}
-				parseInlineString( _stop_char ) ;
 				NewTok(Tok.Type.AttrValueEnd) ;
+				
+				if( _ptr >= _end || _ptr[0] !is ')' && _ptr[0] !is ',' ) {
+					err("expected AttrValue end `%s`", line) ;
+				}
 			}
 			
 			if( scan_comma ) {
@@ -859,6 +862,7 @@ struct Lexer {
 			
 			err("expected AttrKey or AttrEnd `%s`", line ) ;
 		}
+		
 		return null ;
 	}
 	

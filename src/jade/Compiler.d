@@ -96,31 +96,33 @@ struct Compiler {
 		return &this ;
 	}
 	
-	public pThis asString(string val, bool unstrip = true ){
+	public pThis asString(string val,  bool escape = false ) {
 		if( _astype !is asType.String){
 			FinishLastOut() ;
 			if( _astype !is asType.String ) {
 				_ret_bu("\tob(\"");
 			}
 		}
-		if( unstrip ) {
-			_ret_bu.unstrip(val);
+		if( escape ) {
+			_ret_bu.escape(val) ;
 		} else {
-			_ret_bu( val) ;
+			_ret_bu.unstrip(val) ;
 		}
 		_astype	=  asType.String ;
 		return &this ;
 	}
 	
-	public pThis asVar(string val, bool unstrip = false ){
+	public pThis asVar(string val,  bool escape = false ){
 		if( _astype is asType.String ) {
 			FinishLastOut ;
 		}
-		if( unstrip ) {
-			_ret_bu("\tob(")(val)(");\n") ;
+		
+		if( escape ) {
+			_ret_bu("\tob.escape(")(val)(");\n");
 		} else {
-			_ret_bu("\tob(")(val)(");\n") ;
+			_ret_bu("\tob(")(val)(");\n");
 		}
+		
 		_astype	=  asType.Var ;
 		return &this ;
 	}

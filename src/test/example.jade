@@ -10,7 +10,7 @@ html(lang=en)
       | hehe
       p user.id = ${user.id}
       - if user.login
-        p welcome
+        p welcome 
           a#member.profile:(href=/profile/${user.id}/, target=blank) span.red1 ${user.name}
       - else if user.admin
         p admin controll panel
@@ -19,7 +19,7 @@ html(lang=en)
           a#login login
       // test
       table(border=1)
-        tr: th(colspan=2)
+        tr: th(colspan=2, style=(color:rgb(1,60,33); font-size:16px;) , onclock=test("123")) req.header
         - each string key, string value in req.header
           tr
             th ${key}
