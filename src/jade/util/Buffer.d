@@ -217,6 +217,8 @@ final class vBuffer  :  out_range {
 					opCall(`&gt;`);
 				}else if( inp[i] is '<' ){
 					opCall(`&lt;`);
+				} else if( inp[i] is '&' ){
+					opCall(`&amp;`);
 				} else if( inp[i] is '\n'){
 					opCall('\\')('n');
 				} else if( inp[i] is '\r'){

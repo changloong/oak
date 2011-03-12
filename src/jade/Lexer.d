@@ -45,6 +45,19 @@ struct Lexer {
 		throw new Exception(a.data);
 	}
 	
+	void dump_tok(string _file = __FILE__, ptrdiff_t _line = __LINE__)( bool from_last_tok = false ) {
+		writefln("\n--------- dump tok --------\n%s:%d", _file, _line);
+		Tok* tk	= _root_token ;
+		if( from_last_tok ) {
+			tk	= _last_token ;
+		}
+		while( tk !is null ) {
+			//auto node = parseExpr ;
+			writefln("tab:%d ln:%d:%d %s = `%s`" , tk.tabs, tk.ln,tk._ln, tk.type(), tk.string_value );
+			tk	= tk.next ;
+		}
+	}
+	
 	void parse() {
 		while( _ptr <= _end ){
 			parseIndent ;
@@ -786,13 +799,16 @@ struct Lexer {
 		bool scan_attrs_end() {
 			skip_space ;
 			if( _ptr >= _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
-				err("expected AttrEnd" );
+				dump_tok();
+				err("expected AttrEnd `%s`", line );
 			}
 			
 			scan_inline_code ;
 			
 			// attr end 
 			if( _ptr <= _end  && _ptr[0] is ')' ) {
+				//Log("`%s`", line );
+				//assert(false) ;
 				_ptr++ ;
 				NewTok(Tok.Type.AttrEnd) ;
 				return true ;
@@ -830,6 +846,7 @@ struct Lexer {
 				}
 				
 				auto __tk =  NewTok(Tok.Type.AttrValueStart) ;
+				auto __ptr = _ptr ;
 				parseInlineString( ')' ) ;
 				// add unQuota
 				for( auto _qtk = __tk.next; _qtk !is null; _qtk = _qtk.next ) {
@@ -843,13 +860,50 @@ struct Lexer {
 						default:
 							break ;
 					}
-					
 				}
-				NewTok(Tok.Type.AttrValueEnd) ;
 				
-				if( _ptr >= _end || _ptr[0] !is ')' && _ptr[0] !is ',' ) {
+				Tok*	_tk_left,	_tk_right  = null ;
+				string _val_left,  _val_right  = null ;
+		
+				for( auto _qtk = __tk.next; _qtk !is null; _qtk = _qtk.next ) {
+					if ( _qtk.ty is Tok.Type.String ) {
+						_tk_left	= _qtk ;
+						_val_left = _qtk.string_value ;
+						while( _val_left.length && (_val_left[0] is ' ' || _val_left[0] is '\t' ) ) _val_left = _val_left[1..$] ;
+						break ;
+					}
+				}
+				for( auto _qtk = _last_token ; _qtk !is __tk; _qtk = _qtk.pre ) {
+					if ( _qtk.ty is Tok.Type.String ) {
+						_tk_right	= _qtk ;
+						_val_right = _qtk.string_value ;
+						while( _val_right.length && (_val_right[$-1] is ' ' || _val_right[$-1] is '\t' ) ) _val_right = _val_right[0..$-1] ;
+						break ;
+					}
+				}
+				
+				if( _val_left !is null && _val_right !is null  ){
+					assert(_tk_left !is null);
+					assert(_tk_right !is null);
+					if( _val_left.length && _val_right.length ) {
+						if( 
+							_val_left[0] is '(' && _val_right[$-1] is ')' 
+						)  {
+							if( _tk_left is _tk_right ) {
+								_tk_left.string_value	= _val_left[1..$-1];
+							} else {
+								_tk_left.string_value	= _val_left[1..$];
+								_tk_right.string_value	= _val_right[0..$-1];
+							}
+						} 
+					}
+				}					
+				
+				skip_space ;
+				if( _ptr >= _end || _ptr[0] !is ',' && _ptr[0] !is ')' ) {
 					err("expected AttrValue end `%s`", line) ;
 				}
+				NewTok(Tok.Type.AttrValueEnd) ;
 			}
 			
 			if( scan_comma ) {

@@ -144,9 +144,9 @@ struct Parser {
 	
 	void dump_tok(string _file = __FILE__, ptrdiff_t _line = __LINE__)( bool from_last_tok = false ) {
 		writefln("\n--------- dump tok --------\n%s:%d", _file, _line);
-		Tok* tk	= lexer._root_tok ;
+		Tok* tk	= lexer._root_token ;
 		if( from_last_tok ) {
-			tk	= lexer._last_tok ;
+			tk	= _last_tok ;
 		}
 		while( tk !is null ) {
 			//auto node = parseExpr ;
