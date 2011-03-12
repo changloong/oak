@@ -299,12 +299,21 @@ class XTpl {
 		foreach(size_t key_i, var; var_list) {
 			
 			string key	= var.name ;
+			auto pos_sharp = lastIndexOf( var.loc, '#') ;
+			auto pos_comma = lastIndexOf( var.loc, ',') ;
 			
 			_tuple_bu
-				("\n\t")(var.type)("	")( key ) (";\n")
+				("\n")
+				("#line ")(  var.loc[  pos_sharp + 1.. $]) (" \"")(  var.loc[ pos_comma + 1.. pos_sharp])("\"\n")
+				("\t")(var.type)("	")( key ) (";\n")
+			
+				("#line ")(  var.loc[  pos_sharp + 1.. $]) (" \"")(  var.loc[ pos_comma + 1.. pos_sharp])("\"\n")
 				("\tstatic assert( typeid(typeof(_This.tupleof[")(key_i)("])).stringof == `&")( var.tyid ) ("` , `")(this._name)("(")(this._loc)(").")(var.type)(":")(var.name)("(")(var.loc)(").typeid (")(var.tyid)(") !=")("` ~ typeid(typeof(_This.tupleof[")(key_i)("])) ) ;\n")
+				("#line ")(  var.loc[  pos_sharp + 1.. $]) (" \"")(  var.loc[ pos_comma + 1.. pos_sharp])("\"\n")
 				("\tstatic assert(_This.tupleof[")(key_i)("].offsetof is ")( var.offset ) (", `")(this._name)("(")(this._loc)(").")(var.type)(":")(var.name)("(")(var.loc)(")(")(var.tyid)(").offsetof (")(var.offset)(") !=")("` ~ _This.tupleof[")(key_i)("].offsetof.stringof  ) ;\n")
+				("#line ")(  var.loc[  pos_sharp + 1.. $]) (" \"")(  var.loc[ pos_comma + 1.. pos_sharp])("\"\n")
 				("\tstatic assert( typeof(_This.tupleof[")(key_i)("]).sizeof is ")( var.size ) (", `")(this._name)("(")(this._loc)(").")(var.type)(":")(var.name)("(")(var.loc)(")(")(var.tyid)(").sizeof (")(var.size)(") !=")("` ~ typeof(_This.tupleof[")(key_i)("]).sizeof.stringof ) ;\n")
+				("\n")
 			;
 		}
 		

@@ -1,4 +1,4 @@
-!!! 
+!!!
 html(lang={if user.admin("hi", 123)}en{/if} , id=home)
   head
     style
@@ -6,7 +6,7 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=home)
       |  font-size:12px;
       |}
     script
-      |$(document.body).ready(function(){ 
+      |$(document.body).ready(function(){
       |  alert(123);
       |});
     :css
@@ -14,14 +14,14 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=home)
         font-size:12px;
       }
     ::js
-       alert( ${user.id} )
+        alert( ${user.id} )
     :js
-      $(document.body).ready(function(){ 
+      $(document.body).ready(function(){
         alert( ${user.id} )
       });
 
     :include!"../header.jade"
-    
+
     meta(name=Content-Type, \
       {if user.login}content=text/html, {/if}\
       charset=utf-8)
@@ -36,25 +36,25 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=home)
       li: a ${i} => ${v}
     - each  int i,v in o
       li: a ${i} => ${v}
-  
+
     #user_list.test1.test12
-      | test div 
+      | test div
       | multi line ${val1} \${val2}
       a#link(href=/123/id) test
       | hehe
       // test ' \n
       - if user.login
-        p welcome 
+        p welcome
           a#member.profile(href=/profile/${user.id}/, target=blank) ${user.name}
 	    img.photograph(src=/images/{if user.pic !is null}${user.pic}{else}blank.gif{/if})
       - else if user.admin
         p admin controll panel
       - else
-        p please 
-	
+        p please
+
           a#login login
 
   :i18n!"user.intro"!"123" div:(id=test, onclick=(${test_fn}, doClick())) \
 	p#p1.c1.c2 \
 	[user_name=${user.name}] a#user_intro(href="/user/${user.id}") \
-	[message_number=${user.msgs}]span.red1 
+	[message_number=${user.msgs}]span.red1
