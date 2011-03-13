@@ -20,7 +20,7 @@ struct Lexer {
 	void Init(Compiler* cc)  in {
 		assert( cc !is null);
 	} body {
-		pool		= &cc.pool ;
+		pool		= cc.pool ;
 		_str_bu		= cc._str_bu ;
 		filename	= cc .filename ;
 		

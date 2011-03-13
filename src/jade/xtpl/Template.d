@@ -4,6 +4,7 @@ module oak.jade.xtpl.Template ;
 import 
 	oak.jade.xtpl.all ;
 
+
 class XTpl {
 
 	static __gshared _tpl_protocol	= "tpl://" ;
@@ -179,6 +180,32 @@ class XTpl {
 		});
 	}
 	
+	static string Load_Source_(char[] file, ref char[] _file_path , bool _throw = true ){
+		
+		foreach( _dir; project_paths ){
+			char[] __file__path = _dir ~ file  ;
+			if( std.file.exists( __file__path ) ) {
+				_file_path	= __file__path ;
+				break ;
+			}
+		}
+		if( _file_path is null ) {
+			if( _throw ) {
+				tpl_error("temmplate source file `%s` can't be find in %s", file, project_paths);
+			}
+			return null ;
+		}
+		
+		if( !std.file.exists(_file_path) ) {
+			if( _throw ) {
+				tpl_error("temmplate source file `%s` can't be find in %s", file, project_paths);
+			}
+			return null ;
+		}
+		
+		auto data	= cast(string) std.file.read(_file_path);
+		return data ;
+	}
 	
 	string 		_name ;
 	string 		_loc ;
@@ -245,24 +272,9 @@ class XTpl {
 	}
 	
 	public string getRender(char[] file, char[] loc) {
-		
-		char[]  _file_path = null ;
-		foreach( _dir; project_paths ){
-			char[] __file__path = _dir ~ file  ;
-			if( std.file.exists( __file__path ) ) {
-				_file_path	= __file__path ;
-				break ;
-			}
-		}
-		if( _file_path is null ) {
-			tpl_error("temmplate source file `%s` can't be find in %s", file, project_paths);
-		}
-		
-		if( !std.file.exists(_file_path) ) {
-			tpl_error("temmplate source file `%s` can't be find in %s", file, project_paths);
-		}
-		
-		auto _file_data	 = cast(string) std.file.read(_file_path);
+
+		char[] _file_path ;
+		auto _file_data = Load_Source_( file, _file_path);
 		jade.Init( cast(string) _file_path, _file_data);
 		
 		auto _old_tpl_file	= _tpl_file ;
@@ -317,16 +329,25 @@ class XTpl {
 		
 		_tuple_bu("\n\t void render(vBuffer ob){\n\tassert(ob !is null);\n ");
 		
-		auto tmp_val	= jade.check_each_keyvalue ;
+		auto _tmp_each	= jade.check_each_keyvalue ;
+		auto _tmp_load	= jade.load_source ;
 		jade.check_each_keyvalue = &this.check_each_keyvalue ;
+		jade.load_source	= &this.load_source ;
 		_tuple_bu(jade.compile) ;
-		 jade.check_each_keyvalue	= tmp_val ;
+		 jade.check_each_keyvalue	= _tmp_each ;
+		 jade.load_source	= _tmp_load ;
 		
 		_tuple_bu("\t}\n");
 		_tuple_bu("} \n");
 		_tuple_bu("private alias xtpl_tuple_")(_name)(" _tpl_struct ;\n");
 		
 		return _tuple_bu.toString ;
+	}
+	
+	string load_source(string file) {
+		char[] _file_path ;
+		auto _file_data = Load_Source_( cast(char[]) file, _file_path, false) ;
+		return _file_data ;
 	}
 	
 	public bool check_each_keyvalue(string obj, ref string type, ref string value_type ) {

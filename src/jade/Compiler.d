@@ -23,7 +23,7 @@ struct Compiler {
 		}
 	}
 	
-	Pool		pool ;
+	Pool*		pool ;
 	vBuffer		_str_bu , _ret_bu ;
 	Parser		parser ;
 	string		filedata ;
@@ -32,15 +32,21 @@ struct Compiler {
 	
 	bool delegate(string, ref string, ref string) check_each_keyvalue ;
 	bool delegate(ref string) check_var_name ;
+	string delegate(string) load_source ;
 	
 	~this(){
-		pool.__dtor ;
+		if( pool !is null ) {
+			pool.__dtor ;
+		}
 	}
 	
 	void Init(string _filename, string _filedata) in {
 		assert(_filename !is null);
 		assert(_filedata !is null);
 	} body {
+		if( pool is null ) {
+			pool	= new Pool ;
+		}
 		filename	= _filename ;
 		filedata	= _filedata ;
 		if( _str_bu is null ) {
@@ -65,19 +71,53 @@ struct Compiler {
 		}
 	}
 	
+	void reuse(Compiler* cc){
+		cc.FinishLastOut();
+		_str_bu	= cc._str_bu ;
+		_ret_bu	= cc._ret_bu ;
+		pool	= cc.pool ;
+	}
+	
+	void reuse_clear(){
+		
+		FinishLastOut() ;
+		
+		_str_bu	= null ;
+		_ret_bu	= null ;
+		pool	= null ;
+
+	}
+	
+	string load_file(string file){
+		if( load_source !is null ) {
+			return load_source(file);
+		} else {
+			if( std.file.exists( file ) ) {
+				return cast(string) std.file.read(file);
+			}
+		}
+		return null ;
+	}
+	
 	void check_var(Var var){
 		
 	}
 	
-	string compile() in {
+	string compile( bool reuse = false ) in {
 		assert(filename !is null);
 		assert(filedata !is null);
 	} body {
-		_str_bu.clear ;
-		pool.Clear ;
+		if( !reuse ) {
+			_str_bu.clear ;
+			pool.Clear ;
+		}
 		parser.Init(&this) ;
 		parser.parse ;
-		_ret_bu.clear;
+		
+		if( !reuse ) {
+			_ret_bu.clear;
+		}
+		
 		parser.root.asD( &this ) ;
 		FinishLastOut;
 		return _ret_bu.toString ; 
@@ -100,6 +140,8 @@ struct Compiler {
 			default:
 				assert(false,type );
 		}
+		
+		_astype	=  asType.None ;
 	}
 	
 	public pThis asLine(size_t ln){

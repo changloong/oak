@@ -3,8 +3,7 @@ html(lang=en)
   head
     meta(name=Content-Type, content=text/html, charset=utf-8)
     title ${page_title}
-    :js
-        document.title =  document.title + ' js add text ';
+    :include!"header.jade"
   body
       #user_list.test1
       | test

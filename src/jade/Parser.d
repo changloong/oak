@@ -18,7 +18,7 @@ struct Parser {
 	void Init(Compiler* cc) in {
 		assert( cc !is null);
 	} body {
-		pool		= &cc.pool ;
+		pool		= cc.pool ;
 		filename	= cc .filename ;
 		filedata	= cc .filedata ;
 		lexer.Init(cc) ;
