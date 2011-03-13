@@ -312,7 +312,7 @@ class XTpl {
 			;
 		}
 		
-		_tuple_bu("\n\t void render(Buffer ob){\n\tassert(ob !is null);\n ");
+		_tuple_bu("\n\t void render(vBuffer ob){\n\tassert(ob !is null);\n ");
 	
 		_tuple_bu(jade.compile) ;
 
