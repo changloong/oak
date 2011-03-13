@@ -1,7 +1,7 @@
 
-module jade.node.Comment ;
+module oak.jade.node.Comment ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class Comment : Node {
 	bool isHide ;

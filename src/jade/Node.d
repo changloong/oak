@@ -1,39 +1,39 @@
 
-module jade.Node ;
+module oak.jade.Node ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 package import 
-	jade.node.Attrs ,
-	jade.node.Attr ,
-	jade.node.AttrIf ,
+	oak.jade.node.Attrs ,
+	oak.jade.node.Attr ,
+	oak.jade.node.AttrIf ,
 	
-	jade.node.MixString ,
-	jade.node.PureString ,
-	jade.node.InlineIf ,
-	jade.node.InlineElseIf,
-	jade.node.InlineElse,
-	jade.node.Var ,
+	oak.jade.node.MixString ,
+	oak.jade.node.PureString ,
+	oak.jade.node.InlineIf ,
+	oak.jade.node.InlineElseIf,
+	oak.jade.node.InlineElse,
+	oak.jade.node.Var ,
 	
-	jade.node.Block ,
-	jade.node.Comment ,
-	jade.node.CommentBlock,
-	jade.node.Code ,
-	jade.node.DocType ,
+	oak.jade.node.Block ,
+	oak.jade.node.Comment ,
+	oak.jade.node.CommentBlock,
+	oak.jade.node.Code ,
+	oak.jade.node.DocType ,
 	
-	jade.node.Each ,
-	jade.node.IfCode ,
-	jade.node.ElseIfCode,
-	jade.node.ElseCode,
+	oak.jade.node.Each ,
+	oak.jade.node.IfCode ,
+	oak.jade.node.ElseIfCode,
+	oak.jade.node.ElseCode,
 	
-	jade.node.Filter ,
-	jade.node.FilterArgs,
-	jade.node.FilterTagArg ,
-	jade.node.FilterTagArgs ,
+	oak.jade.node.Filter ,
+	oak.jade.node.FilterArgs,
+	oak.jade.node.FilterTagArg ,
+	oak.jade.node.FilterTagArgs ,
 	
-	jade.node.TagClass ,
-	jade.node.TagClasses ,
-	jade.node.Tag ;
+	oak.jade.node.TagClass ,
+	oak.jade.node.TagClasses ,
+	oak.jade.node.Tag ;
 
 
 abstract class Node {
@@ -73,7 +73,7 @@ abstract class Node {
 		Each ,
 	}
 	
-	static const string[] Type_Name = EnumMemberName!(Type) ;
+	static const string[] Type_Name = ctfe_enum_array!(Type) ;
 	
 	Type		ty ;
 	size_t	ln ;

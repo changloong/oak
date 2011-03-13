@@ -1,7 +1,7 @@
-module fcgi4d.Connection ;
+module oak.fcgi.Connection ;
 
-import fcgi4d.all ;
-import fcgi4d.Protocol ;
+import oak.fcgi.all ;
+import oak.fcgi.Protocol ;
 
 import  std.c.stdlib;
 import  std.c.string;

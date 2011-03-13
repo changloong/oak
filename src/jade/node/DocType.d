@@ -1,7 +1,7 @@
 
-module jade.node.DocType ;
+module oak.jade.node.DocType ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 struct DocTypeMap {
 	string	key ;

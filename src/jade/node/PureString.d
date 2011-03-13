@@ -1,7 +1,7 @@
 
-module jade.node.PureString ;
+module oak.jade.node.PureString ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class PureString : Node {
 	string		value ;

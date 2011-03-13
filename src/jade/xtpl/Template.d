@@ -1,8 +1,8 @@
 
-module jade.xtpl.Template ;
+module oak.jade.xtpl.Template ;
 
 import 
-	jade.xtpl.all ;
+	oak.jade.xtpl.all ;
 
 class XTpl {
 

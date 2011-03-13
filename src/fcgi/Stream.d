@@ -1,6 +1,6 @@
-module fcgi4d.Stream ;
+module oak.fcgi.Stream ;
 
-import fcgi4d.all ;
+import oak.fcgi.all ;
 
 version = USE_READ_CACHE ;
 

@@ -1,7 +1,7 @@
 
-module jade.node.InlineElse;
+module oak.jade.node.InlineElse;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class InlineElse : Node {
 	

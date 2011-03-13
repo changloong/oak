@@ -1,7 +1,7 @@
 
-module jade.Compiler ;
+module oak.jade.Compiler ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 
 struct Compiler {
@@ -15,7 +15,7 @@ struct Compiler {
 			String ,
 			Var ,
 		}
-		static const string[] asType_Name	= EnumMemberName!(asType) ;
+		static const string[] asType_Name	= ctfe_enum_array!(asType) ;
 		
 		static string sType(asType ty){
 			assert( ty >=0 && ty <= asType_Name.length );

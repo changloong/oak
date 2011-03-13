@@ -1,7 +1,7 @@
 
-module jade.node.Code ;
+module oak.jade.node.Code ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class Code : Node {
 		

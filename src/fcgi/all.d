@@ -1,13 +1,13 @@
-module fcgi4d.all ;
+module oak.fcgi.all ;
 
 public import 
-	fcgi4d.Stream ,
-	fcgi4d.Protocol , 
-	fcgi4d.Request ,
-	fcgi4d.Exception ,
-	fcgi4d.Connection ,
-	fcgi4d.Base ,
-	fcgi4d.Application ;
+	oak.fcgi.Stream ,
+	oak.fcgi.Protocol , 
+	oak.fcgi.Request ,
+	oak.fcgi.Exception ,
+	oak.fcgi.Connection ,
+	oak.fcgi.Base ,
+	oak.fcgi.Application ;
 
 	
 package import 
@@ -21,6 +21,7 @@ package import
 	std.stdio;
 
 package import 
+	oak.util.Ctfe , 
 	oak.util.Buffer ;
 
 pragma(lib, "fcgi");

@@ -1,7 +1,7 @@
 
-module fcgi4d.test ;
+module oak.fcgi.test ;
 
-import fcgi4d.all ;
+import oak.fcgi.all ;
 
 version(FCGI_TEST):
 

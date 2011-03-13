@@ -12,9 +12,7 @@ import
 	
 import std.c.string : memcpy;
 
-private alias OutputRange!(char) out_range ;
-
-final class vBuffer  :  out_range {
+final class vBuffer  :  OutputRange!(char)  {
 	 alias typeof(this)	This;
         static enum MaxLen	= int.max >> 4 ;
 	

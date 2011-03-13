@@ -1,6 +1,6 @@
-module fcgi4d.Protocol ;
+module oak.fcgi.Protocol ;
 
-import fcgi4d.all ;
+import oak.fcgi.all ;
 
 
 enum {

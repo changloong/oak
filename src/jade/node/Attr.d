@@ -1,7 +1,7 @@
 
-module jade.node.Attr ;
+module oak.jade.node.Attr ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class Attr : Node {
 	

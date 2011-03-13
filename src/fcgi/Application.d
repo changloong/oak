@@ -1,7 +1,7 @@
 
-module fcgi4d.Application;
+module oak.fcgi.Application;
 
-import fcgi4d.all, core.thread ;
+import oak.fcgi.all, core.thread ;
 
 
 class FCGI_Application  {

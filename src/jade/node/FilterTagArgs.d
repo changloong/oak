@@ -1,7 +1,7 @@
 
-module jade.node.FilterTagArgs ;
+module oak.jade.node.FilterTagArgs ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class FilterTagArgs : Node {
 

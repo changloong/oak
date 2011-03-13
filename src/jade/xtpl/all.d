@@ -1,11 +1,11 @@
 
-module jade.xtpl.all ;
+module oak.jade.xtpl.all ;
 
 package import 
-	jade.Jade ,
-	jade.xtpl.Vars ,
-	jade.xtpl.Template ,
-	jade.xtpl.Plugin ;
+	oak.jade.Jade ,
+	oak.jade.xtpl.Vars ,
+	oak.jade.xtpl.Template ,
+	oak.jade.xtpl.Plugin ;
 
 
 package import 

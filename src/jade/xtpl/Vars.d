@@ -1,8 +1,8 @@
 
-module jade.xtpl.Vars ;
+module oak.jade.xtpl.Vars ;
 
 import 
-	jade.xtpl.all;
+	oak.jade.xtpl.all;
 	
 class XTpl_Var {
 	ptrdiff_t	id ;

@@ -1,7 +1,7 @@
 
-module jade.node.ElseCode ;
+module oak.jade.node.ElseCode ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class ElseCode : Node {
 	

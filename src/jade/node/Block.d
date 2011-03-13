@@ -1,7 +1,7 @@
 
-module jade.node.Block ;
+module oak.jade.node.Block ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class Block : Node {
 	

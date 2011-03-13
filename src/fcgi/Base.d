@@ -1,4 +1,4 @@
-module fcgi4d.Base ;
+module oak.fcgi.Base ;
 
 
 extern (C)

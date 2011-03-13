@@ -1,7 +1,7 @@
 
-module jade.node.Each ;
+module oak.jade.node.Each ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class Each : Node {
 	string type, key, value, value_type, obj ;

@@ -1,7 +1,7 @@
 
-module jade.node.Filter ;
+module oak.jade.node.Filter ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class Filter : Node {
 	string		type ;

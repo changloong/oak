@@ -1,7 +1,7 @@
 
-module jade.node.TagClass ;
+module oak.jade.node.TagClass ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class TagClass : Node {
 	string		value ;

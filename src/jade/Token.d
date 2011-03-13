@@ -1,6 +1,6 @@
-module jade.Token;
+module oak.jade.Token;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 struct Tok {
 	enum Type {
@@ -51,7 +51,7 @@ struct Tok {
 		FilterTagKeyValueEnd ,
 	}
 	
-	static const string[] Type_Name	= EnumMemberName!(Type) ;
+	static const string[] Type_Name	= ctfe_enum_array!(Type) ;
 	
 	Type	ty ;
 	size_t	ln, _ln ;

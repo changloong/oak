@@ -1,7 +1,7 @@
 
-module jade.node.AttrIf ;
+module oak.jade.node.AttrIf ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class AttrIf : Node {
 	

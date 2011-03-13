@@ -1,9 +1,9 @@
 
-module jade.test ;
+module oak.jade.test ;
 
 version(JADE_TEST) :
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 
 void main(string[] args ){

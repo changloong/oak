@@ -1,7 +1,7 @@
 
-module jade.node.CommentBlock ;
+module oak.jade.node.CommentBlock ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class CommentBlock : Node {
 	bool 	isHide ;

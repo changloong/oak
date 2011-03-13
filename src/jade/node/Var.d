@@ -1,7 +1,7 @@
 
-module jade.node.Var ;
+module oak.jade.node.Var ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class Var : Node {
 	string		value ;

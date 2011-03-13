@@ -1,7 +1,7 @@
 
-module jade.node.InlineIf ;
+module oak.jade.node.InlineIf ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class InlineIf : Node {
 	

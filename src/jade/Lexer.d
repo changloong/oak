@@ -1,7 +1,7 @@
 
-module jade.Lexer ;
+module oak.jade.Lexer ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 struct Lexer {
 	Pool*		pool ;

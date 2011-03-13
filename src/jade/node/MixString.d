@@ -1,7 +1,7 @@
 
-module jade.node.MixString ;
+module oak.jade.node.MixString ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class MixString : Node {
 	

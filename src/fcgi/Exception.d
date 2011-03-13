@@ -1,6 +1,6 @@
-module fcgi4d.Exception ;
+module oak.fcgi.Exception ;
 
-import fcgi4d.all ;
+import oak.fcgi.all ;
 
 class FCGI_ProtocolException : StreamException {
     this (string msg)

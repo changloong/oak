@@ -1,7 +1,7 @@
 
-module jade.node.ElseIfCode ;
+module oak.jade.node.ElseIfCode ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class ElseIfCode : Node {
 	

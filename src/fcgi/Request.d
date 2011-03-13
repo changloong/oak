@@ -1,6 +1,6 @@
-module fcgi4d.Request ;
+module oak.fcgi.Request ;
 
-import fcgi4d.all ;
+import oak.fcgi.all ;
 
 class FCGI_Request {
 	public ptrdiff_t 	exitStatus;

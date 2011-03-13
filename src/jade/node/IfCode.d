@@ -1,7 +1,7 @@
 
-module jade.node.IfCode ;
+module oak.jade.node.IfCode ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class IfCode : Node {
 	

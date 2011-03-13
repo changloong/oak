@@ -1,9 +1,9 @@
 
-module jade.Parser ;
+module oak.jade.Parser ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
-alias jade.node.Filter.Filter Filter ;
+alias oak.jade.node.Filter.Filter Filter ;
 
 struct Parser {
 	Pool*		pool ;

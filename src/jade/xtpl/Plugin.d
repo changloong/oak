@@ -1,7 +1,7 @@
 
-module jade.xtpl.Plugin ;
+module oak.jade.xtpl.Plugin ;
 
-import jade.xtpl.all ;
+import oak.jade.xtpl.all ;
 
 __gshared	string[] project_paths ;
 

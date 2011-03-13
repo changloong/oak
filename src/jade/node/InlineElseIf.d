@@ -1,7 +1,7 @@
 
-module jade.node.InlineElseIf ;
+module oak.jade.node.InlineElseIf ;
 
-import jade.Jade ;
+import oak.jade.Jade ;
 
 final class InlineElseIf : Node {
 	string		cond ;
