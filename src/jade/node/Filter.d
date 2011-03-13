@@ -3,6 +3,13 @@ module oak.jade.node.Filter ;
 
 import oak.jade.Jade ;
 
+import 
+	oak.jade.filter.Js,
+	oak.jade.filter.Css,
+	oak.jade.filter.Text,
+	oak.jade.filter.Include,
+	oak.jade.filter.I18n;
+
 final class Filter : Node {
 	string		type ;
 	bool		hasVar ;
@@ -17,6 +24,6 @@ final class Filter : Node {
 	}
 	
 	void asD(Compiler* cc) {
-		
+		Log("type = %s", type) ;
 	}
 }
