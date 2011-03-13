@@ -33,7 +33,19 @@ final class Tag : Node {
 		cc.asString("<") ;
 		string _tag	= tag[0] is '*'  ? "div" : tag ;
 		cc.asString(_tag);
-		bool isFindAttr = false ;
+
+		asAttrs(cc) ;
+		
+		if( empty ) {
+			cc.asString(" />");
+		} else {
+			cc.asString(">");
+			eachD(cc);
+			cc.asString("</").asString(_tag).asString(">");
+		}
+	}
+	
+	void asAttrs(Compiler* cc) {
 		
 		if( id !is null ) {
 			cc.asString(" id=\"").asString(id).asString("\"") ;
@@ -45,14 +57,6 @@ final class Tag : Node {
 		
 		if( attrs !is null ) {
 			attrs.eachD(cc);
-		}
-		
-		if( empty ) {
-			cc.asString(" />");
-		} else {
-			cc.asString(">");
-			eachD(cc);
-			cc.asString("</").asString(_tag).asString(">");
 		}
 	}
 }

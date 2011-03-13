@@ -5,7 +5,7 @@ import oak.jade.Jade ;
 
 struct Lexer {
 	Pool*		pool ;
-	vBuffer		_str_bu ;
+	vBuffer	_str_bu ;
 	string		filename ;
 	
 	const(char)*	_ptr ;
@@ -1247,16 +1247,19 @@ struct Lexer {
 			parseInlineString('"');
 			NewTok(Tok.Type.FilterArgEnd) ;
 		}
-		if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
-			return tk ;
-		}
-		skip_space(true) ;
+		skip_space();
 		if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 			return tk ;
 		}
 		
 		if( _ptr[0] !is '[' ) {
-			parseTagWithIdClass(true) ;
+			_offset_tabs++ ;
+			if( _ptr[0] is '('  || _ptr[0] is '#' || _ptr[0] is '.'  ) {
+				parseTag("*", true) ;
+			} else {
+				parseTagWithIdClass(true) ;
+			}
+			_offset_tabs-- ;
 			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 				return tk ;
 			}

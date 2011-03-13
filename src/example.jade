@@ -3,9 +3,11 @@ html(lang=en)
   head
     meta(name=Content-Type, content=text/html, charset=utf-8)
     title ${page_title}
+    :css (href=/test.css)
+    :js (src=/test.js)
     :include!"header.jade"
   body
-      #user_list.test1
+    #user_list.test1
       | test
       | multi line
       | hehe
@@ -18,6 +20,9 @@ html(lang=en)
       - else
         p please 
           a#login(href=/login) login
+      :text #test1(name=test1)
+         test 123
+         <a> test </a>
       // test
       table(border=1)
         tr: th(colspan=2, style=(color:rgb(1,60,33); font-size:16px;) , onclick=alert("123"))  req.header

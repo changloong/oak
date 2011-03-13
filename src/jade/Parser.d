@@ -683,6 +683,7 @@ struct Parser {
 			switch( tk.ty ) {
 				case Tok.Type.Tag:
 					node.tag	= parseTag ;
+					assert( node.tag !is null) ;
 					break;
 
 				default:
