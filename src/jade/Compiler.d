@@ -30,6 +30,9 @@ struct Compiler {
 	string		filename ;
 	asType		_astype ;
 	
+	bool delegate(string, ref string, ref string) check_each_keyvalue ;
+	bool delegate(ref string) check_var_name ;
+	
 	~this(){
 		pool.__dtor ;
 	}
@@ -49,7 +52,9 @@ struct Compiler {
 	}
 	
 	void check_each(Each node){
-		
+		if( check_each_keyvalue !is null && ! check_each_keyvalue(node.obj, node.type, node.value_type) ) {
+			parser.err("can't infer each type at `%s`:`%d` ", filename , node.ln);
+		}
 	}
 	
 	void check_var(Var var){

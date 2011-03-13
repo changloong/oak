@@ -316,15 +316,63 @@ class XTpl {
 		}
 		
 		_tuple_bu("\n\t void render(vBuffer ob){\n\tassert(ob !is null);\n ");
-	
+		
+		auto tmp_val	= jade.check_each_keyvalue ;
+		jade.check_each_keyvalue = &this.check_each_keyvalue ;
 		_tuple_bu(jade.compile) ;
-
+		 jade.check_each_keyvalue	= tmp_val ;
 		
 		_tuple_bu("\t}\n");
 		_tuple_bu("} \n");
 		_tuple_bu("private alias xtpl_tuple_")(_name)(" _tpl_struct ;\n");
 		
 		return _tuple_bu.toString ;
+	}
+	
+	public bool check_each_keyvalue(string obj, ref string type, ref string value_type ) {
+		auto pvar = obj in _vars ;
+		if( pvar is null  ) {
+			return true ;
+		}
+		auto var = *pvar ;
+		foreach( it; var._Each_Types ) {
+			if( type !is null ) {
+				if( value_type is null ) {
+					if( it.key == type ) {
+						value_type	= it.value ;
+						break ;
+					}
+				}
+			} else {
+				if( value_type !is null ) {
+					if( it.value  == value_type ) {
+						if( it.key != "void" ) {
+							type	= it.key ;
+							break ;
+						}
+					}
+				}
+			}
+		}
+		
+		if( type is null && value_type is null  ) {
+			foreach( it; var._Each_Types ) {
+				if( it.key !is null ) {
+					type	= it.key ;
+					value_type	= it.value ;
+					break ;
+				}
+			}
+		}
+		
+		if( type is null && value_type is null  ) {
+			foreach( it; var._Each_Types ) {
+				value_type	= it.value ;
+				break ;
+			}
+		}
+		
+		return true ;
 	}
 	
 	public string toString(){

@@ -24,3 +24,8 @@ html(lang=en)
           tr
             th ${key}
             td ${value}
+        tr: th(colspan=2, style=(color:rgb(1,60,33); font-size:16px;) , onclick=alert("123"))  env
+        - each key, value in env
+          tr
+            th ${key}
+            td ${value}

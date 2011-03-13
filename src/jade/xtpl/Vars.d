@@ -75,7 +75,7 @@ class XTpl_Var {
 			}
 			int i	= ctfe_indexof( _key_val, ',');
 			if( i > 0 && i < _key_val.length ) {
-				auto p = new Each_Key_Value( _key_val[0..i].idup, _key_val[i..$].idup ) ;
+				auto p = new Each_Key_Value( _key_val[0..i].idup, _key_val[i+1..$].idup ) ;
 				_Each_Types	~= p ;
 				// tpl_print("\n`%s` , => `%s`=>`%s`\n", name, p.key, p.value );
 			}

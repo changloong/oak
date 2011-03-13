@@ -43,6 +43,7 @@ class MyApp : FCGI_Application {
 	User	u ;
 	string	page_title	= "test page"[] ;
 	vBuffer bu ;
+	string[string] env ;
 	
 	
 	public this(size_t id) {
@@ -66,6 +67,7 @@ class MyApp : FCGI_Application {
 		
 		tpl.assign!("env", __FILE__, __LINE__)(environment.toAA);
 		
+		env	= environment.toAA ;
 		bu		= new vBuffer(1024 * 32, 1024 * 512 ) ;
 		
 	}
@@ -92,7 +94,6 @@ class MyApp : FCGI_Application {
 		
 		tpl.assign!"req"( req );
 		
-		auto env	= environment.toAA ;
 		tpl.assign!"env"( env );
 		
 		
