@@ -6,7 +6,7 @@ class User {
 	bool 	login = false;
 	bool 	admin ;
 	int	id  = 3001 ;
-	string 	name = "Chang Long" ;
+	string 	name = "<Chang Long>" ;
 }
 
 

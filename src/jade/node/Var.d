@@ -9,6 +9,7 @@ final class Var : Node {
 	
 	this(Tok* tk) {
 		value	= tk.string_value ;
+		unQuota = tk.bool_value ;
 	}
 	
 	void asD(Compiler* cc) {

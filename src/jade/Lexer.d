@@ -293,6 +293,8 @@ struct Lexer {
 						auto val	= __ptr[ 0 .. _ptr - __ptr -1 ] ;
 						if( _tmp_ty is Tok.Type.Var ) {
 							Tok* tk	= NewTok(Tok.Type.Var, cast(string) val);
+							// make var escape
+							tk.bool_value	= true ;
 							return tk ;
 						}
 						if( val.length < 3 ) {
