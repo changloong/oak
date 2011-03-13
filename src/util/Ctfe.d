@@ -38,7 +38,7 @@ uint ctfe_a2i(T) (T[] s, int radix = 10){
         return value;
 }
 
-ptrdiff_t ctfe_indexOf(T)(T[] a, T v){
+ptrdiff_t ctfe_indexof(T)(T[] a, T v){
 	foreach(int i, _v ; a ){
 		if( _v == v ) {
 			return i ;

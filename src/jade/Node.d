@@ -81,7 +81,7 @@ abstract class Node {
 	Node		next , firstChild , lastChild ;
 	
 	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
-		static const _ty = ctfe_indexOf!(string)(Type_Name, name[2..$]);
+		static const _ty = ctfe_indexof!(string)(Type_Name, name[2..$]);
 		static assert(_ty >=0 ,  typeof(this).stringof ~ "." ~ name ~ " is not exists");
 		return _ty is ty ;
 	}
