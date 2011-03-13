@@ -24,6 +24,30 @@ final class Filter : Node {
 	}
 	
 	void asD(Compiler* cc) {
-		Log("type = %s", type) ;
+		Render_Map* map = null ;
+		foreach( ref p; Render_Maps) {
+			if( p.name == type ) {
+				map = &p ;
+			}
+		}
+		if( map is null ) {
+			cc.err("filter `%s` is not defined at line:%d ", type, ln);
+		}
+		
+		// Log("type = %s,", map.name ) ;
+		map.fn(cc, this) ;
 	}
 }
+
+struct Render_Map {
+	const string name ;
+	const void function(Compiler* cc, Filter) fn ;
+}
+
+static __gshared Render_Map[] Render_Maps = [
+		{"js",  &Jade_Js_Filter } ,
+		{"css",  &Jade_Css_Filter } ,
+		{"text",  &Jade_Text_Filter } ,
+		{"include",  &Jade_Include_Filter } ,
+		{"i18n",  &Jade_I18n_Filter } ,
+	] ;

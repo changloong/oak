@@ -51,6 +51,14 @@ struct Compiler {
 		}
 	}
 	
+	void err(size_t _line = __LINE__, T...)(string fmt, T t){
+		auto a = appender!string() ;
+		formattedWrite(a, "(%s:%d) %s", __FILE__, _line, filename);
+		formattedWrite(a, fmt, t);
+		//formattedWrite(a, " at file:`%s` line:%d", filename, ln);
+		throw new Exception( a.data );
+	}
+	
 	void check_each(Each node){
 		if( check_each_keyvalue !is null && ! check_each_keyvalue(node.obj, node.type, node.value_type) ) {
 			parser.err("can't infer each type at `%s`:`%d` ", filename , node.ln);

@@ -619,6 +619,7 @@ struct Lexer {
 				NewTok(Tok.Type.String, cast(string) _str_bu.slice[_str_pos ..$] );
 			}
 			parseString(_search_code) ;
+			NewTok(Tok.Type.String, "\n" );
 		}
 	}
 	

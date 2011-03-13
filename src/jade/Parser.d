@@ -477,9 +477,8 @@ struct Parser {
 					assert( tk.ty is Tok.Type.AttrValueEnd );
 					break L1;
 				default:
-					dump_next();
-					Log("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
-					assert(false) ;
+					dump_tok();
+					err("%s ln:%d tab:%d  `%s`", tk.type(), tk.ln, tk.tabs, tk.string_value);
 			}
 		}
 		return node ;

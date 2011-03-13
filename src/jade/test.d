@@ -28,7 +28,7 @@ void main(string[] args ){
 		cc.Init(file, data) ;
 		auto code	= cc.compile ;
 		if( i is 0  ){
-			// writefln(code);
+			 writefln(code);
 			// cc.parser.dump_tok ;
 		}
 	}
