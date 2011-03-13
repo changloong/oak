@@ -32,7 +32,7 @@ struct Compiler {
 	
 	bool delegate(string, ref string, ref string) check_each_keyvalue ;
 	bool delegate(ref string) check_var_name ;
-	string delegate(string) load_source ;
+	string delegate(ref string) load_source ;
 	
 	~this(){
 		if( pool !is null ) {
@@ -88,7 +88,7 @@ struct Compiler {
 
 	}
 	
-	string load_file(string file){
+	string load_file(ref string file){
 		if( load_source !is null ) {
 			return load_source(file);
 		} else {

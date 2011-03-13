@@ -344,9 +344,10 @@ class XTpl {
 		return _tuple_bu.toString ;
 	}
 	
-	string load_source(string file) {
+	string load_source(ref string file) {
 		char[] _file_path ;
 		auto _file_data = Load_Source_( cast(char[]) file, _file_path, false) ;
+		file	= cast(string) _file_path ;
 		return _file_data ;
 	}
 	

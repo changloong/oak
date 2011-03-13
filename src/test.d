@@ -125,5 +125,6 @@ class MyApp : FCGI_Application {
 
 void main() {
 	auto conn	= new shared(FCGI_Connection)(null, "1983" );
+	log("FastCGI Server 0.0.0.0:1983 ");
 	FCGI_Application.loop!MyApp(conn, true, 1) ;
 }
