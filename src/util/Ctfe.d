@@ -168,6 +168,17 @@ template ctfe_eachtype(T) if(  !isIterable!(T) && !isPointer!(T) || isSomeString
 	alias ctfe_tuple!(void) Values ;
 }
 
+string ctfe_each_type(T)() {
+	alias ctfe_eachtype!(T) E ;
+	string ret = "" ;
+	foreach( i , c; E.Values ) {
+		static if( !is(c==void) ) {
+			ret	~= ctfe_typeof!(E.Keys[i]) ~ "," ~ ctfe_typeof!(c) ~ ":";
+		}
+	}
+	return ret ;
+}
+
 template ctfe_eachtype(T) if( isPointer!(T) ) {
 	alias ctfe_eachtype!(pointerTarget!(T) ) ctfe_eachtype ;
 }

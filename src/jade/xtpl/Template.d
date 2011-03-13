@@ -113,7 +113,7 @@ class XTpl {
 	static char[] Tpl_Assign(char[][] args) {
 		
 		This _this	= Tpl_New(args);
-
+		
 		auto _args	= cast(char[][]) std.array.split(args[2], ":" ) ;
 		
 		if( _args is null || _args.length !is 5 ){
@@ -122,7 +122,7 @@ class XTpl {
 		
 		foreach(ref c;args[2]) if(c is ':') c = 0;
 		
-		auto var	= _this.getVar( _args ) ;
+		auto var	= _this.getVar( _args , args[3] ) ;
 		
 		return cast(char[]) var.index_message() ;
 	}
@@ -197,7 +197,7 @@ class XTpl {
 		_tuple_bu	= new vBuffer(1024, 1024);
 	}
 	
-	private XTpl_Var getVar(char[][] args){
+	private XTpl_Var getVar(char[][] args, char[] _each_types){
 		
 		string _name = cast(string) args[0] ;
 		
@@ -219,6 +219,9 @@ class XTpl {
 				}
 			}
 			var		= new XTpl_Var(this, args) ;
+			
+			var.setEachType(_each_types );
+		
 		} else {
 			var	= *_pvar ;
 			if( var.name != args[ XTpl_Var.Index.Name ] ) {

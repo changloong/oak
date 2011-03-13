@@ -23,14 +23,9 @@ class Tpl(string TplName, string _class_file = __FILE__, size_t _class_line = __
 		static const string _method_loc =  name ~ ":"  ~ _file[0..$] ~ "#" ~ ctfe_i2a(_line) ~ "," ~ __file[0..$] ~ "#" ~ ctfe_i2a(__line) ;
 		
 		enum _type = ctfe_typeof!(T) ;
+		enum _each_type = ctfe_each_type!(T);
 		
-		alias ctfe_eachtype!(T) _EachType ;
-		pragma(msg,  _EachType.Keys );
-		pragma(msg,  _EachType.Values );
-		
-
-		
-		static const tpl_var_id_offset_size	= import( "tpl://assign::" ~ _class_loc ~ "::"  ~ ( _method_loc ~ ":" ~  _type ~ ":" ~ typeid(T).stringof[1..$] ~ ":" ~ T.sizeof.stringof ) );
+		static const tpl_var_id_offset_size	= import( "tpl://assign::" ~ _class_loc ~ "::"  ~ ( _method_loc ~ ":" ~  _type ~ ":" ~ typeid(T).stringof[1..$] ~ ":" ~ T.sizeof.stringof ~ "::" ~ _each_type ) );
 		static const list = ctfe_split(tpl_var_id_offset_size, ':');
 		static assert(list.length is 5);
 		static const id = ctfe_a2i(list[2]);
