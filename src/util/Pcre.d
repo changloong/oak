@@ -3,7 +3,7 @@ module oak.util.Pcre ;
 
 import std.string,  std.conv, std.traits ;
 
-version(OKA_PCRE) :
+version(OAK_PCRE) :
 
 pragma(lib , "pcre");
 
