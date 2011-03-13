@@ -24,19 +24,11 @@ class Tpl(string TplName, string _class_file = __FILE__, size_t _class_line = __
 		
 		enum _type = ctfe_typeof!(T) ;
 		
-		static if( isArray!(T) ) {
-			// ForeachType
-		} else	static if( isPointer!(T) && isArray!( pointerTarget!(T) ) ) {
-			
-		} else static if( isAssociativeArray!(T) ) {
-			
-		} else static if( isPointer!(T) && isAssociativeArray!( pointerTarget!(T) )  ) {
-			
-		} else static if( isIterable!(T)  ) {
-			static assert( is(T==class) || is(T==struct), T.stringof );
-			// opApply
-			//__traits(getMember, T, )
-		}
+		alias ctfe_eachtype!(T) _EachType ;
+		pragma(msg,  _EachType.Keys );
+		pragma(msg,  _EachType.Values );
+		
+
 		
 		static const tpl_var_id_offset_size	= import( "tpl://assign::" ~ _class_loc ~ "::"  ~ ( _method_loc ~ ":" ~  _type ~ ":" ~ typeid(T).stringof[1..$] ~ ":" ~ T.sizeof.stringof ) );
 		static const list = ctfe_split(tpl_var_id_offset_size, ':');

@@ -1,13 +1,39 @@
 module oka.test ;
 
 import oak.all  ;
+import std.process ;
 
 class User {
 	bool 	login = false;
 	bool 	admin ;
 	int	id  = 3001 ;
 	string 	name = "<Chang Long>" ;
+	
+	int opApply(scope int delegate(ref char[] line, ref int o) dg){
+		return 0;
+	}
+	
+	final int opApply(scope int delegate(ref char[] line) dg){
+		return 0;
+	}
+	
 }
+struct User2 {
+	bool 	login = false;
+	bool 	admin ;
+	int	id  = 3001 ;
+	string 	name = "<Chang Long>" ;
+	
+	
+	int opApply(scope int delegate(ref char[]) dg){
+		return 0;
+	}
+	
+	int opApply(scope int delegate(ref string, ref string) dg) {
+		return 0;
+	}
+}
+
 
 
 class MyApp : FCGI_Application {
@@ -29,9 +55,16 @@ class MyApp : FCGI_Application {
 		
 		tpl.assign!("user", __FILE__, __LINE__)(u);
 		
+		auto u2 = new User2 ;
+		tpl.assign!("user2", __FILE__, __LINE__)( *u2 ) ;
+		
+		foreach( string v, string k; *u2){
+			
+		}
+		
 		tpl.assign!("page_title", __FILE__, __LINE__)( page_title );
 		
-		// tpl.assign!("env", __FILE__, __LINE__)(environment.toAA);
+		tpl.assign!("env", __FILE__, __LINE__)(environment.toAA);
 		
 		bu		= new vBuffer(1024 * 32, 1024 * 512 ) ;
 		
@@ -53,8 +86,15 @@ class MyApp : FCGI_Application {
 		if( u.id % 3 is 0 ) {
 			u.admin	= !u.admin ;
 		}
+		int[] test_i = [1, 3, 4];
+		
+		tpl.assign!"test_i"( test_i );
 		
 		tpl.assign!"req"( req );
+		
+		auto env	= environment.toAA ;
+		tpl.assign!"env"( env );
+		
 		
 		mixin Tpl_Jade!("./example.jade", typeof(tpl) , __FILE__, __LINE__) jade ;
 		

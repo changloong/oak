@@ -2,6 +2,7 @@
 module oak.util.Ctfe ;
 
 import 
+	std.bind,
 	std.algorithm,
 	std.array,
 	std.string,
@@ -96,3 +97,92 @@ string ctfe_typeof(T)() if( !isPointer!(T) && !isAssociativeArray!(T) ) {
 string ctfe_typeof(T)() if( isPointer!(T) ) {
 	return ctfe_typeof(pointerTarget!(T)) ~ "*" ;
 }
+
+template ctfe_eachtype(T : V[K], K, V) {
+	alias ctfe_tuple!(K) Keys ;
+	alias ctfe_tuple!(V) Values ;
+}
+
+template ctfe_eachtype(T : V[], V) if( !isSomeString!(T) ) {
+	alias ctfe_tuple!(ptrdiff_t) Keys ;
+	alias ctfe_tuple!(V) Values ;
+}
+
+template ctfe_eachtype(T : V[N], V, size_t N) if( !isSomeString!(T) ) {
+	alias ctfe_tuple!(ptrdiff_t) Keys ;
+	alias ctfe_tuple!(V) Values ;
+}
+
+
+template ctfe_tuple( TList... ){
+	alias TList ctfe_tuple ;
+}
+
+private  template ctfe_Apply(T) {
+	static if( !is(T==function) || !isIntegral!( ReturnType!(T) )  ) {
+		alias void Key ;
+		alias void Value ;
+	} else {
+		alias ParameterTypeTuple!(T) p1 ;
+		static if( p1.length !is 1 || !is(p1[0]==delegate) || !isIntegral!( ReturnType!(p1[0]) )  ) {
+			alias void Key ;
+			alias void Value ;
+		} else {
+			alias ParameterTypeTuple!(p1[0]) p2 ;
+			
+			static if( p2.length is 1 ) { //  && __traits(isRef, p2[0])
+				alias void Key ;
+				alias p2[0] Value ;
+			} else static if (  p2.length is 2  ) { // && __traits(isRef, p2[0]) && __traits(isRef, p2[1])
+				alias p2[0] Key ;
+				alias p2[1] Value ;
+			} else {
+				alias void Key ;
+				alias void Value ;
+			}
+		}
+	}
+}
+
+private template ctfe_eachtype_impl( size_t I, TS...) {
+	alias TS[I] T ;
+	alias ctfe_Apply!(T) _T ;
+	static if( I is 0  ) {
+		alias ctfe_tuple!(_T.Key) Keys ;
+		alias ctfe_tuple!(_T.Value) Values ;
+	} else {
+		alias ctfe_tuple!(_T.Key, ctfe_eachtype_impl!(I-1, TS).Keys ) Keys ;
+		alias ctfe_tuple!(_T.Value, ctfe_eachtype_impl!(I-1, TS).Values) Values ;
+	}
+}
+
+template ctfe_eachtype(T) if(  ( is(T==class) || is(T==struct) ) &&  is( typeof(__traits(getOverloads, T, "opApply" )) ) && typeof(__traits(getOverloads, T, "opApply" )).length > 0 ) {
+	alias  typeof(__traits(getOverloads, T, "opApply" )) TS ;
+	alias ctfe_eachtype_impl!(TS.length -1, TS ) Ret ;
+	alias Ret.Keys 	Keys ;
+	alias Ret.Values 	Values ;
+}
+
+template ctfe_eachtype(T) if(  !isIterable!(T) && !isPointer!(T) || isSomeString!(T) ) {
+	alias ctfe_tuple!(void) Keys  ;
+	alias ctfe_tuple!(void) Values ;
+}
+
+template ctfe_eachtype(T) if( isPointer!(T) ) {
+	alias ctfe_eachtype!(pointerTarget!(T) ) ctfe_eachtype ;
+}
+
+template ctfe_isIterable(T) if( isPointer!(T) ){
+	enum bool ctfe_isIterable	= ctfe_isIterable!( pointerTarget!(T) ) ;
+}
+
+template ctfe_isIterable(T) if( !isPointer!(T) ) {
+	static if( isSomeString!(T) ) {
+		enum bool ctfe_isIterable	= false ;
+	} else static if( isIterable!(T) ) {
+		enum bool ctfe_isIterable	= true ;
+	} else {
+		enum bool ctfe_isIterable	= false ;
+	}
+}
+
