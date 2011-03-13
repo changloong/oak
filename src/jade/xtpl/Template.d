@@ -2,12 +2,7 @@
 module jade.xtpl.Template ;
 
 import 
-	jade.xtpl.all;
-
-pragma(lib, "pcre");
-
-
-
+	jade.xtpl.all ;
 
 class XTpl {
 

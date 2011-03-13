@@ -19,7 +19,7 @@ html(lang=en)
           a#login(href=/login) login
       // test
       table(border=1)
-        tr: th(colspan=2, style=(color:rgb(1,60,33); font-size:16px;) , onclick=test("123"))  req.header
+        tr: th(colspan=2, style=(color:rgb(1,60,33); font-size:16px;) , onclick=alert("123"))  req.header
         - each string key, string value in req.header
           tr
             th ${key}

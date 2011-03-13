@@ -2,9 +2,9 @@
 module jade.Jade ;
 
 package import 
-	jade.util.Pool ,
-	jade.util.Buffer , 
-	jade.util.Pcre ;
+	oak.util.Pool,
+	oak.util.Pcre,
+	oak.util.Buffer ;
 
 package import 
 	jade.Token ,
@@ -14,7 +14,6 @@ package import
 	jade.Lexer ,
 	jade.Parser ,
 	jade.Compiler ;
-	
 	
 package import 
 	std.algorithm,

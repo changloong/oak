@@ -1,9 +1,21 @@
-module fcgi4d.Buffer ;
 
-import fcgi4d.all ;
+module oak.util.Buffer ;
 
-final class FCGI_Buffer {
-        alias typeof(this)	This;
+
+import 
+	std.range,
+	std.algorithm,
+	std.array,
+	std.conv,
+	std.string,
+	std.traits;
+	
+import std.c.string : memcpy;
+
+private alias OutputRange!(char) out_range ;
+
+final class vBuffer  :  out_range {
+	 alias typeof(this)	This;
         static enum MaxLen	= int.max >> 4 ;
 	
 	private {
@@ -83,8 +95,9 @@ final class FCGI_Buffer {
 		return true ;
         }
 	
-        final private void expand (size_t size) in{
+        final private void expand(string _file = __FILE__, ptrdiff_t _line = __LINE__ )(size_t size) in{
                 assert( data.length >= pos ) ;
+		assert( size < 1024 * 1024 * 1024 );
         } out{
                 assert( data.length >= pos ) ;
         } body {
@@ -95,12 +108,13 @@ final class FCGI_Buffer {
                 assert(step > 0 );
                 while( len - pos < size ) {
                         len     +=      step ;
-                        assert( len < MaxLen ) ;
+			assert( len < MaxLen ) ;
                 }
                 data.length     = len ;
+		assert(len is  data.length );
         }
 	
-        final size_t append(const void* buffer, size_t len) in {
+        final size_t append(string _file = __FILE__, ptrdiff_t _line = __LINE__ )(const void* buffer, size_t len) in {
                 assert( data.length >= pos ) ;
         } out{
                 assert( data.length >= pos ) ; 
@@ -109,7 +123,7 @@ final class FCGI_Buffer {
                         return 0 ;
                 }
                 if( len > 0 ) {
-                        expand(len);
+                        expand!(_file, _line)(len);
                         memcpy( &data[pos], buffer, len);
                         pos     +=      len ;
                 }
@@ -120,7 +134,7 @@ final class FCGI_Buffer {
 		return cast(string) slice ;
 	}
 
-	final This opCall(T_)(T_ val){
+	final This opCall(T_, string _file = __FILE__, ptrdiff_t _line = __LINE__ )(T_ val){
 		alias Unqual!(T_) T ;
 		static if( is(T==char) ) {
 			expand(1) ;
@@ -130,14 +144,147 @@ final class FCGI_Buffer {
 			static assert(false);
 		} else static if( isNumeric!(T) ){
 			string _tmp = to!string(val) ;
-			append(_tmp.ptr, _tmp.length ) ;
+			append!(_file, _line)(_tmp.ptr, _tmp.length ) ;
 		} else static if( isSomeString!(T) ){
-			append(val.ptr, val.length * typeof(val[0]).sizeof ) ;
+			append!(_file, _line)(val.ptr, val.length * typeof(val[0]).sizeof ) ;
 		} else static if( isArray!(T) && ( is( typeof(val[0]) == ubyte) || is( typeof(val[0]) == void)  ) ){
-			append(val.ptr, val.length ) ;
+			append!(_file, _line)(val.ptr, val.length ) ;
 		} else {
 			static assert(false);
 		}
 		return this ;
 	}
+	
+	ptrdiff_t capability() {
+		return data.length ;
+	}
+	
+	final void put(char val){
+		expand(1) ;
+		data[pos] = val ;
+		pos	+=      1 ;
+	}
+	
+	final void put(string val){
+		opCall(val);
+	}
+	
+	final void put(char[] val){
+		opCall(val);
+	}
+	
+	final void unQuote(T)(T inp, ptrdiff_t deep = 0) {
+		static if( isSomeString!(T) ) {
+			ptrdiff_t len = inp.length ;
+			if( deep < 0 || deep >= byte.max ) {
+				deep = 0 ;
+			}
+			for(ptrdiff_t i = 0; i < len; i++){
+				if( inp[i] is '\\' ) {
+					for(ptrdiff_t j = 0; j <= deep; j++) {
+						opCall(`\\`);
+					}
+				} else if( inp[i] is '\"' ) {
+					for(ptrdiff_t j = 0; j < deep; j++) {
+						opCall(`\\`);
+					}
+					opCall('\\')(inp[i]);
+				} else if( inp[i] is '\n'){
+					for(ptrdiff_t j = 0; j < deep; j++) {
+						opCall(`\\`);
+					}
+					opCall('\\')('n');
+				} else if( inp[i] is '\r'){
+					
+				} else {
+					opCall(inp[i]);
+				}
+			}
+		} else {
+			opCall(inp);
+		}
+	}
+	
+	final void escape(T)(T inp){
+		static if( isSomeString!(T) ) {
+			ptrdiff_t len = inp.length ;
+			for(ptrdiff_t i = 0; i < len; i++){
+				if( inp[i] is '\\' ){
+					opCall("\\\\");
+				} else if( inp[i] is '\"' ){
+					opCall(`&quot;`);
+				} else if( inp[i] is '>' ){
+					opCall(`&gt;`);
+				}else if( inp[i] is '<' ){
+					opCall(`&lt;`);
+				} else if( inp[i] is '&' ){
+					opCall(`&amp;`);
+				} else if( inp[i] is '\n'){
+					opCall('\\')('n');
+				} else if( inp[i] is '\r'){
+					opCall('\\')('n');
+					if( i !is len && inp[i+1] is '\n' ) {
+						i++;
+					}
+				} else {
+					opCall(inp[i]);
+				}
+			}	
+		} else {
+			opCall(inp);
+		}
+	}
+	
+	final void unstrip(string inp){
+		ptrdiff_t len = inp.length ;
+		for(ptrdiff_t i = 0; i < len; i++){
+			if( inp[i] is '\\' ){
+				opCall("\\\\");
+			} else if( inp[i] is '\"' ){
+				opCall('\\')(inp[i]);
+			} else if( inp[i] is '\n'){
+				opCall('\\')('n');
+			} else if( inp[i] is '\r'){
+				
+			} else {
+				opCall(inp[i]);
+			}
+		}
+	}
+
+	final void strip( string inp){
+		ptrdiff_t len = inp.length ;
+		for(ptrdiff_t i = 0; i < len; i++){
+			if( inp[i] is '\\' ){
+				i++;
+				if( i is len  ) {
+					break;
+				}
+				switch( inp[i] ) {
+					case 'n':
+						opCall('n');
+						break;
+					case '\'':
+						opCall('\'');
+						break;
+					case 't':
+						opCall('\t');
+						break;
+					case 'r':
+						opCall('\r');
+						break;
+					case '\\':
+						opCall('\\');
+						break;
+					default:
+						i--;
+						opCall(inp[i]);
+				}
+			} else {
+				opCall(inp[i]);
+			}
+		}
+	}
 }
+
+

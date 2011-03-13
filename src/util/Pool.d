@@ -1,7 +1,10 @@
 
-module jade.util.Pool ;
+module oak.util.Pool ;
 
-import jade.Jade ;
+import 
+	std.c.string,
+	core.memory ,
+	std.traits ;
 
 
 struct Pool {

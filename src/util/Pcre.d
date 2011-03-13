@@ -1,11 +1,7 @@
 
-module jade.util.Pcre ;
+module oak.util.Pcre ;
 
-import std.string, std.conv, std.traits ;
-
-version(JADE_PCRE):
-
-import jade.Jade ;
+import std.string,  std.conv, std.traits ;
 
 pragma(lib , "pcre");
 

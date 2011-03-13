@@ -1,10 +1,11 @@
-//: \$dmd2 -J. \+..\jade\util\Buffer.d \+..\fcgi -O -inline -release
+//: \$dmd2 -J. \+..\util\Buffer.d \+..\fcgi -O -inline -release
 // -debug -g -unittest
 
 module tpl2.test ;
 
-import std.stdio, std.conv, std.traits, jade.util.Buffer , std.datetime,  fcgi4d.all ,  std.process ;
+import std.stdio, std.conv, std.traits, std.datetime,  fcgi4d.all ,  std.process ;
 
+import oak.util.Buffer ;
 
 alias vBuffer Buffer;
 

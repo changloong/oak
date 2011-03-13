@@ -27,5 +27,5 @@ public int run (FCGI_Request req){
 
 void main() {
 	auto conn	= new shared(FCGI_Connection)(null, "1983" );
-	FCGI_Application.loop!run(conn, true, 8) ;
+	FCGI_Application.loop!run(conn, true, 2) ;
 }
