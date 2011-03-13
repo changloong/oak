@@ -54,7 +54,7 @@ string[] ctfe_split(string s, char c){
 	while(s.length >0 && s[0] is c ) s = s[1..$];
 	while(s.length >0 && s[$-1] is c ) s = s[0..$-1];
 	
-	int i, j =0, len = s.length;
+	ptrdiff_t i, j =0, len = s.length;
 	while(i < len ){
 		while( i < len && s[i] !is c ){
 			i++ ;
