@@ -82,3 +82,17 @@ string[] ctfe_enum_array(T)() if(is(T==enum)){
 
 
 
+
+
+
+string ctfe_typeof(T : V[K], K, V)() if( isAssociativeArray!(T) ) {
+	return ctfe_typeof!(K) ~ "[" ~ ctfe_typeof!(V) ~ "]" ; 
+}
+
+string ctfe_typeof(T)() if( !isPointer!(T) && !isAssociativeArray!(T) ) {
+	return T.stringof ;
+}
+
+string ctfe_typeof(T)() if( isPointer!(T) ) {
+	return ctfe_typeof(pointerTarget!(T)) ~ "*" ;
+}

@@ -27,30 +27,11 @@ class Tpl(string TplName, string _class_file = __FILE__, size_t _class_line = __
 	void opDispatch(string s, T)(T i) {
 		writefln("S.opDispatch('%s', %s)", s, i);
 	}
-	
-	static string type_of(T : V[K], K, V)() if( isAssociativeArray!(T) ) {
-		return type_of!(K) ~ "[" ~ type_of!(V) ~ "]" ; 
-	}
-	
-	static string type_of(T)() if( !isPointer!(T) && !isAssociativeArray!(T) ) {
-		return T.stringof ;
-	}
-	
-	static string type_of(T)() if( isPointer!(T) ) {
-		return type_of(pointerTarget!(T)) ~ "*" ;
-	}
-	
-	/*
-	static template each_type(T : V[K], K, V) if( isAssociativeArray!(T) ) {
-		alias K Key ;
-		alias V Value ;
-	}
-	*/
 
 	typeof(this) assign(string name, string __file = __FILE__, size_t __line = __LINE__, T)(T t){
 		static const string _method_loc =  name ~ ":"  ~ _file[0..$] ~ "#" ~ ctfe_i2a(_line) ~ "," ~ __file[0..$] ~ "#" ~ ctfe_i2a(__line) ;
 		
-		enum _type = type_of!(T) ;
+		enum _type = ctfe_typeof!(T) ;
 		
 		static if( isArray!(T) ) {
 			// ForeachType
