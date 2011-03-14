@@ -5,6 +5,7 @@ import oak.jade.Jade ;
 
 import 
 	oak.jade.filter.Js,
+	oak.jade.filter.Code,
 	oak.jade.filter.Css,
 	oak.jade.filter.Text,
 	oak.jade.filter.Include,
@@ -46,6 +47,7 @@ struct Render_Map {
 
 static __gshared Render_Map[] Render_Maps = [
 		{"js",  &Jade_Js_Filter } ,
+		{"code", &Jade_Code_Filter } ,
 		{"css",  &Jade_Css_Filter } ,
 		{"text",  &Jade_Text_Filter } ,
 		{"include",  &Jade_Include_Filter } ,
