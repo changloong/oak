@@ -49,6 +49,7 @@ extern "C" {
 #if _WIN32
 
 static	HINSTANCE plugin_hdll ;
+void plugin_export_dmd_data();
 
 bool plugin_load() {
 	dmd_xtpl_loaded	= true ;
@@ -57,7 +58,6 @@ bool plugin_load() {
 		printf("load dmd_xtpl error \n");
        		os_error();
 	}
-	
 	// load plugin_lib_export
 	plugin_lib_export	=  (plugin_lib_export_fn) GetProcAddress(plugin_hdll, "plugin_lib_export");
 	if( !plugin_lib_export ) {
@@ -65,14 +65,7 @@ bool plugin_load() {
 		return false ;
 	}
 	
-	plugin_lib_export(0, stdout ) ;
-	plugin_lib_export(1, fflush ) ;
-	plugin_lib_export(2, fprintf ) ;
-	
-	for (int i = 0; i < global.filePath->dim; i++){
-		void *path	= (void *) global.filePath->data[i];
-		plugin_lib_export(3,  path) ;
-	}
+	plugin_export_dmd_data();
 	
 	// load plugin_lib_import
 	plugin_lib_import	= (plugin_lib_import_fn) GetProcAddress(plugin_hdll, "plugin_lib_import");
@@ -96,7 +89,6 @@ bool plugin_load() {
 		printf("load dmd_xtpl error \n");
        		os_error();
 	}
-	
 	// load plugin_lib_export
 	plugin_lib_export	=  (plugin_lib_export_fn) dlsym(plugin_hdll, "plugin_lib_export");
 	if( !plugin_lib_export ) {
@@ -104,14 +96,7 @@ bool plugin_load() {
 		return false ;
 	}
 
-	plugin_lib_export(0, (void*) printf ) ;
-	
-	// plugin_lib_export(1, (void*) stderr ) ;
-	
-	for (int i = 0; i < global.filePath->dim; i++){
-		void *path	= (void *) global.filePath->data[i];
-		plugin_lib_export(1,  path) ;
-	}
+	plugin_export_dmd_data();
 	
 	// load plugin_lib_import
 	plugin_lib_import	= (plugin_lib_import_fn) dlsym(plugin_hdll, "plugin_lib_import");
@@ -123,6 +108,21 @@ bool plugin_load() {
 }
 
 #endif
+
+void plugin_export_dmd_data(){
+	
+	plugin_lib_export(0, stdout ) ;
+	plugin_lib_export(1, fflush ) ;
+	plugin_lib_export(2, fprintf ) ;
+	
+	for (int i = 0; i < global.filePath->dim; i++){
+		void *path	= (void *) global.filePath->data[i];
+		plugin_lib_export(3,  path) ;
+	}
+	
+	// global.params.isX86_64
+	plugin_lib_export(4, (void*) global.params.isX86_64 ) ;
+}
 
 size_t plugin_import(/* in */char* name, /* out */ char** dname, /* out */ void** d_source){
 	if( !dmd_xtpl_loaded ){

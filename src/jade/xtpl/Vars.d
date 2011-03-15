@@ -53,10 +53,12 @@ class XTpl_Var {
 		offset	= tpl._offset ;
 		
 		ptrdiff_t _size	= size ;
-	
+		
+		ptrdiff_t _step	= _G.is64 ? 8 : 4 ;
+		
 		while(  _size > 0 ) {
-			tpl._offset	+= size_t.sizeof ;
-			_size		-= size_t.sizeof ;
+			tpl._offset	+= _step ;
+			_size		-= _step ;
 		}
 		
 		tpl._vars[var_name]	= this ;
