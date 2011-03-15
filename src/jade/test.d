@@ -10,7 +10,7 @@ void main(string[] args ){
 	string file = `example.jade`;
 	auto data = cast(string) std.file.read(file);
 	
-	int count = 1 ;
+	ptrdiff_t count = 1 ;
         if( args.length > 1 ) {
                 count = ctfe_a2i( args[1] );
         }
@@ -24,7 +24,7 @@ void main(string[] args ){
 	
 	Compiler cc ;
 	
-	for(int i =0 ; i < count ; i++) {
+	for(ptrdiff_t i =0 ; i < count ; i++) {
 		cc.Init(file, data) ;
 		auto code	= cc.compile ;
 		if( i is 0  ){

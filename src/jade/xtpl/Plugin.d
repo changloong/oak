@@ -46,6 +46,8 @@ version (Windows) {
 	    }
 	    return true;
 	}
+} else {
+
 }
 
 export extern(C) size_t plugin_lib_export(size_t ty, void* data) {
