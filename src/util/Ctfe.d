@@ -8,7 +8,7 @@ import
 	std.string,
 	std.traits;
 
-string ctfe_i2a(int i){
+string ctfe_i2a(ptrdiff_t i){
     char[] digit	= cast(char[]) "0123456789";
     char[] res		= cast(char[]) "";
     if (i==0){
@@ -29,8 +29,8 @@ string ctfe_i2a(int i){
         return cast( string) res;
 }
 
-uint ctfe_a2i(T) (T[] s, int radix = 10){
-        uint value;
+size_t ctfe_a2i(T) (T[] s, ptrdiff_t radix = 10){
+        size_t value;
         foreach (c; s)
                  if (c >= '0' && c <= '9')
                      value = value * radix + (c - '0') ;
