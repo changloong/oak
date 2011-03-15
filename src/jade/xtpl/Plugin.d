@@ -15,8 +15,9 @@ private struct dmd_export {
 	extern(C) void function(void*) fflush;
 	extern(C) void function(void*, char*,...) fprintf ;
 	dmd_export_cb	__add_path = &add_project_path ;
+	bool	is64 ;
 }
-private __gshared dmd_export _G ;
+package __gshared dmd_export _G ;
 
 version (Windows) {
 	
