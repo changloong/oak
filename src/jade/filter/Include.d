@@ -7,8 +7,18 @@ import oak.jade.Jade ;
 
 alias oak.jade.node.Filter.Filter Filter ;
 
-void Jade_Include_Filter(Compiler* cc, Filter  node){
+void Jade_Include_Filter(Compiler* cc, Filter  node) {
+	
+	if( node.hasVar ) {
+		cc.err("include filter can't start with double colon, at line %d", node.ln);
+	}
 
+	if( node.tag !is null ) {
+		cc.err("include filter  can't  have tag, at line %d", node.ln);
+	}
+	if( node.tag_args !is null ) {
+		cc.err("include filter  can't  have tag args, at line %d", node.ln);
+	}
 	
 	for( auto arg =  node.args.firstChild; arg !is null ; arg = arg.next ) {
 		if( arg.firstChild  !is null ) {

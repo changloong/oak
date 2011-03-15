@@ -59,7 +59,7 @@ struct Compiler {
 	
 	void err(size_t _line = __LINE__, T...)(string fmt, T t){
 		auto a = appender!string() ;
-		formattedWrite(a, "(%s:%d) %s", __FILE__, _line, filename);
+		formattedWrite(a, "(%s:%d) %s ", __FILE__, _line, filename);
 		formattedWrite(a, fmt, t);
 		//formattedWrite(a, " at file:`%s` line:%d", filename, ln);
 		throw new Exception( a.data );
