@@ -75,7 +75,7 @@ class XTpl_Var {
 			if( _key_val is null || _key_val.length is 0 ) {
 				continue ;
 			}
-			int i	= ctfe_indexof( _key_val, ',');
+			ptrdiff_t i	= ctfe_indexof( _key_val, ',');
 			if( i > 0 && i < _key_val.length ) {
 				auto p = new Each_Key_Value( _key_val[0..i].idup, _key_val[i+1..$].idup ) ;
 				_Each_Types	~= p ;

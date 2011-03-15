@@ -45,9 +45,9 @@ class XTpl {
 			return null ;
 		}
 		
-		for(int i = _tpl_protocol.length; i < _argument.length;i++){
+		for(ptrdiff_t i = _tpl_protocol.length; i < _argument.length;i++){
 			if( _argument[i] is ':' ){
-				int j = i+1 ;
+				ptrdiff_t j = i+1 ;
 				if( j < _argument.length && _argument[j] is ':' ){
 					_argument[i]	= 0 ;
 					i++;
