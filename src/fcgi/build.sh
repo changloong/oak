@@ -1,2 +1,2 @@
 #!/bin/sh
-dmd  *.d ../util/*.d -L-lfcgi -version=FCGI_TEST -O -release -inline -offcgi4d
+dmd *.d -version=FCGI_TEST ../util/*.d -version=OAK_PCRE -offcgi_text

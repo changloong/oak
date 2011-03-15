@@ -25,7 +25,7 @@ package import
 	oak.util.Buffer ;
 
 pragma(lib, "fcgi");
-pragma(lib, "ws2_32");
+version(Windows) pragma(lib, "ws2_32");
 
 package alias vBuffer FCGI_Buffer ;
 class LogSyncClass{}
