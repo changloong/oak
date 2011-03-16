@@ -591,7 +591,7 @@ struct Lexer {
 	
 	void parseTextBlock(Tok* tk, bool _search_code = false) {
 		if( _ptr > _end ) {
-			err("expected text block");
+			return ;
 		}
 		if(_ptr[0] !is '\n' && _ptr[0] !is '\r' ){
 			err("expected new line");

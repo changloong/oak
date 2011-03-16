@@ -127,7 +127,7 @@ struct Compiler {
 		return asType_Name[_astype] ;
 	}
 	
-	private void FinishLastOut(){
+	void FinishLastOut(){
 		switch(_astype){
 			case asType.String:
 				_ret_bu("\");\n");
