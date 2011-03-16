@@ -727,8 +727,8 @@ struct Lexer {
 		skip_space ;
 		if( _ptr <= _end && _ptr[0] is '(' ) {
 			Tok* _tk_attrs	= parseAttrs() ;
-			if( _ptr !is _end && _ptr[0] !is '\r' && _ptr[0] !is '\n' && _ptr[0] !is '\t' && _ptr[0] !is ' ' ) {
-				err("missing space after attributes `%s`", line);
+			if( _ptr <= _end && _ptr[0] !is '\r' && _ptr[0] !is '\n' && _ptr[0] !is '\t' && _ptr[0] !is ' ' ) {
+				err("missing space after attributes  _ptr=%s line=`%s`", _ptr[0], line);
 			}
 			skip_space ;
 		}
@@ -772,6 +772,19 @@ struct Lexer {
 		skip_space ;
 		
 		bool _last_value	= true ;
+		bool _find_value  	= true ;
+		
+		// input(type=checked, checked);
+		void check_skip_value(){
+			if( !_find_value ) {
+				assert( _last_token.ty is Tok.Type.AttrKey );
+				NewTok(Tok.Type.AttrValueStart) ;
+				auto tk	= NewTok(Tok.Type.String) ;
+				tk.string_value = "true" ;
+				NewTok(Tok.Type.AttrValueEnd) ;
+				_find_value	= true ;
+			}
+		}
 
 		bool scan_inline_code() {
 			skip_space;
@@ -801,7 +814,9 @@ struct Lexer {
 		
 		bool scan_attrs_end() {
 			skip_space ;
-			if( _ptr >= _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+			
+			
+			if( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 				dump_tok();
 				err("expected AttrEnd `%s`", line );
 			}
@@ -810,6 +825,9 @@ struct Lexer {
 			
 			// attr end 
 			if( _ptr <= _end  && _ptr[0] is ')' ) {
+				
+				check_skip_value();
+				
 				//Log("`%s`", line );
 				//assert(false) ;
 				_ptr++ ;
@@ -820,7 +838,11 @@ struct Lexer {
 			return false ;
 		}
 		
+		
+		
 		while(  _end >= _ptr ) {
+			
+			check_skip_value();
 			
 			if( scan_attrs_end ) {
 				break ;
@@ -835,6 +857,7 @@ struct Lexer {
 				err("expected AttrKey `%s`", line);
 			}
 			NewTok(Tok.Type.AttrKey, key);
+			_find_value  	= false ;
 			
 			if( scan_attrs_end ) {
 				break ;
@@ -847,7 +870,7 @@ struct Lexer {
 				if( _ptr >= _end ) {
 					err("expected AttrValue") ;
 				}
-				
+				_find_value	= true ;
 				auto __tk =  NewTok(Tok.Type.AttrValueStart) ;
 				auto __ptr = _ptr ;
 				parseInlineString( ')' ) ;
