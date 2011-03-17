@@ -1,4 +1,4 @@
-//: \$dmd2 \+..\src\jade \-..\src\jade\xtpl \+..\src\util -debug -g
+//: \$dmd2 \+..\src\jade \-..\src\jade\xtpl \+..\src\util 
 
 
 import oak.jade.Jade ;

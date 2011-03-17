@@ -44,7 +44,8 @@ void Jade_I18n_Filter(Compiler* cc, Filter  node) {
 	}
 	
 	ptrdiff_t _i18n_render_pos = cc._str_bu.length ;
-	cc._str_bu("_i18n_render_pos_");
+	cc._str_bu("_i18n_render_");
+	
 	foreach( c; cc.filename) {
 		if( c >='0' && c <= '9' || c >='A' && c <= 'Z' || c >='a' && c <='z' ) {
 			cc._str_bu(c);
@@ -52,6 +53,7 @@ void Jade_I18n_Filter(Compiler* cc, Filter  node) {
 			cc._str_bu( cast(byte) c);
 		}
 	}
+	
 	cc._str_bu("_id")(cc.i18n_id++);
 	string _i18n_render	= cc._str_bu.toString[ _i18n_render_pos .. $] ;
 

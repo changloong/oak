@@ -10,7 +10,8 @@ public import
 	oak.fcgi.all ;
 
 public import 
-	oak.tpl ;
+	oak.view.I18n ,
+	oak.view.tpl ;
 
 public import 
 	std.algorithm,

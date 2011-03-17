@@ -1,4 +1,4 @@
-module oak.tpl ;
+module oak.view.tpl ;
 
 import oak.all ;
 
