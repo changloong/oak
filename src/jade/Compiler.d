@@ -29,6 +29,7 @@ struct Compiler {
 	string		filedata ;
 	string		filename ;
 	asType		_astype ;
+	ptrdiff_t	i18n_id ;
 	
 	bool delegate(string, ref string, ref string) check_each_keyvalue ;
 	bool delegate(ref string) check_var_name ;
@@ -55,6 +56,7 @@ struct Compiler {
 		if( _ret_bu is null ) {
 			_ret_bu	= new vBuffer(1024, 1024) ;
 		}
+		i18n_id	= 0 ;
 	}
 	
 	void err(size_t _line = __LINE__, T...)(string fmt, T t){
@@ -76,6 +78,7 @@ struct Compiler {
 		_str_bu	= cc._str_bu ;
 		_ret_bu	= cc._ret_bu ;
 		pool	= cc.pool ;
+		i18n_id	= cc.i18n_id ;
 	}
 	
 	void reuse_clear(){

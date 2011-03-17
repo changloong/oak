@@ -1,3 +1,8 @@
 js:
   alert(123, checked)
   alert(123)
+  
+:i18n!"user.intro"!"123" \
+  p#id1.cl1.cl2:(title=${test.1}) #id2(title=3) \
+	[user_name2] a#user_intro2(href=/user/${user.id2}) \
+	[message_number=${user.msgs}]span.red1

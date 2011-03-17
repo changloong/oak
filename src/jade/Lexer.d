@@ -1270,7 +1270,11 @@ struct Lexer {
 			parseInlineString('"');
 			NewTok(Tok.Type.FilterArgEnd) ;
 		}
-		skip_space();
+	
+		if( !scan_skip_line ) {
+			skip_space() ;
+		}
+		
 		if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 			return tk ;
 		}
@@ -1317,24 +1321,30 @@ struct Lexer {
 			
 			// find =
 			skip_space;
-			if ( _ptr > _end || _ptr[0] !is '=' ) {
-				err("expected filter tag key = " );
+			if ( _ptr < _end && _ptr[0] is ']' ) {
+				NewTok(Tok.Type.FilterTagValueStart) ;
+				
+				NewTok(Tok.Type.FilterTagValueEnd) ;
+				_ptr++;
+			} else {
+				if ( _ptr > _end || _ptr[0] !is '=' ) {
+					err("expected filter tag key = " );
+				}
+				_ptr++;
+				skip_space;
+				
+				// find value
+				if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
+					err("expected filter tag value" );
+				}
+				NewTok(Tok.Type.FilterTagValueStart) ;
+				Tok* _tag_val	= parseInlineString(']');
+				if( _tag_val is null ) {
+					err("expected filter tag value" );
+				}
+				skip_space;
+				NewTok(Tok.Type.FilterTagValueEnd) ;
 			}
-			_ptr++;
-			skip_space;
-			
-			// find value
-			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
-				err("expected filter tag value" );
-			}
-			NewTok(Tok.Type.FilterTagValueStart) ;
-			Tok* _tag_val	= parseInlineString(']');
-			if( _tag_val is null ) {
-				err("expected filter tag value" );
-			}
-			skip_space;
-			
-			NewTok(Tok.Type.FilterTagValueEnd) ;
 
 			if( !scan_skip_line ) {
 				skip_space() ;
@@ -1343,7 +1353,7 @@ struct Lexer {
 			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 				break ;
 			}
-			
+
 			// find filter tag
 			if( _ptr[0] !is '[' ) {
 				NewTok(Tok.Type.FilterTagArgStart) ;
