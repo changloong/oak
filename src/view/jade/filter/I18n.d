@@ -60,7 +60,7 @@ void Jade_I18n_Filter(Compiler* cc, Filter  node) {
 	}
 	scope(exit){
 		cc.FinishLastOut() ;
-		for( int i =_tags.length; i--;){
+		for(ptrdiff_t i =_tags.length; i--;){
 			cc.asString("</").asString( _tags[i]).asString(">") ;
 		}
 	}
