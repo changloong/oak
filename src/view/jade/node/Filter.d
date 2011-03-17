@@ -52,4 +52,5 @@ static __gshared Render_Map[] Render_Maps = [
 		{"text",  &Jade_Text_Filter } ,
 		{"include",  &Jade_Include_Filter } ,
 		{"i18n",  &Jade_I18n_Filter } ,
+		{"i18n_chroot",  &Jade_I18n_ChRoot_Filter } ,
 	] ;
