@@ -72,11 +72,11 @@ void Jade_I18n_Filter(Compiler* cc, Filter  node) {
 	cc._ret_bu("foreach(")(_i18n_render)("_tk; ")(_i18n_render)(") {\n") ;
 
 	cc._ret_bu("\tswitch(")(_i18n_render)("_tk.ty) {\n") ;
-		cc._ret_bu("\t\tcase I18n.Render_Type.String:\n") ;
+		cc._ret_bu("\t\tcase I18n_Render_Type.String:\n") ;
 		cc._ret_bu("\t\t\tob.escape(")(_i18n_render)("_tk.string_value);\n") ;
 		cc._ret_bu("\t\t\tbreak;\n\n") ;
 	
-		cc._ret_bu("\t\tcase I18n.Render_Type.TagOpen:\n") ;
+		cc._ret_bu("\t\tcase I18n_Render_Type.TagOpen:\n") ;
 		cc._ret_bu("\t\t\tswitch(")(_i18n_render)("_tk.tag_id){\n") ;
 		foreach(ptrdiff_t i, n; _tag_tags ) {
 			cc._ret_bu("\t\t\t\tcase ");
@@ -100,7 +100,7 @@ void Jade_I18n_Filter(Compiler* cc, Filter  node) {
 		cc._ret_bu("\t\t\tbreak;\n") ;
 	
 	
-		cc._ret_bu("\t\tcase I18n.Render_Type.TagClose:\n") ;
+		cc._ret_bu("\t\tcase I18n_Render_Type.TagClose:\n") ;
 		cc._ret_bu("\t\t\tswitch(tk.tag_id){\n") ;
 		foreach(ptrdiff_t i, n; _tag_tags ) {
 			cc._ret_bu("\t\t\t\tcase ");

@@ -1,7 +1,7 @@
-//: \$dmd2 \+..\src\jade \-..\src\jade\xtpl \+..\src\util 
+//: \$dmd2 \+..\src\view\jade \-..\src\view\jade\xtpl \+..\src\util 
 
 
-import oak.jade.Jade ;
+import oak.view.jade.Jade ;
 
 void main(string[] args ){
 	string file = `attr.jade`;
