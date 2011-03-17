@@ -5,7 +5,5 @@ import oak.all ;
 
 interface I18n_Translate {
 	
-	void chroot(string path){
-		
-	}
+	void chroot(string path);
 }

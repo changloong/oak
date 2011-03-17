@@ -155,7 +155,6 @@ void Jade_I18n_Filter(Compiler* cc, Filter  node) {
 		
 	cc._ret_bu("\t\tdefault:") ;
 	
-	cc._ret_bu("\t\t\tbreak;\n") ;
 	cc.asLine(node.ln);
 	cc._ret_bu("\t\t throw new I18n_Render_Exception(")(_i18n_render)("_tk, `");
 	cc._ret_bu( cc.filename)("`, ")( node.ln ) ;
