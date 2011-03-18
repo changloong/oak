@@ -1,10 +1,10 @@
 
-module oak.fcgi.Application ;
+module oak.fcgi.Application;
 
-import oak.fcgi.all ;
+import oak.fcgi.all, core.thread ;
 
 
-class FCGI_Application (T) {
+class FCGI_Application  {
 	package static shared FCGI_Connection _app_conn ;
 
 	private {

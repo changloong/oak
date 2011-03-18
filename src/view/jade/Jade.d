@@ -2,6 +2,7 @@
 module oak.view.jade.Jade ;
 
 package import 
+	oak.util.Log,
 	oak.util.Pool,
 	oak.util.Pcre,
 	oak.util.Ctfe ,
@@ -30,14 +31,3 @@ package import
 version(JADE_XTPL) {
 	package import  oak.view.jade.xtpl.all ;
 }
-
-
-public void Log( string file= __FILE__, int line = __LINE__, T...)(T t){//
-	std.stdio.write(file, ":", line, " ");
-	std.stdio.writefln(t);
-}
-
-extern(C){
-	private void exit(ptrdiff_t);
-}
-

@@ -1,4 +1,4 @@
-//: \$dmd2 -release -version=LIB_FCGI_DEMO -L+fcgi+ws2_32 
+//: \$dmd2 -release -O -inline -version=LIB_FCGI_DEMO -L+fcgi+ws2_32 
 /**
  * @file fcgi.d
  *	libfcgi C bindings
@@ -20,7 +20,7 @@ version(LIB_FCGI_DEMO)
     import std.stdio;
     import std.string;
 
-    const size_t THREADS = 10;
+    const size_t THREADS = 4 ;
 
     int main(char[][] args)
     {
@@ -56,6 +56,9 @@ version(LIB_FCGI_DEMO)
                 // request loop
                 while(request.accept())
                 {
+		    scope(exit){
+			request.outStream.flush ;
+		    }
                     size_t nrTotal;
                     nr++;
 
