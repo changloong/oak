@@ -13,11 +13,11 @@ struct Pool {
 		static const _Min_Step		= ubyte.max << 4 ;
 		static const _Def_Step		= ushort.max << 4 ;
 		
-		ubyte*	data ;
+		ubyte*	data = null ;
 		size_t	pos ;
 		
 		size_t	size ;
-		size_t	step ;
+		size_t	step = _Min_Step ;
 		GC.BlkAttr attr ;
 	}
 	
@@ -61,7 +61,9 @@ struct Pool {
 		return ret[ 0 .. _len ] ;
 	}
 	
-	ubyte* alloc(size_t _size) {
+	ubyte* alloc(size_t _size) in {
+		assert( step > 0 ) ;
+	} body {
 		size_t _pos	= pos + _size ;
 		if( _pos > size ) {
 			size_t _new_size	= size + step ;
