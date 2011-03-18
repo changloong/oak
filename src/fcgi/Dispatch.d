@@ -45,6 +45,8 @@ private class Null_Host : FCGI_VHost {
 			cb.fn(req,res ) ;
 		} else if( cb.dg !is null ) {
 			cb.dg(req, res);
+		} else {
+			super.service(req, res) ;
 		}
 	}
 }
