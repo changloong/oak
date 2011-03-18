@@ -50,13 +50,15 @@ struct Pool {
 			return null ;
 		}
 		alias typeof(T[0]) C ;
-		auto len = C.sizeof * v.length ;
+		auto _len = v.length   ;
+		auto len  = C.sizeof * _len   ;
 		if( len is 0 ) {
 			return v ;
 		}
-		C* ret	= cast(C*) alloc( len ) ;
+		C* ret	= cast(C*) alloc( len + C.sizeof ) ;
 		memcpy(ret, v.ptr, len ) ;
-		return ret[ 0 .. v.length ] ;
+		ret[_len] = 0 ;
+		return ret[ 0 .. _len ] ;
 	}
 	
 	ubyte* alloc(size_t _size) {

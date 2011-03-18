@@ -7,7 +7,7 @@ final class FCGI_Request {
 	
 	public  vBuffer stdin ;
 	private {
-		vBuffer	stdtmp ;
+		vBuffer	_tmp_bu ;
 	}
 	package Pool*	pool ;
 	
@@ -15,7 +15,7 @@ final class FCGI_Request {
 	
 	this(Pool* pool){
 		stdin	= new vBuffer(1024 * 16, 1024 * 256) ;
-		stdtmp	= new vBuffer(1024 * 16, 1024 * 256) ;
+		_tmp_bu	= new vBuffer(1024 * 16, 1024 * 256) ;
 		this.pool	= pool;
 	}
 	
@@ -67,7 +67,7 @@ final class FCGI_Request {
 	package final void Finish(FCGX_Request* fcgi_req) {
 		headers	= null ;	
 		stdin.clear ;
-		stdtmp.clear ;
+		_tmp_bu.clear ;
 	}
 	
 }
