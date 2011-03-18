@@ -6,19 +6,25 @@ import oak.fcgi.all ;
 abstract class FCGI_Application {
 	
 	private {
-		FCGI_VHost	host ;
-		string		path =  "/" ;
-		Pool*		pool ;
+		FCGI_VHost	_host ;
+		string		_path =  "/" ;
 	}
 
-	this(FCGI_VHost host, string path = null ) in {
+	void Init(FCGI_VHost host, string path = null ) in {
 		assert(host !is null) ;
 	} body {
-		this.host	= host ;
+		_host	= host ;
 		if( path !is null ) {
-			this.path	= path ;
+			_path	= path ;
 		}
-		host.addApplication(this) ;
+		_host.addApplication(this) ;
 	}
+	
+	string path(){
+		return _path ;
+	}
+	
+		
+	abstract bool service(FCGI_Request req, FCGI_Response res) ;
 
 }

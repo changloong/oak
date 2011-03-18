@@ -18,6 +18,7 @@ class User {
 	}
 	
 }
+
 struct User2 {
 	bool 	login = false;
 	bool 	admin ;
@@ -34,36 +35,35 @@ struct User2 {
 	}
 }
 
-void main() {
 
+class MyApp : FCGI_Application {
+	
 	alias Tpl!("UserList", __FILE__, __LINE__) MyTpl ;
 	MyTpl	tpl ;
 	User	u ;
 	string	page_title	= "test page"[] ;
 	vBuffer bu ;
 	string[string] env ;
-
-	tpl	= new MyTpl ;
-	u	= new User ;
 	
-	tpl.assign!("user", __FILE__, __LINE__)(u);
-	
-	auto u2 = new User2 ;
-	tpl.assign!("user2", __FILE__, __LINE__)( *u2 ) ;
-	
-	tpl.assign!("page_title", __FILE__, __LINE__)( page_title );
-	
-	tpl.assign!("env", __FILE__, __LINE__)(environment.toAA);
-	
-	env	= environment.toAA ;
-	bu		= new vBuffer(1024 * 32, 1024 * 512 ) ;
-
-	
-	FCGI_Dispatch dispatch ;
-	dispatch.Listen(":1983\0");
-	
-	dispatch.setDefaultService( (FCGI_Request req, FCGI_Response res){
+	this(){
+		tpl	= new MyTpl ;
+		u	= new User ;
 		
+		tpl.assign!("user", __FILE__, __LINE__)(u);
+		
+		auto u2 = new User2 ;
+		tpl.assign!("user2", __FILE__, __LINE__)( *u2 ) ;
+		
+		tpl.assign!("page_title", __FILE__, __LINE__)( page_title );
+		
+		tpl.assign!("env", __FILE__, __LINE__)(environment.toAA);
+		
+		env	= environment.toAA ;
+		bu	= new vBuffer(1024 * 32, 1024 * 512 ) ;
+	}
+	
+	bool service(FCGI_Request req, FCGI_Response res) {
+
 		auto stdout = res.stdout ;
 		
 		StopWatch sw;
@@ -96,14 +96,26 @@ void main() {
 		
 		sw.stop;
 		
-		stdout ("Content-type: text/html\r\n");
-		stdout ("RenderTime: ")(sw.peek.msecs)("ms\r\n");
-		stdout ("Content-Length: ")( bu.length)("\r\n");
-		stdout("\r\n");
+		auto header = res.header ;
+		header ("Content-type: text/html\r\n");
+		header ("RenderTime: ")(sw.peek.msecs)("ms\r\n");
+		header ("Content-Length: ")( bu.length)("\r\n");
+		header("\r\n");
+		
 		stdout(bu.slice);
 		
 		bu.clear;
 		
-	});
-	dispatch.Loop();
+		return true ;
+	}
+	
+}
+
+
+void main() {
+
+	FCGI_Dispatch fcgi ;
+	fcgi.Listen(":1983\0");
+	fcgi.Dispatch!(MyApp);
+	fcgi.Loop();
 }

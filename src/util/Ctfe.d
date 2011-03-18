@@ -197,3 +197,14 @@ template ctfe_isIterable(T) if( !isPointer!(T) ) {
 	}
 }
 
+
+
+template ctfe_contains(C, T...){
+	static if( T.length is 0 ) {
+		enum bool ctfe_contains = false ;
+	} else static if( is(C==T[0]) ){
+		enum bool ctfe_contains = true ;
+	} else {
+		enum bool ctfe_contains = ctfe_contains!(C, T[1..$] ) ;
+	}
+}

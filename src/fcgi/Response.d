@@ -25,6 +25,13 @@ final class FCGI_Response {
 	}
 	
 	package final void Finish(FCGX_Request* fcgi_req) {
+		
+		if( _header_bu.length is 0 ) {
+			_header_bu("Content-Type: text/plain\r\n");
+			
+			_header_bu("\r\n") ;
+		}
+		
 		fcgi_req.appStatus	= _exitStatus ;
 		
 		auto _len = _header_bu.length ;
@@ -44,6 +51,10 @@ final class FCGI_Response {
 		stdout.clear ;
 		stderr.clear ;
 		_header_bu.clear ;
+	}
+	
+	vBuffer header(){
+		return _header_bu ;
 	}
 	
 	@property  void exitStatus(ptrdiff_t i) {
