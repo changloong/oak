@@ -39,10 +39,17 @@ private class Null_Host : FCGI_VHost {
 	this( Null_Handle _cb) {
 		cb	= _cb ;
 	}
+	
+	override void service(FCGI_Request req, FCGI_Response res) {
+		if( cb.fn !is null ) {
+			cb.fn(req,res ) ;
+		} else if( cb.dg !is null ) {
+			cb.dg(req, res);
+		}
+	}
 }
 
 private class Default_Host : FCGI_VHost {
-	
 	this (string _name) {
 		this._host	= _name ;
 	}
@@ -235,7 +242,6 @@ struct FCGI_Dispatch {
 		
 		vhosts_map.rehash ;
 		
-
 		while( true ) {
 			ret	= fcgi_req.accept() ;
 			if( !ret ) {
@@ -247,11 +253,11 @@ struct FCGI_Dispatch {
 			res.Init(fcgi_req) ;
 			
 			// dispatch 
-			try{
+			try {
 				auto pvhost  = req.header.SERVER_NAME in vhosts_map ;
 				if( pvhost !is null ) {
 					(*pvhost).service(req, res) ;
-				} else if( null_vhost !is null ) {
+				} else {
 					null_vhost.service(req, res) ;
 				}
  			} catch(Exception e) {
