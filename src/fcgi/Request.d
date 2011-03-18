@@ -10,7 +10,7 @@ final class FCGI_Request {
 		vBuffer stdtmp ;
 	}
 	
-	string[string] header ;
+	string[string] headers ;
 	
 	
 	
@@ -21,8 +21,7 @@ final class FCGI_Request {
 	
 	
 	package final void Init(FCGX_Request* fcgi_req) {
-		stdin.clear ;
-		stdtmp.clear ;
+
 		
 		// read stdin
 		enum _step = 1024 * 4 ;
@@ -38,20 +37,6 @@ final class FCGI_Request {
 			if( _len < _step ) {
 				stdin.move( _len - _step ) ;
 			}
-		}
-		
-		void addParam(char[] key, char[] value){
-			auto pos = stdtmp.length ;
-			stdtmp(key);
-			auto _key	= cast(string) stdtmp.slice[ pos .. $] ;
-			stdtmp('\0') ;
-			
-			pos = stdtmp.length ;
-			stdtmp(value);
-			auto _value	= cast(string) stdtmp.slice[ pos .. $] ;
-			stdtmp('\0') ;
-			
-			header[_key]	= _value ;
 		}
 		
 		// copy params
@@ -70,17 +55,30 @@ final class FCGI_Request {
 			
 			char[] key = (*param)[0..eq] ;
 			char[] value = (*param)[eq+1..end] ;
-			addParam(key, value);
+			
+			auto pos = stdtmp.length ;
+			stdtmp(key);
+			auto _key	= cast(string) stdtmp.slice[ pos .. $] ;
+			stdtmp('\0') ;
+			
+			pos = stdtmp.length ;
+			stdtmp(value);
+			auto _value	= cast(string) stdtmp.slice[ pos .. $] ;
+			stdtmp('\0') ;
+			
+			headers[_key]	= _value ;
 			
 			param++;
 		}
-		header.rehash ;
+		headers.rehash ;
 		
 	}
 	
 	
 	package final void Finish(FCGX_Request* fcgi_req) {
-		
+		headers	= null ;	
+		stdin.clear ;
+		stdtmp.clear ;
 	}
 	
 }

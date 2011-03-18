@@ -17,9 +17,7 @@ final class FCGI_Response {
 	}
 
 	package final void Init(FCGX_Request* fcgi_req){
-		_exitStatus = 0 ;
-		stdout.clear ;
-		stderr.clear ;
+		
 	}
 	
 	package final void Finish(FCGX_Request* fcgi_req) {
@@ -32,6 +30,9 @@ final class FCGI_Response {
 		if( _len ) {
 			auto  ret = FCGX_PutStr(cast(const char*) stdout.slice.ptr, _len, fcgi_req.errStream );
 		}
+		_exitStatus = 0 ;
+		stdout.clear ;
+		stderr.clear ;
 	}
 	
 	@property  void exitStatus(ptrdiff_t i) {

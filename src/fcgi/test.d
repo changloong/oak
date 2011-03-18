@@ -16,7 +16,7 @@ void main(char[][] args){
 		
 		res.stdout("\r\n");
 		
-		foreach(string key, value; req.header ) {
+		foreach(string key, value; req.headers ) {
 			res.stdout(key)(" => ") (value)("\n") ;
 		}
 		
