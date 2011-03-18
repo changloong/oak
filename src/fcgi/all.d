@@ -4,8 +4,9 @@ module oak.fcgi.all ;
 public import 
 	oak.fcgi.Response ,
 	oak.fcgi.Request ,
-	oak.fcgi.Application ,
-	oak.fcgi.Base ;
+	oak.fcgi.Dispatch ,
+	oak.fcgi.Base ,
+	oak.fcgi.Application ;
 
 public import 
 	oak.util.Log ,
@@ -15,6 +16,7 @@ public import
 
 package import 
 	core.thread  ,
+	core.memory ,
 	std.exception,
 	std.stream,
 	std.datetime,

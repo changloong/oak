@@ -33,7 +33,7 @@ class Tpl(string TplName, string _class_file = __FILE__, size_t _class_line = __
 		static const size	= ctfe_a2i(list[4]);
 		// pragma(msg, tpl_var_id_offset_size);
 		assert( _tpl_tuple.length > offset + size );
-		memcpy( &_tpl_tuple[offset  ], &t, size  );
+		std.array.memcpy( &_tpl_tuple[offset ], &t, size  );
 		
 		return this ;
 	}

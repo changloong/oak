@@ -34,51 +34,37 @@ struct User2 {
 	}
 }
 
+void main() {
 
-
-class MyApp : FCGI_Application {
 	alias Tpl!("UserList", __FILE__, __LINE__) MyTpl ;
-	
 	MyTpl	tpl ;
 	User	u ;
 	string	page_title	= "test page"[] ;
 	vBuffer bu ;
 	string[string] env ;
+
+	tpl	= new MyTpl ;
+	u	= new User ;
 	
+	tpl.assign!("user", __FILE__, __LINE__)(u);
 	
-	public this(size_t id) {
-		super(id) ;
-		
-		tpl	= new MyTpl ;
-		u	= new User ;
-		
-		static assert(isPointer!( typeof(&u) ));
-		
-		tpl.assign!("user", __FILE__, __LINE__)(u);
-		
-		auto u2 = new User2 ;
-		tpl.assign!("user2", __FILE__, __LINE__)( *u2 ) ;
-		
-		foreach( string v, string k; *u2){
-			
-		}
-		
-		tpl.assign!("page_title", __FILE__, __LINE__)( page_title );
-		
-		tpl.assign!("env", __FILE__, __LINE__)(environment.toAA);
-		
-		env	= environment.toAA ;
-		bu		= new vBuffer(1024 * 32, 1024 * 512 ) ;
-		
-	}
+	auto u2 = new User2 ;
+	tpl.assign!("user2", __FILE__, __LINE__)( *u2 ) ;
 	
-	int run(FCGI_Request req) {
+	tpl.assign!("page_title", __FILE__, __LINE__)( page_title );
 	
-		assert( bu !is null);
+	tpl.assign!("env", __FILE__, __LINE__)(environment.toAA);
+	
+	env	= environment.toAA ;
+	bu		= new vBuffer(1024 * 32, 1024 * 512 ) ;
+
+	
+	FCGI_Dispatch dispatch ;
+	dispatch.Listen(":1983\0");
+	
+	dispatch.setDefaultService( (FCGI_Request req, FCGI_Response res){
 		
-		assert( req !is null);
-		auto stdout = req.stdout ;
-		assert( stdout !is null);
+		auto stdout = res.stdout ;
 		
 		StopWatch sw;
 		sw.start;
@@ -118,13 +104,6 @@ class MyApp : FCGI_Application {
 		
 		bu.clear;
 		
-		return 0 ;
-	}
-}
-
-
-void main() {
-	auto conn	= new shared(FCGI_Connection)(null, "1983" );
-	log("FastCGI Server 0.0.0.0:1983 ");
-	FCGI_Application.loop!MyApp(conn, true, 1) ;
+	});
+	dispatch.Loop();
 }

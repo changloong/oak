@@ -9,8 +9,6 @@ import
 	std.conv,
 	std.string,
 	std.traits;
-	
-import std.c.string : memcpy;
 
 final class vBuffer  :  OutputRange!(char)  {
 	 alias typeof(this)	This;

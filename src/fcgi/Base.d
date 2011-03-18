@@ -334,7 +334,7 @@ struct FCGX_Request {
 	private fcgi_int ipcFd;		        /*!< < 0 means no connection */
 	private fcgi_int isBeginProcessed;	/*!< FCGI_BEGIN_REQUEST seen */
 	private fcgi_int keepConnection;	    /*!< don't close ipcFd */
-	private fcgi_int appStatus;
+	package fcgi_int appStatus;
 	private fcgi_int nWriters;		    /*!< number of open writers (0..2) */
 	private fcgi_int flags;
 	private fcgi_int listen_sock;
@@ -350,7 +350,7 @@ struct FCGX_Request {
      * @return 
      *	0 upon success.
      **/
-    fcgi_fd init(fcgi_fd sock = 0, fcgi_int flags = 0)
+    fcgi_fd Init(fcgi_fd sock = 0, fcgi_int flags = 0)
     {
         return FCGX_InitRequest(&this, sock, flags);
     }
