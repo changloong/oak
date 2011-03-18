@@ -2,6 +2,7 @@
 module oak.fcgi.all ;
 
 public import 
+	oak.fcgi.VHost ,
 	oak.fcgi.Response ,
 	oak.fcgi.Request ,
 	oak.fcgi.Dispatch ,

@@ -7,22 +7,20 @@ final class FCGI_Request {
 	
 	public  vBuffer stdin ;
 	private {
-		vBuffer stdtmp ;
+		vBuffer	stdtmp ;
 	}
+	package Pool*	pool ;
 	
 	string[string] headers ;
 	
-	
-	
-	this(){
+	this(Pool* pool){
 		stdin	= new vBuffer(1024 * 16, 1024 * 256) ;
 		stdtmp	= new vBuffer(1024 * 16, 1024 * 256) ;
+		this.pool	= pool;
 	}
-	
 	
 	package final void Init(FCGX_Request* fcgi_req) {
 
-		
 		// read stdin
 		enum _step = 1024 * 4 ;
 		while( !fcgi_req.inStream.eof ) {
@@ -53,23 +51,14 @@ final class FCGI_Request {
 				end++;
 			}
 			
-			char[] key = (*param)[0..eq] ;
-			char[] value = (*param)[eq+1..end] ;
-			
-			auto pos = stdtmp.length ;
-			stdtmp(key);
-			auto _key	= cast(string) stdtmp.slice[ pos .. $] ;
-			stdtmp('\0') ;
-			
-			pos = stdtmp.length ;
-			stdtmp(value);
-			auto _value	= cast(string) stdtmp.slice[ pos .. $] ;
-			stdtmp('\0') ;
+			auto _key	= cast(string) pool.Copy( (*param)[0..eq] ) ;
+			auto _value	=  cast(string) pool.Copy( (*param)[eq+1..end] ) ;
 			
 			headers[_key]	= _value ;
 			
 			param++;
 		}
+		
 		headers.rehash ;
 		
 	}

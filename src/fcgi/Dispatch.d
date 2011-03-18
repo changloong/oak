@@ -62,8 +62,12 @@ struct FCGI_Dispatch {
                 auto ret = fcgi_req.Init(_fd) ;
 		assert(ret is 0);
 		
-		auto req	= new FCGI_Request() ;
-		auto res	= new FCGI_Response() ;
+		auto pool	= cast(Pool*) GC.malloc(Pool.sizeof, GC.BlkAttr.NO_SCAN  | GC.BlkAttr.NO_MOVE) ;
+		
+		pool.Init( 1024 * 512 ) ;
+		
+		auto req	= new FCGI_Request(pool) ;
+		auto res	= new FCGI_Response(pool) ;
 		
 		auto _service	= _default_service ;
 		
@@ -73,7 +77,7 @@ struct FCGI_Dispatch {
 				Log("th:%d exit", _th_id ) ;
 				break ;
 			}
-			
+			pool.Clear ;
 			req.Init(fcgi_req) ;
 			res.Init(fcgi_req) ;
 			

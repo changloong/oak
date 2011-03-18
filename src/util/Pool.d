@@ -13,21 +13,26 @@ struct Pool {
 		static const _Min_Step		= ubyte.max << 4 ;
 		static const _Def_Step		= ushort.max << 4 ;
 		
-		ubyte*	data	= null ;
+		ubyte*	data ;
 		size_t	pos ;
 		
 		size_t	size ;
-		size_t	step 	= _Min_Step ;
-		GC.BlkAttr attr	= GC.BlkAttr.NO_SCAN  | GC.BlkAttr.NO_MOVE ;
+		size_t	step ;
+		GC.BlkAttr attr ;
 	}
 	
-	void Init(size_t _step = _Def_Step , GC.BlkAttr _attr = cast(GC.BlkAttr) 0 ) {
+	void Init(size_t _step = _Def_Step , GC.BlkAttr _attr = GC.BlkAttr.NO_SCAN  | GC.BlkAttr.NO_MOVE ) {
 		if( _step >= _Min_Step && _step < _Max_Step ) {
 			step	= _step ;
+		} else {
+			step	= _Min_Step ;
 		}
-		if( _attr !is 0 ){
+		if( _attr !is 0 ) {
 			attr	= _attr ;
 		}
+		pos	= 0 ;
+		size	= 0 ;
+		data	= null ;
 	}
 	
 	void Clear(){
@@ -40,9 +45,22 @@ struct Pool {
 		}
 	}
 	
+	T Copy(T)(T v) if( isSomeString!(T) ) {
+		if( v is null ) {
+			return null ;
+		}
+		alias typeof(T[0]) C ;
+		auto len = C.sizeof * v.length ;
+		if( len is 0 ) {
+			return v ;
+		}
+		C* ret	= cast(C*) alloc( len ) ;
+		memcpy(ret, v.ptr, len ) ;
+		return ret[ 0 .. v.length ] ;
+	}
+	
 	ubyte* alloc(size_t _size) {
 		size_t _pos	= pos + _size ;
-		
 		if( _pos > size ) {
 			size_t _new_size	= size + step ;
 			while( _new_size <= _pos ) {
