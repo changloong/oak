@@ -1,17 +1,20 @@
 
 module oak.fcgi.Base ;
 
+
+alias ptrdiff_t fcgi_fd  , fcgi_int , fcgi_bool;
+
 /**
  * Error Codes.
  *
  * Assigned to avoid conflict with EOF and errno(2).
  **/
-enum : int
+enum : fcgi_int
 {
 	FCGX_UNSUPPORTED_VERSION	= -2,
-	FCGX_PROTOCOL_ERROR		    = -3,
-	FCGX_PARAMS_ERROR		    = -4,
-	FCGX_CALL_SEQ_ERROR		    = -5,
+	FCGX_PROTOCOL_ERROR		= -3,
+	FCGX_PARAMS_ERROR		= -4,
+	FCGX_CALL_SEQ_ERROR		= -5,
 }
 
 /**
@@ -22,7 +25,7 @@ enum : int
  * HTTP response. Responder is the role most similar to traditional CGI
  * programming, and most FastCGI applications are responders.
  **/
-const int FCGI_RESPONDER            = 1;
+const fcgi_int FCGI_RESPONDER            = 1;
 
 /**
  * Authorizer FCGX_Request.role
@@ -30,7 +33,7 @@ const int FCGI_RESPONDER            = 1;
  * An authorizer FastCGI application receives the information in an HTTP
  * request header and generates a decision whether to authorize the request.
  **/
-const int FCGI_AUTHORIZER           = 2;
+const fcgi_int FCGI_AUTHORIZER           = 2;
 
 /**
  * Filter FCGX_Request.role
@@ -40,7 +43,7 @@ const int FCGI_AUTHORIZER           = 2;
  * server, and generates a "filtered" version of the data stream as an HTTP
  * response.
  **/
-const int FCGI_FILTER               = 3;
+const fcgi_int FCGI_FILTER               = 3;
 
 /**
  * FCGX_Request Flags
@@ -48,7 +51,7 @@ const int FCGI_FILTER               = 3;
  * Setting FCGI_FAIL_ACCEPT_ON_INTR prevents FCGX_Accept() from
  * restarting upon being interrupted.
  **/
-const int FCGI_FAIL_ACCEPT_ON_INTR  = 1;
+const fcgi_int FCGI_FAIL_ACCEPT_ON_INTR  = 1;
 
 /**
  * This structure defines the state of a FastCGI stream.
@@ -85,12 +88,12 @@ struct FCGX_Stream {
 	 **/
 	private ubyte *stopUnget;
 
-	private int isReader;
-	private int isClosed;
-	private int wasFCloseCalled;
-	private int FCGI_errno;		/*!< error status */
+	private fcgi_int isReader;
+	private fcgi_int isClosed;
+	private fcgi_int wasFCloseCalled;
+	private fcgi_int FCGI_errno;		/*!< error status */
 	private void function(FCGX_Stream *stream) fillBuffProc;
-	private void function(FCGX_Stream *stream, int doClose) emptyBuffProc;
+	private void function(FCGX_Stream *stream, fcgi_int doClose) emptyBuffProc;
 	private void *data;
 
     /**
@@ -101,7 +104,7 @@ struct FCGX_Stream {
      * several times during a request; the last call before the request ends
      * determines the value.
      **/
-    void status(int s)
+    void status(fcgi_int s)
     {
         FCGX_SetExitStatus(s, &this);
     }
@@ -114,7 +117,7 @@ struct FCGX_Stream {
      * @return
      *	or EOF (-1) if the end of input has been reached.
      **/
-    int getc()
+    fcgi_int getc()
     {
         return FCGX_GetChar(&this);
     }
@@ -130,7 +133,7 @@ struct FCGX_Stream {
      * @return
      *	EOF if not.
      **/
-    int ungetc(int c)
+    fcgi_int ungetc(fcgi_int c)
     {
         return FCGX_UnGetChar(c, &this);
     }
@@ -147,7 +150,7 @@ struct FCGX_Stream {
      **/
     char[] getstr(char[] buf)
     {
-        int len = FCGX_GetStr(buf.ptr, buf.length, &this);
+        fcgi_int len = FCGX_GetStr(buf.ptr, buf.length, &this);
         return buf[0..len];
     }
 
@@ -193,7 +196,7 @@ struct FCGX_Stream {
      **/
     bool eof()
     {
-        return FCGX_HasSeenEOF(&this) != 0;
+        return FCGX_HasSeenEOF(&this) !is 0;
     }
 
     /**
@@ -204,7 +207,7 @@ struct FCGX_Stream {
      **/
     bool putc(char c)
     {
-        return FCGX_PutChar(c, &this) == c;
+        return FCGX_PutChar(c, &this) is c;
     }
 
     /**
@@ -217,7 +220,7 @@ struct FCGX_Stream {
      * @return
      *	EOF (-1) if an error occurred.
      **/
-    int putstr(string str)
+    fcgi_int putstr(string str)
     {
         return FCGX_PutStr(str.ptr, str.length, &this);
     }
@@ -235,7 +238,7 @@ struct FCGX_Stream {
      **/
     bool flush()
     {
-        return FCGX_FFlush(&this) == 0;
+        return FCGX_FFlush(&this) is 0;
     }
 
     /**
@@ -252,7 +255,7 @@ struct FCGX_Stream {
      **/
     bool close()
     {
-        return FCGX_FClose(&this) == 0;
+        return FCGX_FClose(&this) is 0;
     }
 
     /**
@@ -265,7 +268,7 @@ struct FCGX_Stream {
      * @return
      *	< 0 is an FastCGI error.
      **/
-    int error()
+    fcgi_int error()
     {
         return FCGX_GetError(&this);
     }
@@ -284,21 +287,21 @@ typedef char** FCGX_ParamArray;
  * Its exposed for API simplicity, I expect parts of it to change!
  **/
 struct FCGX_Request {
-	int requestId;			        /*<! valid if isBeginProcessed */
-	int role;
+	fcgi_int requestId;			        /*<! valid if isBeginProcessed */
+	fcgi_int role;
 	FCGX_Stream *inStream;
 	FCGX_Stream *outStream;
 	FCGX_Stream *errStream;
 	FCGX_ParamArray envp;
 
 	private void* paramsPtr;
-	private int ipcFd;		        /*!< < 0 means no connection */
-	private int isBeginProcessed;	/*!< FCGI_BEGIN_REQUEST seen */
-	private int keepConnection;	    /*!< don't close ipcFd */
-	private int appStatus;
-	private int nWriters;		    /*!< number of open writers (0..2) */
-	private int flags;
-	private int listen_sock;
+	private fcgi_int ipcFd;		        /*!< < 0 means no connection */
+	private fcgi_int isBeginProcessed;	/*!< FCGI_BEGIN_REQUEST seen */
+	private fcgi_int keepConnection;	    /*!< don't close ipcFd */
+	private fcgi_int appStatus;
+	private fcgi_int nWriters;		    /*!< number of open writers (0..2) */
+	private fcgi_int flags;
+	private fcgi_int listen_sock;
 
     /**
      * Initialize a FCGX_Request
@@ -311,7 +314,7 @@ struct FCGX_Request {
      * @return 
      *	0 upon success.
      **/
-    int init(int sock = 0, int flags = 0)
+    fcgi_fd init(fcgi_fd sock = 0, fcgi_int flags = 0)
     {
         return FCGX_InitRequest(&this, sock, flags);
     }
@@ -392,7 +395,7 @@ struct FCGX_Request {
             return null;
 
         size_t i = 0;
-        while (rv[i] != '\0')
+        while (rv[i] !is '\0')
             i++;
 
         return rv[0..i];
@@ -413,7 +416,7 @@ template _doc_hack_() { }
  * @return
  *	1 if this process appears to be a CGI process.
  **/
-int FCGX_IsCGI();
+fcgi_int FCGX_IsCGI();
 
 /**
  * Initialize the FCGX library.
@@ -423,7 +426,7 @@ int FCGX_IsCGI();
  * @return
  *	0 on success
  **/
-int FCGX_Init();
+fcgi_int FCGX_Init();
 
 /**
  * Create a FastCGI listen socket.
@@ -436,7 +439,7 @@ int FCGX_Init();
  * @return
  *	the socket file descriptor or -1 on error.
  **/
-int FCGX_OpenSocket(const char *path, int backlog);
+fcgi_fd FCGX_OpenSocket(const char *path, fcgi_int backlog);
 
 /**
  * Initialize a FCGX_Request for use with FCGX_Accept_r().
@@ -451,7 +454,7 @@ int FCGX_OpenSocket(const char *path, int backlog);
  * @return 
  *	0 upon success.
  **/
-int FCGX_InitRequest(FCGX_Request *request, int sock, int flags);
+fcgi_bool FCGX_InitRequest(FCGX_Request *request, fcgi_fd sock, fcgi_int flags);
 
 /**
  * Accept a new request (multi-thread safe).
@@ -479,7 +482,7 @@ int FCGX_InitRequest(FCGX_Request *request, int sock, int flags);
  *
  *	DON'T use the FCGX_Request, its structure WILL change.
  **/
-int FCGX_Accept_r(FCGX_Request *request);
+fcgi_bool FCGX_Accept_r(FCGX_Request *request);
 
 /**
  * Finish the request (multi-thread safe).
@@ -569,7 +572,7 @@ int FCGX_StartFilterData(FCGX_Stream *stream);
  * times during a request; the last call before the request ends determines the
  * value.
  **/
-void FCGX_SetExitStatus(int status, FCGX_Stream *stream);
+void FCGX_SetExitStatus(fcgi_int status, FCGX_Stream *stream);
 
 /**
  * obtain value of FCGI parameter in environment
@@ -582,7 +585,7 @@ void FCGX_SetExitStatus(int status, FCGX_Stream *stream);
  * 	Caller must not mutate the result or retain it past the end of this
  *	request.
  */
-char *FCGX_GetParam(const char *name, FCGX_ParamArray envp);
+char* FCGX_GetParam(const char *name, FCGX_ParamArray envp);
 
 /**
  * Reads a byte from the input stream and returns it.
@@ -592,7 +595,7 @@ char *FCGX_GetParam(const char *name, FCGX_ParamArray envp);
  * @return
  *	or EOF (-1) if the end of input has been reached.
  **/
-int FCGX_GetChar(FCGX_Stream *stream);
+fcgi_int FCGX_GetChar(FCGX_Stream *stream);
 
 /**
  * Pushes back the character c onto the input stream.
@@ -605,7 +608,7 @@ int FCGX_GetChar(FCGX_Stream *stream);
  * @return
  *	EOF if not.
  **/
-int FCGX_UnGetChar(int c, FCGX_Stream *stream);
+fcgi_int FCGX_UnGetChar(fcgi_int c, FCGX_Stream *stream);
 
 /**
  * Reads up to n consecutive bytes from the input stream into the character
@@ -617,7 +620,7 @@ int FCGX_UnGetChar(int c, FCGX_Stream *stream);
  *	Number of bytes read. If result is smaller than n, the end of input has
  *	been reached.
  **/
-int FCGX_GetStr(char *str, int n, FCGX_Stream *stream);
+fcgi_int FCGX_GetStr(char *str, fcgi_int n, FCGX_Stream *stream);
 
 /**
  * Reads up to n-1 consecutive bytes from the input stream into the character
@@ -632,7 +635,7 @@ int FCGX_GetStr(char *str, int n, FCGX_Stream *stream);
  * @return
  *	str otherwise
  **/
-char *FCGX_GetLine(char *str, int n, FCGX_Stream *stream);
+char *FCGX_GetLine(char *str, fcgi_int n, FCGX_Stream *stream);
 
 /**
  * Returns EOF if end-of-file has been detected while reading from stream;
@@ -646,7 +649,7 @@ char *FCGX_GetLine(char *str, int n, FCGX_Stream *stream);
  *	EOF if end-of-file has been detected, 0 if not.
  **/
 
- int FCGX_HasSeenEOF(FCGX_Stream *stream);
+fcgi_int FCGX_HasSeenEOF(FCGX_Stream *stream);
 
 /**
  * Writes a byte to the output stream.
@@ -654,7 +657,7 @@ char *FCGX_GetLine(char *str, int n, FCGX_Stream *stream);
  * @return
  *	The byte, or EOF (-1) if an error occurred.
  **/
-int FCGX_PutChar(int c, FCGX_Stream *stream);
+fcgi_int FCGX_PutChar(fcgi_int c, FCGX_Stream *stream);
 
 /**
  * Writes n consecutive bytes from the character array str into the output
@@ -667,7 +670,7 @@ int FCGX_PutChar(int c, FCGX_Stream *stream);
  * @return
  *	EOF (-1) if an error occurred.
  **/
-int FCGX_PutStr(const char *str, int n, FCGX_Stream *stream);
+fcgi_int FCGX_PutStr(const char *str, fcgi_int n, FCGX_Stream *stream);
 
 /**
  * Writes a null-terminated character string to the output stream.
@@ -677,7 +680,7 @@ int FCGX_PutStr(const char *str, int n, FCGX_Stream *stream);
  * @return
  *	EOF (-1) if an error occurred.
  **/
-int FCGX_PutS(const char *str, FCGX_Stream *stream);
+fcgi_int FCGX_PutS(const char *str, FCGX_Stream *stream);
 
 /**
  * Performs printf-style output formatting and writes the results to the output
@@ -688,7 +691,7 @@ int FCGX_PutS(const char *str, FCGX_Stream *stream);
  * @return
  * EOF (-1) if an error occurred.
  **/
-int FCGX_FPrintF(FCGX_Stream *stream, const char *format, ...);
+fcgi_int FCGX_FPrintF(FCGX_Stream *stream, const char *format, ...);
 
 /**
  * Performs printf-style output formatting and writes the results to the output
@@ -699,7 +702,7 @@ int FCGX_FPrintF(FCGX_Stream *stream, const char *format, ...);
  * @return
  *	EOF (-1) if an error occurred.
  **/
-int FCGX_VFPrintF(
+fcgi_int FCGX_VFPrintF(
 	FCGX_Stream *stream,
 	const char *format,
 	/* va_list */ void* arg);
@@ -715,7 +718,7 @@ int FCGX_VFPrintF(
  * @return
  *	EOF (-1) if an error occurred.
  **/
-int FCGX_FFlush(FCGX_Stream *stream);
+fcgi_int FCGX_FFlush(FCGX_Stream *stream);
 
 /**
  * Closes the stream.
@@ -729,7 +732,7 @@ int FCGX_FFlush(FCGX_Stream *stream);
  * @return
  *	EOF (-1) if an error occurred.
  **/
-int FCGX_FClose(FCGX_Stream *stream);
+fcgi_int FCGX_FClose(FCGX_Stream *stream);
 
 /**
  * Return the stream error code.
@@ -741,7 +744,7 @@ int FCGX_FClose(FCGX_Stream *stream);
  * @return
  *	< 0 is an FastCGI error.
  **/
-int FCGX_GetError(FCGX_Stream *stream);
+fcgi_int FCGX_GetError(FCGX_Stream *stream);
 
 /**
  * Clear the stream error code and end-of-file indication.
@@ -753,7 +756,7 @@ void FCGX_ClearError(FCGX_Stream *stream);
  *
  * This shouldn't be needed by a FastCGI applictaion.
  **/
-FCGX_Stream *FCGX_CreateWriter(int sock, int rId, int bufflen, int streamType);
+FCGX_Stream *FCGX_CreateWriter(fcgi_fd sock, fcgi_int rId, fcgi_int bufflen, fcgi_int streamType);
 
 /**
  * Free a FCGX_Stream (used by cgi-fcgi).
