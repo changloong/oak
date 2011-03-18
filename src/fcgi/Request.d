@@ -11,12 +11,13 @@ final class FCGI_Request {
 	}
 	package Pool*	pool ;
 	
-	string[string] headers ;
+	Req_Header 	header ;
 	
-	this(Pool* pool){
+	package this(Pool* pool){
 		stdin	= new vBuffer(1024 * 16, 1024 * 256) ;
 		_tmp_bu	= new vBuffer(1024 * 16, 1024 * 256) ;
 		this.pool	= pool;
+		header.Boostrap ;
 	}
 	
 	package final void Init(FCGX_Request* fcgi_req) {
@@ -38,34 +39,13 @@ final class FCGI_Request {
 		}
 		
 		// copy params
-		char** param = fcgi_req.envp ;
-		while (*param !is null)
-		{
-			ptrdiff_t eq = 0;
-			while ((*param)[eq] != '\0' && (*param)[eq] != '=') {
-				eq++;
-			}
 
-			ptrdiff_t end = eq;
-			while ((*param)[end] != '\0') {
-				end++;
-			}
-			
-			auto _key	= cast(string) pool.Copy( (*param)[0..eq] ) ;
-			auto _value	=  cast(string) pool.Copy( (*param)[eq+1..end] ) ;
-			
-			headers[_key]	= _value ;
-			
-			param++;
-		}
-		
-		headers.rehash ;
-		
+		header.Init(fcgi_req.envp, pool) ;
 	}
 	
 	
 	package final void Finish(FCGX_Request* fcgi_req) {
-		headers	= null ;	
+		header.Reset ;	
 		stdin.clear ;
 		_tmp_bu.clear ;
 	}

@@ -26,7 +26,7 @@ html(lang=en)
       // test
       table(border=1)
         tr: th(colspan=2, style=(color:rgb(1,60,33); font-size:16px;) , onclick=alert("123"))  req.header
-        - each string key, string value in req.headers
+        - each string key, string value in req.header
           tr
             th ${key}
             td ${value}

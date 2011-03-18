@@ -10,10 +10,16 @@ public import
 	oak.fcgi.Application ;
 
 public import 
+	oak.fcgi.http.Session ,
+	oak.fcgi.http.Cookie ,
+	oak.fcgi.http.Header ;
+
+public import 
 	oak.util.Log ,
 	oak.util.Pool ,
 	oak.util.Ctfe ,
 	oak.util.Buffer ;
+
 
 package import 
 	core.thread  ,

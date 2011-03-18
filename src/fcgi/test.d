@@ -16,10 +16,10 @@ void main(char[][] args){
 		
 		res.stdout("\r\n");
 		
-		foreach(string key, value; req.headers ) {
+		foreach(string key, string value; req.header ) {
 			res.stdout(key)(" => ") (value)("\n") ;
 		}
-		
+
 	});
 	dispatch.Loop();
 }
