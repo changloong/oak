@@ -1,15 +1,16 @@
 
 module oak.fcgi.Base ;
 
+alias ptrdiff_t fcgi_fd  , fcgi_int , fcgi_bool ;
 
-alias ptrdiff_t fcgi_fd  , fcgi_int , fcgi_bool;
+import std.c.string ,  std.traits ,  std.conv ;
 
 /**
  * Error Codes.
  *
  * Assigned to avoid conflict with EOF and errno(2).
  **/
-enum : fcgi_int
+enum  FCGX_ERROR : fcgi_int
 {
 	FCGX_UNSUPPORTED_VERSION	= -2,
 	FCGX_PROTOCOL_ERROR		= -3,
@@ -94,7 +95,7 @@ struct FCGX_Stream {
 	private fcgi_int FCGI_errno;		/*!< error status */
 	private void function(FCGX_Stream *stream) fillBuffProc;
 	private void function(FCGX_Stream *stream, fcgi_int doClose) emptyBuffProc;
-	private void *data;
+	private void* data;
 
     /**
      * Sets the exit status for stream's request.
@@ -268,9 +269,44 @@ struct FCGX_Stream {
      * @return
      *	< 0 is an FastCGI error.
      **/
-    fcgi_int error()
+    
+    fcgi_int errno(){
+	return FCGX_GetError(&this) ;
+    }
+    
+    string error()
     {
-        return FCGX_GetError(&this);
+	fcgi_int errno	= FCGX_GetError(&this) ;
+	string 	 errstr = null ;
+	if( errno > 0 ) {
+		version (Posix)
+		{
+		    char[256] buf = void;
+		    version (linux)
+		    {
+			auto s = std.c.string.strerror_r(errno, buf.ptr, buf.length);
+		    }
+		    else
+		    {
+			std.c.string.strerror_r(errno, buf.ptr, buf.length);
+			auto s = buf.ptr;
+		    }
+		} else {
+		    auto s = std.c.string.strerror(errno);
+		}
+		errstr	= to!string(s);
+	} else if( errno < 0 ) {
+		alias traits_allMembers!(FCGX_ERROR) Enum_Names;
+		foreach(int i, name; Enum_Names){
+			const _name	= Enum_Names[i].stringof[1..$-1] ;
+			if( __traits(getMember, FCGX_ERROR, _name) is errno ) {
+				errstr	= _name ;
+				break ;
+			}
+		}
+	}
+	
+        return errstr ;
     }
 
 }
