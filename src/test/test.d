@@ -1,4 +1,4 @@
-//: \$dmd2 \+..\src\view\jade \-..\src\view\jade\xtpl \+..\src\util 
+//: \$dmd2 \+..\oak\view\jade \-..\oak\view\jade\xtpl \+..\oak\util 
 
 
 import oak.view.jade.Jade ;

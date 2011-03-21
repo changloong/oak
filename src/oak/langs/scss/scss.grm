@@ -1,0 +1,56 @@
+!*
+-----------------------------------------------------------
+Sassy Cascading Style Sheets
+http://sass-lang.com/
+-----------------------------------------------------------
+*!
+
+"Name"      = 'SCSS'
+"Version"   = 'SCSS1 - 2011'
+"Author"    = 'Chang Long'
+"About"     = 'Sassy Cascading Style Sheets'
+
+
+"Case Sensitive" = True
+"Start Symbol"   = <Add Exp>
+
+
+! --------------------------------------------------------------- Terminals
+
+{ID Char}   = {AlphaNumeric} + [-]
+
+ID            = {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
+ClassID       = '.' {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
+
+Number        = {Digit}+ ('.' {Digit}+)?
+
+! --------------------------------------------------------------- Rules
+
+<Add Exp>     ::= <Add Exp> '+' <Mult Exp>
+               |  <Add Exp> '-' <Mult Exp>
+               |  <Mult Exp>
+
+<Mult Exp>    ::= <Mult Exp> '*' <Negate Exp>
+               |  <Mult Exp> '/' <Negate Exp>
+               |  <Negate Exp>
+
+<Negate Exp>  ::= '-' <NumberValue>
+               |  <NumberValue> 
+
+<Var>        ::= '$' ID
+
+<NumberValue>       ::= Number
+               | Number <Unit>
+               | <Var>
+               |  '(' <Add Exp> ')'
+
+<Unit>    ::= em    ! The height of the element's font.
+            | ex    ! The height of the letter "x"
+            | px    ! Pixels
+            | '%'   ! Percentage
+            | in    ! Inches
+            | cm    ! Centimeters
+            | mm    ! Millimeters. 
+            | pt    ! Points (72 points = 6 picas = 1 inch) 
+            | pc    ! Picas (1 pica = 12 points)
+
