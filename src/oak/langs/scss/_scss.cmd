@@ -4,6 +4,7 @@
 cd %~p0
 set scss_dir=%cd%
 del vendor\*.d
+del *.exe
 cd ..
 cd ..
 cd ..
