@@ -1,10 +1,12 @@
-//: \$dmd2 \+..\oak\langs\jade \-..\oak\langs\jade\xtpl \+..\oak\util 
 
+module oak.langs.jade.test ;
+
+version(JADE_TEST) :
 
 import oak.langs.jade.Jade ;
 
 void main(string[] args ){
-	string file = `attr.jade`;
+	string file = `example.jade`;
 	auto data = cast(string) std.file.read(file);
 	
 	ptrdiff_t count = 1 ;
@@ -25,8 +27,8 @@ void main(string[] args ){
 		cc.Init(file, data) ;
 		auto code	= cc.compile ;
 		if( i is 0  ){
-			writefln(code);
-			cc.parser.dump_tok ;
+			 writefln(code);
+			// cc.parser.dump_tok ;
 		}
 	}
 	
