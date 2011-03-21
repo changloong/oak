@@ -5,7 +5,6 @@ version(JADE_TEST) :
 
 import oak.view.jade.Jade ;
 
-
 void main(string[] args ){
 	string file = `example.jade`;
 	auto data = cast(string) std.file.read(file);

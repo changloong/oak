@@ -112,7 +112,9 @@ struct Lexer {
 	
 	private Tok* NewTok(string _file = __FILE__, ptrdiff_t _line = __LINE__)(Tok.Type ty, string val = null ) {
 		Tok* tk ;
+		
 		tk	= pool.New!(Tok)() ;
+
 		tk.ty	= ty ;
 		tk.ln	= ln ;
 		tk._ln	= ln - _ln ;
@@ -680,7 +682,7 @@ struct Lexer {
 				err("expected tag but find `%s` ", _ptr[0], line ) ;
 			}
 		}
-	
+		
 		Tok* _tk	= NewTok(Tok.Type.Tag, tag);
 		
 		while(true) {
