@@ -136,6 +136,14 @@ final class vBuffer  :  OutputRange!(char)  {
 			expand(1) ;
 			data[pos]       = val ;
 			pos     +=      1 ;
+		} else static if( is(T==bool) ) {
+			if( val ) {
+				static _true = "true";
+				append!(_file, _line)(_true.ptr, _true.length ) ;
+			} else {
+				static _false = "false";
+				append!(_file, _line)(_false.ptr, _false.length ) ;
+			}
 		} else static if( is(T==wchar) || is(T==dchar) ) {
 			string _tmp = to!string(val) ;
 			append!(_file, _line)(_tmp.ptr, _tmp.length ) ;
@@ -147,7 +155,7 @@ final class vBuffer  :  OutputRange!(char)  {
 		} else static if( isArray!(T) && ( is( typeof(val[0]) == ubyte) || is( typeof(val[0]) == void)  ) ){
 			append!(_file, _line)(val.ptr, val.length ) ;
 		} else {
-			static assert(false);
+			static assert(false, T_.stringof);
 		}
 		return this ;
 	}
