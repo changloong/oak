@@ -155,8 +155,6 @@ template Gold_Lang(This) {
 			return TokingRet.SyntaxError ;
 		}
 		
-		Tok*[Max_Rule_Len] Tok_Pool ;
-		
 		TokingRet ret ;
 		switch( act.ty ) {
 			case LALRActionType.Accept:
@@ -186,12 +184,13 @@ template Gold_Lang(This) {
 				
 				input_stack.push( reduced_tk ) ;
 				
-				foreach(int i, __tk ; reduced_tk.sub[0..sym_len] ){
-					if( __tk.symbol_id !is rule.symbols[i] ) {
+				for( int i = sym_len; i--; ) {
+					if( reduced_tk.sub[i].symbol_id !is rule.symbols[i] ) {
 						assert(false);
 					}
 				}
-				auto _act = find_act(_cur_lalr_id, tk);
+				
+				auto _act = find_act(_cur_lalr_id, reduced_tk);
 				if( _act is null ) {
 					assert(false, "Couldn't find appropriate goto after reduction.") ;
 				}
