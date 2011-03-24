@@ -2,6 +2,7 @@ module oak.langs.gold.Base ;
 
 public import 
 	oak.langs.gold.Lang , 
+	oak.util.Stack ,
 	oak.util.Pool , 
 	oak.util.Buffer , 
 	oak.util.Log , 
@@ -68,5 +69,23 @@ struct LALRState {
 	const LALRAction[]	actions ;
 }
 
+enum TokingRet {
+	Shift ,
+	Reduce ,
+	ReduceTrimmed ,
+	Accept ,
+	SyntaxError ,
+	InternalError ,
+}
 
-
+enum ParsingRet {
+	TokenRead , 
+	Reduction , 
+	Accept ,
+	NotLoadedError ,
+	LexicalError ,
+	SyntaxError ,
+	RunawayCommentError ,
+	UnmatchedCommentError ,
+	InternalError ,
+}

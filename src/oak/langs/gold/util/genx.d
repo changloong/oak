@@ -90,7 +90,7 @@ void main(){
 	
 	scope(exit) {
 		bu("}\n");
-		bu("struct lang_")( _file_name)(" {\n\n") ;
+		bu("struct Lang_")( _file_name)(" {\n\n") ;
 		
 		asVar("Name", lang.name ) ;
 		asVar("Version", lang.ver ) ;
