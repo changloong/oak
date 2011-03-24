@@ -31,6 +31,13 @@ static string[] sym_type = [
 		"CommentEnd",  
 		"CommentLine", 
 		"Error", ];
+		
+static string[] actions = [
+		null , 
+		"Shift",
+		"Reduce",
+		"Accept", 
+		"Goto",  ];
 
 string Tab(){
 	static string[] _tabs ;
@@ -67,17 +74,19 @@ void main(){
 	bu	= new vBuffer(1024 * 16 , 1024 * 16);
 	auto file	= `../scss/scss.cgt` ;
 	auto lang 	= Language.loadCGT(file);
+	
+	auto out_file	= "x.txt";
+	
 	scope(exit){
 		writefln("%s", cast(string) bu.slice);
+		std.file.write(out_file, bu.slice);
 	}
 	
-	bu(Tab)("enum SymbolType { \n");
-	iTab++;
-	foreach( int i , _ty; sym_type) {
-		bu(Tab)( _ty)("	=")(i)(",\n");
-	}
-	iTab--;
-	bu(Tab)("}\n");
+	bu("#line ")(1)("\"") (out_file)("\"\n");
+	
+	gen_enum("SymbolType", sym_type);
+	gen_enum("ActionType", actions);
+	
 	
 	bu( cast(string) std.file.read(`gold.d`) )("\n");
 	
@@ -106,6 +115,17 @@ void main(){
 	load_rule(lang);
 	load_lalr(lang);
 	
+}
+
+void gen_enum(string name, string[] list){
+	bu(Tab)("enum ")(name)(" { \n");
+	iTab++;
+	foreach( int i , _ty; list) {
+		if( _ty !is null )
+		bu(Tab)( _ty)("	= ")( i )(" ,\n");
+	}
+	iTab--;
+	bu(Tab)("}\n");
 }
 
 string get_symbol_name(T)(T name) if( isSomeString!(T) ) {
@@ -257,7 +277,7 @@ void load_charset(Language lang){
 
 void load_dfa(Language lang){
 	// DfaTable
-	bu(Tab)("static const DfaNode[")( lang.charSetTable.length )("] DfaTable = [ \n");
+	bu(Tab)("static const DfaNode[")( lang.dfaTable.length )("] DfaTable = [ \n");
 	iTab++;
 	foreach(int i, dfa ; lang.dfaTable) {
 		bu
@@ -316,7 +336,7 @@ void load_lalr(Language lang) {
 			(Tab)(" { ") (i) (", [")
 		;
 		foreach(int iAct, LALRAction action; state.actions) {
-			bu("{")(iAct)(",")(cast(ptrdiff_t)action.type)(",")( action.symbolId)(",")(action.target)("}, ");
+			bu("{")(iAct)(", ActionType.")( actions[action.type])(",")( action.symbolId)(",")(action.target)("}, ");
 		}
 		
 		bu("] },")
