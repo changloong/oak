@@ -1,4 +1,4 @@
-//: \$dmd2p -L+goldie \+..\..\util\
+//: \$dmd2p -L+goldie \+..\..\..\util\
 
 
 module oak.langs.gold.genx ;
@@ -72,37 +72,44 @@ void asVar(T)(string name, T value){
 
 void main(){
 	bu	= new vBuffer(1024 * 16 , 1024 * 16);
-	auto file	= `../scss/css.cgt` ;
+	auto file	= `../../scss/css.cgt` ;
 	auto lang 	= Language.loadCGT(file);
+	auto _file_name = getName(basename(file));
 	
-	auto out_file	= "x.txt";
 	
 	scope(exit){
+		auto out_file	= "../" ~ _file_name ~ ".d" ;
 		writefln("%s", cast(string) bu.slice);
-		std.file.write(out_file, bu.slice);
+		std.file.write( out_file, bu.slice);
 	}
 	
-	bu("#line ")(1)("\"") (out_file)("\"\n");
+	bu("module oak.langs.gold.")(_file_name)(" ;\n");
 	
-	gen_enum("SymbolType", sym_type);
-	gen_enum("DFAActionType", actions);
+	bu("public import oak.langs.gold.Base ;\n\n");
+	bu("private {\n");
 	
-	
-	bu( cast(string) std.file.read(`gold.d`) )("\n");
-	
-	asVar("Name", lang.name ) ;
-	asVar("Version", lang.ver ) ;
-	asVar("Author", lang.author ) ;
-	asVar("About", lang.about ) ;
-	
-	bu("\n");
-	
-	asVar("StartSymbolID", lang.startSymbolIndex ) ;
-	asVar("EofSymbolID", lang.eofSymbolIndex ) ;
-	asVar("ErrorSymbolID", lang.errorSymbolIndex ) ;
-	
-	asVar("InitDfaID", lang.initialDFAState ) ;
-	asVar("InitLALRID", lang.initialLALRState ) ;
+	scope(exit) {
+		bu("}\n");
+		bu("struct lang_")( _file_name)(" {\n\n") ;
+		
+		asVar("Name", lang.name ) ;
+		asVar("Version", lang.ver ) ;
+		asVar("Author", lang.author ) ;
+		asVar("About", lang.about ) ;
+		
+		bu("\n");
+		
+		asVar("StartSymbolID", lang.startSymbolIndex ) ;
+		asVar("EofSymbolID", lang.eofSymbolIndex ) ;
+		asVar("ErrorSymbolID", lang.errorSymbolIndex ) ;
+		
+		asVar("InitDfaID", lang.initialDFAState ) ;
+		asVar("InitLALRID", lang.initialLALRState ) ;
+		
+		bu("\n");
+		bu(Tab)("mixin Gold_Lang!(typeof(this)) ;\n");
+		bu("}\n");
+	}
 	
 	bu("\n");
 	
