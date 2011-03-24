@@ -151,5 +151,7 @@ struct Stack (V, int Size = 0,  size_t Step = 64 ) {
         V[] slice () {
                 return stack [0 .. depth];
         }
-
+	size_t length(){
+		return depth ;
+	}
 }

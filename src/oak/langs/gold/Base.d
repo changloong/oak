@@ -20,7 +20,7 @@ enum SymbolType {
 	Error	= 7 ,
 }
 
-enum DFAActionType { 
+enum LALRActionType { 
 	Shift	= 1 ,
 	Reduce	= 2 ,
 	Goto	= 3 ,
@@ -59,7 +59,7 @@ struct DFAState {
 
 struct LALRAction {
 	const ptrdiff_t	id ;
-	const DFAActionType	ty ;
+	const LALRActionType	ty ;
 	const ptrdiff_t	sym_id;
 	const ptrdiff_t	target ;
 }

@@ -319,10 +319,14 @@ void load_rule(Language lang) {
 	// RuleTable
 	bu(Tab)("static const SymbolRule[")( lang.ruleTable.length )("] RuleTable = [ \n");
 	iTab++;
+	ptrdiff_t max_len = 0 ;
 	foreach(int i, rule ; lang.ruleTable) {
 		
 		bu(Tab)("// ")( _symbols_origin[rule.symbolIndex] )("\t  ::= ");
 		
+		if( rule.subSymbolIndicies.length > max_len ) {
+			max_len	= rule.subSymbolIndicies.length ;
+		}
 		foreach(int j, it ;rule.subSymbolIndicies){
 			bu( _symbols_origin[it])( " " )
 			;
@@ -344,6 +348,8 @@ void load_rule(Language lang) {
 	}
 	iTab--;
 	bu(Tab)("]; \n");
+	bu(Tab)("static const Max_Rule_Len = ")(max_len)(" ; \n");
+	
 }
 
 
@@ -357,7 +363,7 @@ void load_lalr(Language lang) {
 			(Tab)(" { ") (i) (", [")
 		;
 		foreach(int iAct, LALRAction action; state.actions) {
-			bu("{")(iAct)(", DFAActionType.")( actions[action.type])(",")( action.symbolId)(",")(action.target)("}, ");
+			bu("{")(iAct)(", LALRActionType.")( actions[action.type])(",")( action.symbolId)(",")(action.target)("}, ");
 		}
 		
 		bu("] },")
