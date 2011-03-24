@@ -12,6 +12,7 @@ template Gold_Lang(This) {
 		ptrdiff_t	ln ;
 		dchar[]	data ;
 		
+		
 		Tok*[Max_Rule_Len]
 				sub ;
 		
@@ -27,12 +28,14 @@ template Gold_Lang(This) {
 		Pool*		pool ;
 		ptrdiff_t	comment_level ;
 		
-		Stack!(Tok*, 0, 512)	
-				lalr_tok_stack ,
+		Stack!(Tok*, 0, 64)	
+				lalr_stack ,
 				input_stack ;
 		
 		dchar*		_start, _end, _ptr ;
 		ptrdiff_t	_cur_lalr_id ;
+		
+		bool		trim_reductions ;
 	}
 	
 	private Tok* NewTok(ptrdiff_t sym_id = -1 , ptrdiff_t lalr_id = -1 ){
@@ -66,14 +69,14 @@ template Gold_Lang(This) {
 		}
 		
 		auto tk = NewTok(StartSymbolID, InitLALRID) ;
-		lalr_tok_stack.push( tk ) ;
+		lalr_stack.push( tk ) ;
 	}
 	
 	
 	void Clear() {
 		pool.Clear ;
 		comment_level	= 0 ;
-		lalr_tok_stack.clear ;
+		lalr_stack.clear ;
 		input_stack.clear ;
 		
 		_cur_lalr_id	= InitLALRID ;
@@ -163,7 +166,7 @@ template Gold_Lang(This) {
 			
 			case LALRActionType.Shift:
 				tk.lalr_id	= _cur_lalr_id ;
-				lalr_tok_stack.push(tk);
+				lalr_stack.push(tk);
 				_cur_lalr_id	= act.target ;
 				ret	= TokingRet.Shift ;
 				break;
@@ -171,26 +174,49 @@ template Gold_Lang(This) {
 			case LALRActionType.Reduce:
 				auto rule = &RuleTable[ act.target] ;
 				int  sym_len = rule.symbols.length  ;
-				if( input_stack.length < sym_len ) {
-					assert(false);
-				}
 				
-				Tok* reduced_tk = NewTok( rule.sym_id ) ;
-				reduced_tk.rule_id = act.target ;
-				
-				for( int i = sym_len; i--; ) {
-					reduced_tk.sub[i] = input_stack.pop ;
-				}
-				
-				input_stack.push( reduced_tk ) ;
-				
-				for( int i = sym_len; i--; ) {
-					if( reduced_tk.sub[i].symbol_id !is rule.symbols[i] ) {
+				Tok* head ;
+			
+				if( trim_reductions ) {
+					
+					head	= lalr_stack.pop ;
+					assert( head.symbol_id is rule.sym_id);
+					ret = TokingRet.ReduceTrimmed ;
+					
+				} else {
+					// Part 1.a: Pop the handle off the Token Stack and create a reduction.
+					
+					if( input_stack.length < sym_len ) {
 						assert(false);
 					}
+					
+					Tok* reduced_tk = NewTok( rule.sym_id ) ;
+					reduced_tk.rule_id = rule.id ;
+					
+					for( int i = sym_len; i--; ) {
+						reduced_tk.sub[i] = input_stack.pop ;
+					}
+					
+					input_stack.push( reduced_tk ) ;
+					
+					for( int i = sym_len; i--; ) {
+						if( reduced_tk.sub[i].symbol_id !is rule.symbols[i] ) {
+							assert(false);
+						}
+					}
+					
+					// Part 2.b: Create a new token that will contain the nonterminal representing the reduced rule.
+					head	= reduced_tk ; 
+					ret	= TokingRet.Reduce ;
 				}
 				
-				auto _act = find_act(_cur_lalr_id, reduced_tk);
+				// GO TO THE NEXT STATE
+				
+				//Set Lookup-State = State property of the token on the top of the LALR-Token-Stack.
+				auto _lookup_state = lalr_stack.top.lalr_id ;
+				
+				// Set Current-LALR-State = State specified by the goto for Head in Lookup-State.
+				auto _act = find_act(_lookup_state, head);
 				if( _act is null ) {
 					assert(false, "Couldn't find appropriate goto after reduction.") ;
 				}
@@ -199,12 +225,31 @@ template Gold_Lang(This) {
 					assert(false, "After reduction, found action type #%s instead of goto.") ;
 				}
 				_cur_lalr_id = act.target ;
+				
+				// PART 3: PUSH THE NEW NONTERMINAL TOKEN
+				head.lalr_id	= _cur_lalr_id ;
+				lalr_stack.push(head);
+
 				break;
 			
 			default:
 				assert(false);
 		}
 		
+		return ret ;
+	}
+	
+	ParsingRet Parse() {
+		ParsingRet ret ;
+		bool isDone	= false ;
+		size_t count_i = 0;
+		while( !isDone ) {
+			if( input_stack.empty ) {
+				
+			}
+			
+			assert(count_i++ < int.max) ;
+		}
 		return ret ;
 	}
 	
