@@ -72,7 +72,7 @@ void asVar(T)(string name, T value){
 
 void main(){
 	bu	= new vBuffer(1024 * 16 , 1024 * 16);
-	auto file	= `../scss/scss.cgt` ;
+	auto file	= `../scss/css.cgt` ;
 	auto lang 	= Language.loadCGT(file);
 	
 	auto out_file	= "x.txt";
@@ -85,7 +85,7 @@ void main(){
 	bu("#line ")(1)("\"") (out_file)("\"\n");
 	
 	gen_enum("SymbolType", sym_type);
-	gen_enum("ActionType", actions);
+	gen_enum("DFAActionType", actions);
 	
 	
 	bu( cast(string) std.file.read(`gold.d`) )("\n");
@@ -108,11 +108,9 @@ void main(){
 	
 	load_symbol(lang);
 	
-	
-	
+	load_rule(lang);
 	load_charset(lang);
 	load_dfa(lang);
-	load_rule(lang);
 	load_lalr(lang);
 	
 }
@@ -181,6 +179,21 @@ string get_symbol_name(T)(T name) if( isSomeString!(T) ) {
 			case ' ':
 				_name	~= "_Space_";
 				break;
+			case '!':
+				_name	~= "_ExPoint_";
+				break;
+			case ',':
+				_name	~= "_Comma_";
+				break;
+			case ':':
+				_name	~= "_Colon_";
+				break;
+			case ';':
+				_name	~= "_Semicolon_";
+				break;
+			case '@':
+				_name	~= "_AT_";
+				break;
 			
 			default:
 				assert(false, to!string(d) );
@@ -190,6 +203,10 @@ string get_symbol_name(T)(T name) if( isSomeString!(T) ) {
 	assert( _name.length > 0 );
 	if( _name[0] >= '0' &&  _name[0] <= '9' ) {
 		 _name	= "_" ~  _name ;
+	}
+	
+	if( _name[0] !is '_' ) {
+		_name	= "_" ~ _name ;
 	}
 	
 	string _name_new = _name ;
@@ -220,10 +237,9 @@ void load_symbol(Language lang){
 	foreach(int i, Symbol sym; lang.symbolTable) {
 		get_symbol_name(sym.name) ;
 	}
-	// symbol enum
 	
-	/*
-	bu(Tab)("enum Symbol : ptrdiff_t ")("{\n");
+	// symbol enum
+	bu(Tab)("enum SymbolID : ptrdiff_t ")("{\n");
 	iTab++;
 		foreach(int i, Symbol sym; lang.symbolTable) {
 			auto _name	= _symbols[i] ;
@@ -234,7 +250,6 @@ void load_symbol(Language lang){
 		}
 	iTab--;
 	bu(Tab)("}\n");
-	*/
 	
 	// symbolTable
 	bu(Tab)("static const Symbol[")( lang.symbolTable.length )("] SymbolTable = [ \n");
@@ -295,7 +310,7 @@ void load_dfa(Language lang){
 
 void load_rule(Language lang) {
 	// RuleTable
-	bu(Tab)("static const Rule[")( lang.ruleTable.length )("] RuleTable = [ \n");
+	bu(Tab)("static const SymbolRule[")( lang.ruleTable.length )("] RuleTable = [ \n");
 	iTab++;
 	foreach(int i, rule ; lang.ruleTable) {
 		
@@ -335,7 +350,7 @@ void load_lalr(Language lang) {
 			(Tab)(" { ") (i) (", [")
 		;
 		foreach(int iAct, LALRAction action; state.actions) {
-			bu("{")(iAct)(", ActionType.")( actions[action.type])(",")( action.symbolId)(",")(action.target)("}, ");
+			bu("{")(iAct)(", DFAActionType.")( actions[action.type])(",")( action.symbolId)(",")(action.target)("}, ");
 		}
 		
 		bu("] },")

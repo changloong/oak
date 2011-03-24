@@ -9,7 +9,7 @@
 		const dchar[]		set ;
 	}
 	
-	static struct Rule {
+	static struct SymbolRule {
 		const ptrdiff_t	id ;
 		const ptrdiff_t	sym_id ;
 		const ptrdiff_t[]	symbols;
@@ -30,7 +30,7 @@
 	
 	static struct LALRAction {
 		const ptrdiff_t	id ;
-		const ActionType	ty ;
+		const DFAActionType	ty ;
 		const ptrdiff_t	sym_id;
 		const ptrdiff_t	target ;
 	}
