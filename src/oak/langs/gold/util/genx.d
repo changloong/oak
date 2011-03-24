@@ -245,6 +245,7 @@ void load_symbol(Language lang){
 		get_symbol_name(sym.name) ;
 	}
 	
+	/*
 	// symbol enum
 	bu(Tab)("enum SymbolID : ptrdiff_t ")("{\n");
 	iTab++;
@@ -257,6 +258,7 @@ void load_symbol(Language lang){
 		}
 	iTab--;
 	bu(Tab)("}\n");
+	*/
 	
 	// symbolTable
 	bu(Tab)("static const Symbol[")( lang.symbolTable.length )("] SymbolTable = [ \n");
@@ -266,7 +268,8 @@ void load_symbol(Language lang){
 		
 		bu
 			(Tab)(" { ") (i) (", SymbolType.") ( sym_type[sym.type])(", \"").unQuote(sym.name)("\" }, ")
-			(" //  ") ( symbolTypeToString(sym.type) ) (" \t =  ") ( name ) ("\n")
+			// (" //  ") ( symbolTypeToString(sym.type) ) (" \t =  ") ( name ) 
+			("\n")
 		;
 	}
 	iTab--;
