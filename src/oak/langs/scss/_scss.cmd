@@ -3,7 +3,7 @@
 %~d0
 cd %~p0
 set scss_dir=%cd%
-del vendor\*.d
+del gscss\*.d
 del *.exe
 cd ..
 cd ..
@@ -13,9 +13,11 @@ set oak_dir=%cd%
 e:
 cd \projects\goldie
 .\bin\goldie-grmc.exe %scss_dir%\scss.grm
-.\bin\goldie-staticlang scss.cgt -dir:%oak_dir% -pack:oak.langs.scss.vendor
-del scss.cgt
+.\bin\goldie-staticlang scss.cgt -dir:%oak_dir% -pack:oak.langs.scss.gscss
 
+copy scss.cgt %scss_dir%
+del scss.cgt
+ 
 %~d0
 cd %~p0
 dir vendor\*.d

@@ -137,7 +137,8 @@ final class vBuffer  :  OutputRange!(char)  {
 			data[pos]       = val ;
 			pos     +=      1 ;
 		} else static if( is(T==wchar) || is(T==dchar) ) {
-			static assert(false);
+			string _tmp = to!string(val) ;
+			append!(_file, _line)(_tmp.ptr, _tmp.length ) ;
 		} else static if( isNumeric!(T) ){
 			string _tmp = to!string(val) ;
 			append!(_file, _line)(_tmp.ptr, _tmp.length ) ;
@@ -169,7 +170,7 @@ final class vBuffer  :  OutputRange!(char)  {
 		opCall(val);
 	}
 	
-	final void unQuote(T)(T inp, ptrdiff_t deep = 0) {
+	final typeof(this) unQuote(T)(T inp, ptrdiff_t deep = 0) {
 		static if( isSomeString!(T) ) {
 			ptrdiff_t len = inp.length ;
 			if( deep < 0 || deep >= byte.max ) {
@@ -199,6 +200,7 @@ final class vBuffer  :  OutputRange!(char)  {
 		} else {
 			opCall(inp);
 		}
+		return this ;
 	}
 	
 	final void escape(T)(T inp){
@@ -242,13 +244,15 @@ final class vBuffer  :  OutputRange!(char)  {
 				opCall('\\')('n');
 			} else if( inp[i] is '\r'){
 				
+			} else if( inp[i] < ' ') {
+				opCall("\\u")( cast(byte) inp[i])(";");
 			} else {
 				opCall(inp[i]);
 			}
 		}
 	}
 
-	final void strip( string inp){
+	final void strip( string inp ){
 		ptrdiff_t len = inp.length ;
 		for(ptrdiff_t i = 0; i < len; i++){
 			if( inp[i] is '\\' ){
@@ -261,7 +265,7 @@ final class vBuffer  :  OutputRange!(char)  {
 						opCall('n');
 						break;
 					case '\'':
-						opCall('\'');
+						put( '\'' ) ;
 						break;
 					case 't':
 						opCall('\t');
