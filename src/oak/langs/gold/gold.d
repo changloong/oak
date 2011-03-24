@@ -11,6 +11,7 @@
 	
 	static struct Rule {
 		const ptrdiff_t	id ;
+		const ptrdiff_t	sym_id ;
 		const ptrdiff_t[]	symbols;
 	}
 	

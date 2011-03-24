@@ -277,7 +277,7 @@ void load_charset(Language lang){
 
 void load_dfa(Language lang){
 	// DfaTable
-	bu(Tab)("static const DFAState[")( lang.dfaTable.length )("] DfaTable = [ \n");
+	bu(Tab)("static const DFAState[")( lang.dfaTable.length )("] DFATable = [ \n");
 	iTab++;
 	foreach(int i, dfa ; lang.dfaTable) {
 		bu
@@ -298,28 +298,27 @@ void load_rule(Language lang) {
 	bu(Tab)("static const Rule[")( lang.ruleTable.length )("] RuleTable = [ \n");
 	iTab++;
 	foreach(int i, rule ; lang.ruleTable) {
-		string ruleStr = lang.symbolTable[rule.symbolIndex].name ~ " ::=" ;
-		bu
-			(Tab)(" { ") (i) (", [")
-		;
+		
+		bu(Tab)("// ")( _symbols_origin[rule.symbolIndex] )("\t  ::= ");
+		
 		foreach(int j, it ;rule.subSymbolIndicies){
-			// pragma(msg, typeof(it).stringof);
+			bu( _symbols_origin[it])( " " )
+			;
+		}
+		bu(" \n");
+		
+		bu
+			(Tab)(" { ") (i) (", ")(rule.symbolIndex)(", [")
+		;
+		
+		foreach(int j, it ;rule.subSymbolIndicies){
 			bu(it)
-				// (" /* ").unQuote(lang.symbolTable[it].name)(" */ ")
 			(",")
 			;
 		}
+		bu("] }, \n");
 		
-		bu("] },");
-		bu("	//	")( ruleStr )("\t");
 		
-		foreach(int j, it ;rule.subSymbolIndicies){
-			// pragma(msg, typeof(it).stringof);
-			bu( _symbols[it])( " " )
-			;
-		}
-		
-		bu(" \n");
 	}
 	iTab--;
 	bu(Tab)("]; \n");
@@ -328,7 +327,7 @@ void load_rule(Language lang) {
 
 void load_lalr(Language lang) {
 	// LaLrTable
-	bu(Tab)("static const LALRState[")( lang.lalrTable.length )("] LaLrTable = [ \n");
+	bu(Tab)("static const LALRState[")( lang.lalrTable.length )("] LALRTable = [ \n");
 	iTab++;
 	foreach(int i, state ; lang.lalrTable) {
 		
