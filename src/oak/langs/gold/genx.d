@@ -22,6 +22,16 @@ ptrdiff_t iTab	= 1 ;
 string[] _symbols ;
 string[] _symbols_origin ;
 
+static string[] sym_type = [	
+		"NonTerminal",
+		"Terminal",
+		"Whitespace", 
+		"EOF",      
+		"CommentStart",
+		"CommentEnd",  
+		"CommentLine", 
+		"Error", ];
+
 string Tab(){
 	static string[] _tabs ;
 	if( _tabs.length <= iTab ) {
@@ -60,6 +70,16 @@ void main(){
 	scope(exit){
 		writefln("%s", cast(string) bu.slice);
 	}
+	
+	bu(Tab)("enum SymbolType { \n");
+	iTab++;
+	foreach( int i , _ty; sym_type) {
+		bu(Tab)( _ty)("	=")(i)(",\n");
+	}
+	iTab--;
+	bu(Tab)("}\n");
+	
+	bu( cast(string) std.file.read(`gold.d`) )("\n");
 	
 	asVar("Name", lang.name ) ;
 	asVar("Version", lang.ver ) ;
@@ -130,10 +150,10 @@ string get_symbol_name(T)(T name) if( isSomeString!(T) ) {
 				_name	~= "_Plus_";
 				break;
 			case '-':
-				_name	~= "_Minus_";
+				_name	~= "_Min_";
 				break;
 			case '/':
-				_name	~= "_Division_";
+				_name	~= "_Div_";
 				break;
 			case '_':
 				_name	~= "_";
@@ -182,6 +202,7 @@ void load_symbol(Language lang){
 	}
 	// symbol enum
 	
+	/*
 	bu(Tab)("enum Symbol : ptrdiff_t ")("{\n");
 	iTab++;
 		foreach(int i, Symbol sym; lang.symbolTable) {
@@ -193,6 +214,7 @@ void load_symbol(Language lang){
 		}
 	iTab--;
 	bu(Tab)("}\n");
+	*/
 	
 	// symbolTable
 	bu(Tab)("static const Symbol[")( lang.symbolTable.length )("] SymbolTable = [ \n");
@@ -201,7 +223,7 @@ void load_symbol(Language lang){
 		auto name	= _symbols[i] ;
 		
 		bu
-			(Tab)(" { ") (i) (", ") ( cast(ptrdiff_t) sym.type)(", \"").unQuote(sym.name)("\" }, ")
+			(Tab)(" { ") (i) (", SymbolType.") ( sym_type[sym.type])(", \"").unQuote(sym.name)("\" }, ")
 			(" //  ") ( symbolTypeToString(sym.type) ) (" \t =  ") ( name ) ("\n")
 		;
 	}
