@@ -9,31 +9,32 @@
 		const dchar[]		set ;
 	}
 	
-	static struct DfaEdge {
-		const ptrdiff_t	charset_id ;
-		const ptrdiff_t	dfa_id ;
-	}
-	
-	static struct DfaNode {
-		const ptrdiff_t	id ;
-		const ptrdiff_t	sym_id ;
-		const bool		accept ;
-		const DfaEdge[]	edges ;
-	}
-	
-	static struct RuleNode {
+	static struct Rule {
 		const ptrdiff_t	id ;
 		const ptrdiff_t[]	symbols;
 	}
 	
-	static struct Action {
+	static struct DFAEdge {
+		const ptrdiff_t	charset_id ;
+		const ptrdiff_t	dfa_id ;
+	}
+	
+	static struct DFAState {
+		const ptrdiff_t	id ;
+		const ptrdiff_t	sym_id ;
+		const bool		accept ;
+		const DFAEdge[]	edges ;
+	}
+	
+	
+	static struct LALRAction {
 		const ptrdiff_t	id ;
 		const ActionType	ty ;
 		const ptrdiff_t	sym_id;
 		const ptrdiff_t	target ;
 	}
 	
-	static struct LaLrNode {
+	static struct LALRState {
 		const ptrdiff_t	id ;
-		const Action[]		actions ;
+		const LALRAction[]	actions ;
 	}

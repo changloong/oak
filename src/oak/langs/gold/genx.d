@@ -36,8 +36,8 @@ static string[] actions = [
 		null , 
 		"Shift",
 		"Reduce",
-		"Accept", 
-		"Goto",  ];
+		"Goto", 
+		"Accept",  ];
 
 string Tab(){
 	static string[] _tabs ;
@@ -277,7 +277,7 @@ void load_charset(Language lang){
 
 void load_dfa(Language lang){
 	// DfaTable
-	bu(Tab)("static const DfaNode[")( lang.dfaTable.length )("] DfaTable = [ \n");
+	bu(Tab)("static const DFAState[")( lang.dfaTable.length )("] DfaTable = [ \n");
 	iTab++;
 	foreach(int i, dfa ; lang.dfaTable) {
 		bu
@@ -295,7 +295,7 @@ void load_dfa(Language lang){
 
 void load_rule(Language lang) {
 	// RuleTable
-	bu(Tab)("static const RuleNode[")( lang.ruleTable.length )("] RuleTable = [ \n");
+	bu(Tab)("static const Rule[")( lang.ruleTable.length )("] RuleTable = [ \n");
 	iTab++;
 	foreach(int i, rule ; lang.ruleTable) {
 		string ruleStr = lang.symbolTable[rule.symbolIndex].name ~ " ::=" ;
@@ -328,7 +328,7 @@ void load_rule(Language lang) {
 
 void load_lalr(Language lang) {
 	// LaLrTable
-	bu(Tab)("static const LaLrNode[")( lang.lalrTable.length )("] LaLrTable = [ \n");
+	bu(Tab)("static const LALRState[")( lang.lalrTable.length )("] LaLrTable = [ \n");
 	iTab++;
 	foreach(int i, state ; lang.lalrTable) {
 		
