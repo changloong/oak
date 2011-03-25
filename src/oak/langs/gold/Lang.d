@@ -174,7 +174,6 @@ template Gold_Lang_Engine(This) {
 		auto act = find_act(_cur_lalr_id, tk) ;
 		if( act is null ) {
 			Log("Error: _cur_lalr_id = %d , tok = %s: `%s` ", _cur_lalr_id, tk.symbol, tk.data);
-			assert(false);
 			return TokingRet.SyntaxError ;
 		}
 		// Log(">>> Next Action: %s", LALRActionTypes[act.ty] );
@@ -306,16 +305,28 @@ template Gold_Lang_Engine(This) {
 							// Discard the token from the front of the Input-Stack.
 							input_stack.pop();
 						break ;
-					case SymbolType.CommentEnd :
+					case SymbolType.CommentStart :
 							comment_level = 1 ;
 							// Discard the token from the front of the Token-Queue.
 							input_stack.pop();
 						break ;
 					case SymbolType.CommentLine :
-							// Discard the rest of the current line in Source.
-							assert(false); // mSource.readLine();
 							// Discard the token from the front of the Input-Stack.
-							input_stack.pop();
+							auto _tk2	= input_stack.pop();
+							// Discard the rest of the current line in Source.
+							for(auto __ptr = _ptr ; _ptr <= _end; _ptr++ ) {
+								if( _ptr[0] is '\r' ) {
+									if( _ptr < _end && _ptr[1] is '\n' ) {
+										_ptr++;
+									}
+									_ptr++;
+									break;
+								}
+								if( _ptr[0] is '\n' ) {
+									_ptr++;
+									break;
+								}
+							}
 						break ;
 					case SymbolType.Error :
 							ret	= ParsingRet.MessageLexicalError;

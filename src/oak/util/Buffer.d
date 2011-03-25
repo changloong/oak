@@ -3,6 +3,7 @@ module oak.util.Buffer ;
 
 
 import 
+	std.format,
 	std.range,
 	std.algorithm,
 	std.array,
@@ -159,6 +160,15 @@ final class vBuffer  :  OutputRange!(char)  {
 		}
 		return this ;
 	}
+	
+	final private This format(T...)(string  fmt, T t) in {
+                 assert( data.length >= pos ) ; 
+        } out{
+                 assert( data.length >= pos ) ; 
+        } body {
+		formattedWrite(this, fmt, t);
+                return this ;
+        }
 	
 	ptrdiff_t capability() {
 		return data.length ;

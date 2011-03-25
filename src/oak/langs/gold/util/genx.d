@@ -79,8 +79,12 @@ void main(){
 	
 	scope(exit){
 		auto out_file	= "../" ~ _file_name ~ ".d" ;
-		writefln("%s", cast(string) bu.slice);
-		std.file.write( out_file, bu.slice);
+		
+		auto ret = cast(string) bu.slice ;
+		
+		std.file.write( out_file, ret);
+		
+		writefln("%s", ret.length > 1024 * 4 ? ret[0..1024*4] : ret );
 	}
 	
 	bu("module oak.langs.gold.")(_file_name)(" ;\n");
@@ -197,8 +201,63 @@ string get_symbol_name(T)(T name) if( isSomeString!(T) ) {
 			case ';':
 				_name	~= "_Semicolon_";
 				break;
+			
 			case '@':
 				_name	~= "_AT_";
+				break;
+			
+			case '&':
+				_name	~= "_AND_";
+				break;
+			
+			case '.':
+				_name	~= "_DOT_";
+				break;
+			
+			case '?':
+				_name	~= "_Question_";
+				break;
+			
+			case '"':
+				_name	~= "_dQuote_";
+				break;
+			
+			case '\'':
+				_name	~= "_Quote_";
+				break;
+			
+			case '`':
+				_name	~= "_xQuote_";
+				break;
+		
+			case '~':
+				_name	~= "_Tilde_";
+				break;
+		
+			case '^':
+				_name	~= "_6Top_";
+				break;
+			
+			case '|':
+				_name	~= "_Vertical_";
+				break;
+			
+			case '=':
+				_name	~= "_Equal_";
+				break;
+			
+			case '[':
+				_name	~= "_lBracket_";
+				break;
+			case ']':
+				_name	~= "_rBracket_";
+				break;
+			
+			case '<':
+				_name	~= "_lAngle_";
+				break;
+			case '>':
+				_name	~= "_rAngle_";
 				break;
 			
 			default:
@@ -282,14 +341,16 @@ void load_charset(Language lang){
 	iTab++;
 	foreach(int i, tab ; lang.charSetTable) {
 		auto _strin_char = to!string(tab.chars) ;
-		bu
-			(Tab)(  "// " ) .unstrip(_strin_char) 
-		;
+		
+		// bu(Tab)(  "// " ) .unstrip(_strin_char) ;
+		
 		bu
 			("\n") (Tab)(" { ") (i) (", [")
 		;
+		
+		// should sort data
 		foreach(dchar _dchar; tab.chars ) {
-			bu( cast(int) _dchar )(", ");	
+			bu.format("0x%x,", cast(size_t) _dchar );	
 		}
 		bu("] }, \n");
 	}

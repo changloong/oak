@@ -5,7 +5,8 @@ void main(){
 	Lang_css css ;
 	
 	//css.Init("1111*2222 + ( 1- 3 *3 ) / (3-0*7+7788) ");
-	css.Init("tag1.class1.class2 , test2:hover{font-size:12px !important; }");
+	auto data = cast(string) std.file.read(`test.txt`);
+	css.Init( data);
 	
 	size_t coutn_i ;
 
@@ -26,7 +27,7 @@ void main(){
 				Log("%s", names[ret] );
 				isDone = true ;
 		}
-		assert( coutn_i++ < short.max >> 6 );
+		assert( coutn_i++ < short.max >> 5 );
 	}
 	
 	
