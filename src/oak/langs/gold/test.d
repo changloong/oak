@@ -4,7 +4,7 @@ import oak.langs.gold.css ;
 void main(){
 	Lang_css css ;
 	
-	css.Init("1111*2222 + ( 1- 3 *3 )");
+	css.Init("1111*2222 + ( 1- 3 *3 ) / (3-0*7+7788) ");
 	
 	size_t coutn_i ;
 

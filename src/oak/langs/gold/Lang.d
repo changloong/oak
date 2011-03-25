@@ -100,7 +100,7 @@ template Gold_Lang_Engine(This) {
 	
 	Tok* RetrieveToken () {
 		Tok* tk	= null ;
-		if( _ptr > _end ) {
+		if( _ptr >= _end ) {
 			tk = NewTok( EofSymbolID ) ;
 			return tk ;
 		}
@@ -129,7 +129,7 @@ template Gold_Lang_Engine(This) {
 			bool eof = _ptr + len > _end  ;
 			
 			if( eof ) {
-				throw new Exception("err");
+				throw new Exception("eof err");
 			}
 			
 			if( state.accept ) {
@@ -188,7 +188,7 @@ template Gold_Lang_Engine(This) {
 			
 			case LALRActionType.Shift:
 				Log(" lalr_state %d => %d", _cur_lalr_id, act.target ) ;
-				tk.lalr_state_id	= _cur_lalr_id ;
+				tk.lalr_state_id	=  act.target ;
 				lalr_stack.push(tk);
 				_cur_lalr_id	= act.target ;
 				ret	= TokingRet.Shift ;
@@ -210,7 +210,7 @@ template Gold_Lang_Engine(This) {
 					// Part 1.a: Pop the handle off the Token Stack and create a reduction.
 					
 					if( lalr_stack.length < sym_len ) {
-						Log(" %d = %d reduce_rule = %d ",input_stack.length,  sym_len, rule.id );
+						Log(" %d = %d reduce_rule = %d ",lalr_stack.length,  sym_len, rule.id );
 						assert(false);
 					}
 					
@@ -224,17 +224,6 @@ template Gold_Lang_Engine(This) {
 					for( int i = sym_len; i--; ) {
 						if( reduced_tk.sub[i].symbol_id !is rule.symbols[i] ) {
 							Log("Error: rule = %s, reduced_tk = `%s`:`%s`", rule.description , reduced_tk.symbol, reduced_tk.data);
-							foreach( int _i, sym_id;rule.symbols){
-								Log("index:%d rule :%d , input_stack: %s",_i, sym_id, reduced_tk.sub[_i].symbol );
-							}
-							
-							foreach(Tok* _tk;input_stack){
-								log("%s:%s", _tk.symbol, _tk.data );
-							}
-							log("-------------");
-							foreach(Tok* _tk; lalr_stack){
-								log("%s:%s", _tk.symbol, _tk.data );
-							}
 							assert(false);
 						}
 					}
