@@ -233,9 +233,8 @@ struct Lexer {
 					*/
 					char _next_char = eval_find( ';', '}', '{' ) ;
 					
-					if( _next_char is '{' ) {
+					if( _next_char !is '{' ) {
 						// pseudo left char
-						assert(false);
 						if( __ptr !is _ptr ){
 							auto _pre = _ptr - 1;
 							if( _pre[0] is ' ' && _pre[1] is '\t' ) {
@@ -249,6 +248,8 @@ struct Lexer {
 						}
 						_ptr++ ;
 					} else {
+						// follow a value or body ;
+						
 						assert( false ) ;
 					}
 	
