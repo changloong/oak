@@ -82,11 +82,73 @@ struct Lexer {
 		return false ;
 	}
 	
+	private char eval_find(T...)(T t) if(T.length > 1 ) {
+		char _ret  = '\0' ;
+		auto __ptr = _ptr ;
+		while( __ptr <= _end ) {
+			static if( T.length is 1 ) {
+				if( __ptr[0] is t[0] ) {
+					_ret	= __ptr[0] ;
+					break;
+				}
+			} else static if( T.length is 2 ){
+				if( _ptr[0] is t[0] || __ptr[0] is t[1] ) {
+					_ret	= __ptr[0] ;
+					break;
+				}
+			}else static if( T.length is 3 ){
+				if( __ptr[0] is t[0] || __ptr[0] is t[1] || __ptr[0] is t[2] ) {
+					_ret	= __ptr[0] ;
+					break;
+				}
+			} else {
+				static assert(false);
+			}
+			if( __ptr[0] is '\'' || __ptr[0] is '"' ) {
+				char quote = __ptr[0] ;
+				__ptr++;
+				while( __ptr < _end ) {
+					if( __ptr[0] is quote ) {
+						break ;
+					}
+					if( __ptr[0] is '\\' ) {
+						__ptr++;
+						if( __ptr <= _end ) {
+							__ptr++;
+						}
+						continue;
+					}
+					__ptr++;
+				}
+				break;
+			}
+			
+			if( __ptr[0] is '#' ) {
+				assert(false) ;
+			}
+			__ptr++;
+		}
+		Log("%s", __ptr[0]);
+		assert(false);
+		return _ret ;
+	}
+	
 	void parse() {
-		skip_space;
+		parseBody(false);
+	}
+	
+	Tok* parseBody( bool with_curly = true ) {
+		Tok* tk = null ;
+		if( with_curly ) {
+			if(  _ptr > _end || _ptr[0] !is '{' ) {
+				err("expected {");
+			}
+			_ptr++;
+		}
+		
+		skip_space ;
 		size_t count_i ;
 		while( _ptr <= _end ){
-			
 			switch( _ptr[0] ) {
 				case '$':  // def var 
 					assert(false);
@@ -98,15 +160,23 @@ struct Lexer {
 				case '/':
 					assert(false);
 					break;
+				
+				case '}': // end of body
+					assert(false);
 				default:
-					parsePaths ;
+					parsePaths(with_curly) ;
 			}
 			assert( count_i++ < ushort.max >> 6 );
+			skip_space ;
 		}
+		
+		if( with_curly ) {
+			assert(false);
+		}
+		return tk ;
 	}
 	
-	
-	bool parseInlineExp(void delegate() dg){
+	bool parseInlineExp(void delegate() dg) {
 		if(  _ptr > _end || _ptr[0] !is '#' ) {
 			err("expected #");
 		}
@@ -122,7 +192,7 @@ struct Lexer {
 		return true ;
 	}
 	
-	void parsePath() {
+	void parsePath( bool with_attr_value = true ) {
 		auto __ptr = _ptr ;
 		auto _string_ptr = _ptr ;
 		size_t count_i ;
@@ -143,15 +213,27 @@ struct Lexer {
 					auto _ln = ln ;
 					_ptr++;
 					skip_space;
-					// font : {  size:12px; }
+					/**
+						Next Char is {, follow a body 
+						font : {  size:12px; }
+					*/
 					if( _ptr <= _end  ){
 						if(  _ptr[0] is '{' ) {
 							isDone	= true ;
 							break;
 						}
 					} 
+					
 					_ptr	= _tmp_ptr ;
 					ln	= _ln ;
+					_ptr++;
+					/**
+						( ; or } )  befor { , it should be a  pseudo
+						else it is a value ;
+					*/
+					char _term_char = eval_find( ';', '}', '{' ) ;
+					
+					assert(false);
 					// pseudo left char
 					if( __ptr !is _ptr ){
 						auto _pre = _ptr - 1;
@@ -219,11 +301,11 @@ struct Lexer {
 	}
 	
 	
-	void parsePaths() {
+	void parsePaths( bool with_attr_value = true  ) {
 		Tok* tk = null ;
 		size_t count_i ;
 		while( _ptr <= _end ) {
-			parsePath ;
+			parsePath(with_attr_value) ;
 			if( _ptr > _end ) {
 				err("path missing content");
 			}
@@ -236,7 +318,7 @@ struct Lexer {
 						err(" missing content for unwind attribute");
 					}
 				case '{':
-					parseClosure;
+					parseBody;
 					break;
 				default:
 					Log("`%s`", _ptr[0]);
@@ -248,13 +330,5 @@ struct Lexer {
 			
 	}
 	
-	Tok* parseClosure(){
-		Tok* tk = null ;
-		if(  _ptr > _end || _ptr[0] !is '{' ) {
-			err("expected {");
-		}
-		assert(false);
-		return tk ;
-	}
 }
 
