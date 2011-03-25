@@ -66,6 +66,17 @@ struct Tok {
 		ParentPath , // &
 	}
 	
+	Type		ty ;
+	ptrdiff_t	ln ;
+	Tok*		next ;
 	
+	double		number_value ;
+	string		string_value ;
+	
+	static const _Type_Names = ctfe_enum_array!(Type) ;
+	
+	string type() {
+		return _Type_Names[ty] ;
+	}
 
 }
