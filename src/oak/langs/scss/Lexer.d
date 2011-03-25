@@ -32,6 +32,8 @@ struct Lexer {
 	}
 	
 	void err(size_t _line = __LINE__, T...)(string fmt, T t){
+		auto len = _end - _ptr ;
+		log("`%s`", _ptr[ 0 .. len > 100 ? 100 : len ] );
 		auto a = appender!string() ;
 		formattedWrite(a, "(%s:%d) ", __FILE__, _line);
 		formattedWrite(a, fmt, t);
@@ -50,6 +52,14 @@ struct Lexer {
 	}
 	
 	private bool skip_space( bool expected = false ){
+		/++
+			skip comment 
+			case 0:
+				/* test */
+			case 1:
+				// test 
+			
+		++/
 		while( _ptr <= _end ) {
 			if( _ptr[0] != ' ' && _ptr[0] != '\t' ) {
 				if( _ptr[0] !is '\r' && _ptr[0] !is '\n' ) {
@@ -98,6 +108,16 @@ struct Lexer {
 				}
 			}else static if( T.length is 3 ){
 				if( __ptr[0] is t[0] || __ptr[0] is t[1] || __ptr[0] is t[2] ) {
+					_ret	= __ptr[0] ;
+					break;
+				}
+			} else static if( T.length is 4 ){
+				if( __ptr[0] is t[0] || __ptr[0] is t[1] || __ptr[0] is t[2] || __ptr[0] is t[3] ) {
+					_ret	= __ptr[0] ;
+					break;
+				}
+			} else static if( T.length is 5 ){
+				if( __ptr[0] is t[0] || __ptr[0] is t[1] || __ptr[0] is t[2] || __ptr[0] is t[3]|| __ptr[0] is t[4] ) {
 					_ret	= __ptr[0] ;
 					break;
 				}
@@ -214,26 +234,34 @@ struct Lexer {
 					_ptr++;
 					skip_space;
 					/**
-						Next Char is {, follow a body 
-						font : {  size:12px; }
+						case -1:
+							:hove { font-size:10px}  ; // error 
+				
+						case 0:
+							font : {  weight:700; }
+						case 1:
+							font : 12px/14px {  weight:700; }
+						case 2:
+							font : 10px ;
+						case 3:
+							font:10px;
+						case 4:
+							a:hove { font-size:10px} ;	// pseudo
+						case 5:
+							a:hove tag#id.class { font-size:10px} ;
+						case 6:
+							a:hove & { font-size:10px} ;
+						case 7:
+							a:hove & tag#id.class  { font-size:10px} ;
 					*/
-					if( _ptr <= _end  ){
-						if(  _ptr[0] is '{' ) {
-							isDone	= true ;
-							break;
-						}
-					} 
 					
-					_ptr	= _tmp_ptr ;
-					ln	= _ln ;
-					_ptr++;
-					/**
-						( ; or } )  befor { , it should be a  pseudo
-						else it is a value ;
-					*/
 					char _next_char = eval_find( ';', '}', '{' ) ;
 					
 					if( _next_char !is '{' ) {
+						
+						
+						
+						Log("'%s' %s", _next_char, _ptr[0] );
 						// pseudo left char
 						if( __ptr !is _ptr ){
 							auto _pre = _ptr - 1;
@@ -248,7 +276,7 @@ struct Lexer {
 						}
 						_ptr++ ;
 					} else {
-						// follow a value or body ;
+						// follow a body ;
 						
 						assert( false ) ;
 					}
