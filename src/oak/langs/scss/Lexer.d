@@ -51,18 +51,15 @@ struct Lexer {
 		return tk ;
 	}
 	
-	private bool skip_space( bool expected = false ){
-		/++
-			skip comment 
-			case 0:
-				/* test */
-			case 1:
-				// test 
-			
-		++/
+	private bool skip_space( bool expected = false , bool create_tok = false ) {
 		while( _ptr <= _end ) {
 			if( _ptr[0] != ' ' && _ptr[0] != '\t' ) {
 				if( _ptr[0] !is '\r' && _ptr[0] !is '\n' ) {
+					if( _ptr[0] is '/' ) {
+						if( skip_comment(create_tok)  ) {
+							continue ;
+						}
+					}
 					return true ;
 				}
 				if( _ptr[0] is '\r' ) {
@@ -212,6 +209,120 @@ struct Lexer {
 		return true ;
 	}
 	
+	bool skip_comment(bool create_tok = true ) {
+		if( _ptr > _end ||  _ptr[0] !is '/' ) {
+			err(" expected / ");
+		}
+		if( _ptr > _end ){
+			return false ;
+		}
+		auto __ln = ln ;
+		scope(exit) {
+			if( !create_tok ) {
+				ln = __ln ;
+			}
+		}
+		if( _ptr[1] is '/' ) {
+			// skip line 
+			_ptr +=2 ;
+			auto __ptr = _ptr ;
+			string val ;
+			while( _ptr <= _end ) {
+				if( _ptr[0] is '\r' ) {
+					val = cast(string) __ptr[ 0 .. _ptr - __ptr ] ;
+					ln++ ;
+					_ptr++;
+					if( _ptr <= _end && _ptr[0] is '\n' ) {
+						_ptr++;
+					}
+					break;
+				}
+				if( _ptr[0] is '\n' ) {
+					val = cast(string) __ptr[ 0 .. _ptr - __ptr ] ;
+					_ptr++;
+					break;
+				}
+				_ptr++;
+			}
+			if( create_tok ) {
+				NewTok(Tok.Type.CommentLine, val) ;
+			}
+			return true ;
+		}
+		
+		if( _ptr[1] is '*' ) {
+			// skip line 
+			_ptr +=2 ;
+			auto __ptr	= _ptr ;
+			string val	= null ;
+			
+			while( _ptr <= _end ) {
+				if( _ptr[0] is '\r' ) {
+					val = cast(string) __ptr[ 0 .. _ptr - __ptr ] ;
+					ln++ ;
+					_ptr++;
+					if( _ptr <= _end && _ptr[0] is '\n' ) {
+						_ptr++;
+					}
+					continue;
+				}
+				if( _ptr[0] is '\n' ) {
+					val = cast(string) __ptr[ 0 .. _ptr - __ptr ] ;
+					_ptr++;
+					continue;
+				}
+				if( _ptr[0] is '\\' ) {
+					_ptr += 2 ;
+					continue;
+				}
+				if( _ptr[0] is '*' ) {
+					_ptr++;
+					if( _ptr <= _end && _ptr[0] is '/' ) {
+						val	= cast(string) __ptr [ 0 .. _ptr - __ptr  ] ;
+						_ptr++;
+						break ;	
+					}
+					continue ;
+				}
+				_ptr++;
+			}
+			if( val is null ) {
+				err("missing comment end");
+			}
+			if( create_tok ) {
+				NewTok(Tok.Type.CommentBlock, val) ;
+			}
+			return true ;
+		}
+		
+		return false ;
+	}
+	
+	bool is_space(const(char)* _from, const(char)* _to ) {
+		if( _to < _from ) {
+			err(" inner error, param invalid");
+		}
+		while( _to > _from ) {
+			if( _from[0] !is ' ' && _from[0] !is '\t' && _from[0] !is '\r' && _from[0] !is '\n' ) {
+				if( _from[0] is '/' ) {
+					auto __ptr = _ptr ;
+					auto _ln = ln ;
+					bool is_comment = skip_comment(false) ;
+					auto __from = _ptr ;
+					_ptr	= __ptr ;
+					ln	= _ln ;
+					if( is_comment ) {
+						_from	= __from ;
+						continue ;
+					}
+				}
+				return false ;
+			}
+			_from++ ;
+		}
+		return true ;
+	}
+	
 	void parsePath( bool with_attr_value = true ) {
 		auto __ptr = _ptr ;
 		auto _string_ptr = _ptr ;
@@ -229,10 +340,6 @@ struct Lexer {
 			switch( _ptr[0] ) {
 				// end node;
 				case ':': // 
-					auto _tmp_ptr = _ptr ;
-					auto _ln = ln ;
-					_ptr++;
-					skip_space;
 					/**
 						case -1:
 							:hove { font-size:10px}  ; // error 
@@ -255,11 +362,18 @@ struct Lexer {
 							a:hove & tag#id.class  { font-size:10px} ;
 					*/
 					
+					if( __ptr is _ptr ) {
+						err(" pseudo should around by char");
+					}
+					
+					auto _tmp_ptr = _ptr ;
+					auto _ln = ln ;
+					_ptr++;
+					skip_space;
+					
 					char _next_char = eval_find( ';', '}', '{' ) ;
 					
 					if( _next_char !is '{' ) {
-						
-						
 						
 						Log("'%s' %s", _next_char, _ptr[0] );
 						// pseudo left char
@@ -284,6 +398,9 @@ struct Lexer {
 					break;
 					
 				case ',': // end one path, more to go
+					if( __ptr is _ptr ){
+						
+					}
 					isDone	= true ;
 					break;
 				
@@ -329,6 +446,9 @@ struct Lexer {
 		}
 		if( !isDone ) {
 			err("missing path end");
+		}
+		if( is_space(__ptr, _ptr) ) {
+			err("expected path");
 		}
 		save_string() ;
 		NewTok(Tok.Type.PathEnd);
