@@ -39,9 +39,222 @@ struct Lexer {
 		throw new Exception(a.data);
 	}
 	
+	Tok* NewTok( Tok.Type ty, string val = null ){
+		Tok* tk = pool.New!(Tok) ;
+		tk.ln	= ln ;
+		tk.ty	= ty ;
+		if( val !is null ) {
+			tk.string_value	= val ;
+		}
+		return tk ;
+	}
+	
+	private bool skip_space( bool expected = false ){
+		while( _ptr <= _end ) {
+			if( _ptr[0] != ' ' && _ptr[0] != '\t' ) {
+				if( _ptr[0] !is '\r' && _ptr[0] !is '\n' ) {
+					return true ;
+				}
+				if( _ptr[0] is '\r' ) {
+					ln++ ;
+					_ptr++ ;
+					if(  _ptr <= _end  && _ptr[0] is '\n' ) {
+						_ptr++ ;
+					}
+					continue ;
+				}
+				if( _ptr[0] is '\n' ) {
+					ln++ ;
+					_ptr++ ;
+					continue ;
+				}
+				assert(false);
+			}
+			_ptr++ ;
+		}
+		if( expected ) {
+			if( _ptr > _end ) {
+				err("expected space but find EOF");
+			} else {
+				err("expected space but find `%s`",  _ptr[0]);
+			}
+		}
+		return false ;
+	}
 	
 	void parse() {
+		skip_space;
+		size_t count_i ;
+		while( _ptr <= _end ){
+			
+			switch( _ptr[0] ) {
+				case '$':  // def var 
+					assert(false);
+					break;
+				
+				case '@': // def mixin, or fun call
+					assert(false);
+					break;
+				case '/':
+					assert(false);
+					break;
+				default:
+					parsePaths ;
+			}
+			assert( count_i++ < ushort.max >> 6 );
+		}
+	}
+	
+	
+	bool parseInlineExp(void delegate() dg){
+		if(  _ptr > _end || _ptr[0] !is '#' ) {
+			err("expected #");
+		}
+		if( 
+			_ptr >= _end  // no content follow
+			|| _ptr[1] !is '{'
+		) {
+			return false ;
+		}
+		dg();
 		
+		assert(false);
+		return true ;
+	}
+	
+	void parsePath() {
+		auto __ptr = _ptr ;
+		auto _string_ptr = _ptr ;
+		size_t count_i ;
+		NewTok(Tok.Type.PathStart);
+		void save_string(){
+			if( _string_ptr !is _ptr ) {
+				auto string_value = cast(string) _string_ptr[ 0 .. _ptr - _string_ptr] ;
+				NewTok(Tok.Type.String ,  string_value ) ;
+				_string_ptr	= _ptr ;
+			}
+		}
+		bool isDone 	= false ;
+		while( _ptr <= _end ) {
+			switch( _ptr[0] ) {
+				// end node;
+				case ':': // 
+					auto _tmp_ptr = _ptr ;
+					auto _ln = ln ;
+					_ptr++;
+					skip_space;
+					// font : {  size:12px; }
+					if( _ptr <= _end  ){
+						if(  _ptr[0] is '{' ) {
+							isDone	= true ;
+							break;
+						}
+					} 
+					_ptr	= _tmp_ptr ;
+					ln	= _ln ;
+					// pseudo left char
+					if( __ptr !is _ptr ){
+						auto _pre = _ptr - 1;
+						if( _pre[0] is ' ' && _pre[1] is '\t' ) {
+							err("pseudo must around char");
+						}
+					} else {
+						err("pseudo cant by first path char");
+					}
+					if( _ptr >= _end || !( _ptr[1] >='a' && _ptr[1] <='z' || _ptr[1] >='A' && _ptr[1] <='Z'  ) && _ptr[1] !is '#'  ) {
+						err("pseudo must around char");
+					}
+					_ptr++ ;
+					break;
+					
+				case ',': // end one path, more to go
+					isDone	= true ;
+					break;
+				
+				case '{': // start body
+					isDone	= true ;
+					break;
+				
+				// inline node
+				case '&':
+					if( __ptr !is _ptr ){
+						save_string();
+						// pre _ptr is space 
+						auto _pre = _ptr - 1;
+						if( _pre[0] !is ' ' && _pre[1] !is '\t' ) {
+							err("parent path must around by space");
+						}
+						auto _next = _ptr + 1;
+						if( _next <= _end && _next[0] !is '{' && _next[0] !is '\t' && _next[0] !is ' ' ) {
+							err("parent path must around by space");
+						}
+					}
+					NewTok(Tok.Type.ParentPath) ;
+					_ptr++ ;
+					skip_space;
+					break;
+					
+				case '"':
+				case '\'':
+					assert(false);
+					break;
+				
+				case '#':
+					if(  parseInlineExp( &save_string ) ) {
+						break;
+					}
+				default:
+					_ptr++;
+			}
+			if( isDone ) {
+				break ;
+			}
+			assert( count_i++ < ushort.max >> 5 );
+		}
+		if( !isDone ) {
+			err("missing path end");
+		}
+		save_string() ;
+		NewTok(Tok.Type.PathEnd);
+	}
+	
+	
+	void parsePaths() {
+		Tok* tk = null ;
+		size_t count_i ;
+		while( _ptr <= _end ) {
+			parsePath ;
+			if( _ptr > _end ) {
+				err("path missing content");
+			}
+			
+			switch( _ptr[0] ) {
+				case ':':
+					_ptr++;
+					skip_space;
+					if( _ptr >= _end || _ptr[0] !is '{' ) {
+						err(" missing content for unwind attribute");
+					}
+				case '{':
+					parseClosure;
+					break;
+				default:
+					Log("`%s`", _ptr[0]);
+			}
+			
+			assert(false);
+			assert( count_i++ < ushort.max >> 6 );
+		}
+			
+	}
+	
+	Tok* parseClosure(){
+		Tok* tk = null ;
+		if(  _ptr > _end || _ptr[0] !is '{' ) {
+			err("expected {");
+		}
+		assert(false);
+		return tk ;
 	}
 }
 
