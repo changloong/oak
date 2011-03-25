@@ -162,9 +162,9 @@ template Gold_Lang_Engine(This) {
 	}
 	
 	TokingRet ParseToken(Tok* tk) {
-		static LALRAction* find_act(ptrdiff_t lalr_id, Tok* tk) {
+		static const(LALRAction*) find_act(ptrdiff_t lalr_id, Tok* tk) {
 			for( ptrdiff_t i = 0; i < LALRTable[lalr_id].actions.length; i++ ) {
-				LALRAction* act = cast(LALRAction*) &LALRTable[lalr_id].actions[i] ;
+				auto act =  &LALRTable[lalr_id].actions[i] ;
 				if( act.symbol_id is tk.symbol_id ) {
 					return act ;
 				}
@@ -172,12 +172,13 @@ template Gold_Lang_Engine(This) {
 			return null ;
 		}
 		
-		LALRAction* act = find_act(_cur_lalr_id, tk) ;
+		auto act = find_act(_cur_lalr_id, tk) ;
 		if( act is null ) {
 			Log("_cur_lalr_id = %d , tok = %s: `%s` ", _cur_lalr_id, tk.symbol, tk.data);
 			assert(false);
 			return TokingRet.SyntaxError ;
 		}
+		Log(">>> Next Action: %s", LALRActionTypes[act.ty] );
 		
 		TokingRet ret ;
 		switch( act.ty ) {
@@ -186,6 +187,7 @@ template Gold_Lang_Engine(This) {
 				break;
 			
 			case LALRActionType.Shift:
+				Log(" lalr_state %d => %d", _cur_lalr_id, act.target ) ;
 				tk.lalr_state_id	= _cur_lalr_id ;
 				lalr_stack.push(tk);
 				_cur_lalr_id	= act.target ;
@@ -244,6 +246,7 @@ template Gold_Lang_Engine(This) {
 				}
 				
 				if( _act.ty !is LALRActionType.Goto) {
+					Log(">>>* Next Action: %s", LALRActionTypes[_act.ty] );
 					assert(false, "After reduction, found action type #%s instead of goto.") ;
 				}
 				_cur_lalr_id = act.target ;
@@ -320,7 +323,7 @@ template Gold_Lang_Engine(This) {
 						break ;
 					default:
 						auto _parse_ret = ParseToken( tk ) ;
-						Log("%d", _parse_ret);
+						Log("ParseToken return = %s ", enum_name(_parse_ret) );
 						switch(_parse_ret) {
 							case TokingRet.Accept :
 									ret	= ParsingRet.Accept;

@@ -20,7 +20,7 @@ enum SymbolType {
 	Error	= 7 ,
 }
 
-static const SymbolTypes = ctfe_enum_array!(SymbolType) ;
+static const SymbolTypes =  ["NonTerminal", "Terminal", "Whitespace", "EOF", "CommentStart", "CommentEnd", "CommentLine", "Error" ] ;
 
 enum LALRActionType { 
 	Shift	= 1 ,
@@ -28,6 +28,9 @@ enum LALRActionType {
 	Goto	= 3 ,
 	Accept	= 4 ,
 }
+
+static const LALRActionTypes	= ["None", "Shift", "Reduce", "Goto", "Accept"] ;
+
 
 struct Symbol {
 	const ptrdiff_t	id ;
@@ -94,4 +97,10 @@ enum ParsingRet {
 	MessageCommentError ,
 	MessageLexicalError ,
 	MessageSyntaxError,
+}
+
+
+string enum_name(T)(T t){
+	static const names = ctfe_enum_array!T;
+	return names[t] ;
 }
