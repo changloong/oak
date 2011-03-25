@@ -4,7 +4,8 @@ import oak.langs.gold.css ;
 void main(){
 	Lang_css css ;
 	
-	css.Init("1111*2222 + ( 1- 3 *3 ) / (3-0*7+7788) ");
+	//css.Init("1111*2222 + ( 1- 3 *3 ) / (3-0*7+7788) ");
+	css.Init("tag1.class1.class2 , test2:hover{font-size:12px !important; }");
 	
 	size_t coutn_i ;
 

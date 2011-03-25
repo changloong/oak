@@ -147,11 +147,10 @@ template Gold_Lang_Engine(This) {
 					tk = NewTok( accept_state.accept_symbol_id,  accept_state.id ) ;
 					tk.data	= _ptr[ 0 .. len   ] ; 
 					_ptr	+= len ;
-					Log("%d, len = %d   `%s` = `%s`", accept_len, len, tk.symbol,  tk.data );
+					// Log("%d, len = %d   `%s` = `%s`", accept_len, len, tk.symbol,  tk.data );
 				} else {
 					tk = NewTok( ErrorSymbolID ) ;
 					tk.data	= _ptr[ 0 .. 1 ] ; 
-					assert(false);
 				}
 				isDone	= true ;
 			}
@@ -178,7 +177,7 @@ template Gold_Lang_Engine(This) {
 			assert(false);
 			return TokingRet.SyntaxError ;
 		}
-		Log(">>> Next Action: %s", LALRActionTypes[act.ty] );
+		// Log(">>> Next Action: %s", LALRActionTypes[act.ty] );
 		
 		TokingRet ret ;
 		switch( act.ty ) {
@@ -187,7 +186,7 @@ template Gold_Lang_Engine(This) {
 				break;
 			
 			case LALRActionType.Shift:
-				Log(" lalr_state %d => %d", _cur_lalr_id, act.target ) ;
+				// Log(" lalr_state %d => %d", _cur_lalr_id, act.target ) ;
 				tk.lalr_state_id	=  act.target ;
 				lalr_stack.push(tk);
 				_cur_lalr_id	= act.target ;
@@ -281,7 +280,7 @@ template Gold_Lang_Engine(This) {
 					isDone	= true ;
 				} 
 				
-				Log("%d %s , %s = %s ", comment_level, tk.sType, tk.symbol, tk.data);
+				Log("`%s` = `%s` ", tk.symbol, tk.data);
 
 			} else if( comment_level > 0) {
 				tk	= input_stack.pop ;
@@ -324,7 +323,7 @@ template Gold_Lang_Engine(This) {
 						break ;
 					default:
 						auto _parse_ret = ParseToken( tk ) ;
-						Log("ParseToken return = %s ", enum_name(_parse_ret) );
+						// Log("ParseToken return = %s ", enum_name(_parse_ret) );
 						switch(_parse_ret) {
 							case TokingRet.Accept :
 									ret	= ParsingRet.Accept;
