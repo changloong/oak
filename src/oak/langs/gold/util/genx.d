@@ -88,29 +88,7 @@ void main(){
 	bu("public import oak.langs.gold.Base ;\n\n");
 	bu("private {\n");
 	
-	scope(exit) {
-		bu("}\n");
-		bu("struct Lang_")( _file_name)(" {\n\n") ;
-		
-		asVar("Name", lang.name ) ;
-		asVar("Version", lang.ver ) ;
-		asVar("Author", lang.author ) ;
-		asVar("About", lang.about ) ;
-		
-		bu("\n");
-		
-		asVar("StartSymbolID", lang.startSymbolIndex ) ;
-		asVar("EofSymbolID", lang.eofSymbolIndex ) ;
-		asVar("ErrorSymbolID", lang.errorSymbolIndex ) ;
-		
-		asVar("InitDfaID", lang.initialDFAState ) ;
-		asVar("InitLALRID", lang.initialLALRState ) ;
-		
-		bu("\n");
-		bu(Tab)("mixin Gold_Lang!(typeof(this)) ;\n");
-		bu("}\n");
-	}
-	
+
 	bu("\n");
 	
 	load_symbol(lang);
@@ -119,6 +97,27 @@ void main(){
 	load_charset(lang);
 	load_dfa(lang);
 	load_lalr(lang);
+
+	bu("}\n");
+	bu("struct Lang_")( _file_name)(" {\n\n") ;
+	
+	asVar("Name", lang.name ) ;
+	asVar("Version", lang.ver ) ;
+	asVar("Author", lang.author ) ;
+	asVar("About", lang.about ) ;
+	
+	bu("\n");
+	
+	asVar("StartSymbolID", lang.startSymbolIndex ) ;
+	asVar("EofSymbolID", lang.eofSymbolIndex ) ;
+	asVar("ErrorSymbolID", lang.errorSymbolIndex ) ;
+	
+	asVar("InitDfaID", lang.initialDFAState ) ;
+	asVar("InitLALRID", lang.initialLALRState ) ;
+	
+	bu("\n");
+	bu(Tab)("mixin Gold_Lang_Engine!(typeof(this)) ;\n");
+	bu("}\n");
 	
 }
 

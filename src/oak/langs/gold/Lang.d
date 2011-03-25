@@ -3,7 +3,7 @@ module oak.langs.gold.Lang ;
 import std.conv ;
 
 
-template Gold_Lang(This) {
+template Gold_Lang_Engine(This) {
 	
 	static struct Tok {
 		ptrdiff_t	symbol_id ;
@@ -22,6 +22,18 @@ template Gold_Lang(This) {
 			}
 			return null ;
 		}
+		
+		bool isTerminal(){
+			return  SymbolTable[ symbol_id].type is SymbolType.Terminal ;
+		}
+		
+		SymbolType type(){
+			return SymbolTable[ symbol_id].type ;
+		}
+		
+		string sType(){
+			return SymbolTypes[ SymbolTable[ symbol_id].type ] ;
+		}
 	}
 	
 	private {
@@ -34,6 +46,8 @@ template Gold_Lang(This) {
 		
 		dchar*		_start, _end, _ptr ;
 		ptrdiff_t	_cur_lalr_id ;
+		
+		Tok* delegate() GetToken ;
 		
 		bool		trim_reductions ;
 	}
@@ -59,6 +73,8 @@ template Gold_Lang(This) {
 			pool	= new Pool ;
 			pool.Init(1024 * 1024 * 4 ) ;
 		}
+		
+		GetToken	= &RetrieveToken ;
 		
 		Clear();
 		_start	= cast(dchar*) pool.alloc( dchar.sizeof * _input.length ) ;
@@ -240,16 +256,93 @@ template Gold_Lang(This) {
 	}
 	
 	ParsingRet Parse() {
+		
 		ParsingRet ret ;
-		bool isDone	= false ;
+		bool isDone = false ;
 		size_t count_i = 0;
+		Tok* tk ;
+		
 		while( !isDone ) {
 			if( input_stack.empty ) {
+				tk	= GetToken() ;
+				input_stack.push(tk) ;
+				if( comment_level is 0 && tk.isTerminal ) {				
+					ret	= ParsingRet.TokenRead ;
+					isDone	= true ;
+				} 
 				
+				Log("%d %s , %s = %s ", comment_level, tk.sType, tk.symbol, tk.data);
+
+			} else if( comment_level > 0) {
+				tk	= input_stack.pop ;
+				switch( tk.type ) {
+					case SymbolType.CommentStart :
+							comment_level++ ;
+						break ;
+					case SymbolType.CommentEnd :
+							comment_level-- ;
+						break ;
+					case SymbolType.EOF :
+							ret	= ParsingRet.MessageCommentError ;
+							isDone	= true ;
+						break ;
+					default:
+						break ;
+				}
+			} else {
+				tk	= input_stack.pop ;
+				
+				switch( tk.type ) {
+					case SymbolType.Whitespace :
+							// Discard the token from the front of the Input-Stack.
+						break ;
+					case SymbolType.CommentEnd :
+							comment_level = 1 ;
+							// Discard the token from the front of the Token-Queue.
+						break ;
+					case SymbolType.CommentLine :
+							// Discard the rest of the current line in Source.
+							// Discard the token from the front of the Input-Stack.
+						break ;
+					case SymbolType.Error :
+							ret	= ParsingRet.MessageLexicalError;
+							isDone	= true ;
+						break ;
+					default:
+						auto _parse_ret = ParseToken( tk ) ;
+						switch(_parse_ret){
+							case TokingRet.Accept :
+									ret	= ParsingRet.Accept;
+									isDone	= true ;
+								break;
+							case TokingRet.InternalError :
+									ret	= ParsingRet.InternalError ;
+									isDone	= true ;
+								break;
+							
+							case TokingRet.Reduce :
+									ret	= ParsingRet.Reduction ;
+									isDone	= true ;
+								break;
+							
+							case TokingRet.Shift :
+									// Discard the token from the front of the Input-Stack.
+								break;
+							
+							case TokingRet.SyntaxError :
+									ret	= ParsingRet.MessageSyntaxError ;
+									isDone	= true ;
+								break;
+							default:
+								// Do nothing. This includes Shift and Trim-Reduced.
+								;
+						}
+						break ;
+				}
 			}
-			
-			assert(count_i++ < int.max) ;
 		}
+		
+		assert(count_i++ < int.max) ;
 		return ret ;
 	}
 	

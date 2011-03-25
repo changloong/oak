@@ -453,5 +453,5 @@ struct Lang_css {
 	static const int	InitDfaID	= 0; 
 	static const int	InitLALRID	= 0; 
 
-	mixin Gold_Lang!(typeof(this)) ;
+	mixin Gold_Lang_Engine!(typeof(this)) ;
 }

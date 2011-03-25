@@ -20,6 +20,8 @@ enum SymbolType {
 	Error	= 7 ,
 }
 
+static const SymbolTypes = ctfe_enum_array!(SymbolType) ;
+
 enum LALRActionType { 
 	Shift	= 1 ,
 	Reduce	= 2 ,
@@ -88,4 +90,8 @@ enum ParsingRet {
 	RunawayCommentError ,
 	UnmatchedCommentError ,
 	InternalError ,
+	
+	MessageCommentError ,
+	MessageLexicalError ,
+	MessageSyntaxError,
 }
