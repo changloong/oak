@@ -105,6 +105,7 @@ struct Lexer {
 				static assert(false);
 			}
 			if( __ptr[0] is '\'' || __ptr[0] is '"' ) {
+				// skip string
 				char quote = __ptr[0] ;
 				__ptr++;
 				while( __ptr < _end ) {
@@ -124,12 +125,11 @@ struct Lexer {
 			}
 			
 			if( __ptr[0] is '#' ) {
+				// skip iExp
 				assert(false) ;
 			}
 			__ptr++;
 		}
-		Log("%s", __ptr[0]);
-		assert(false);
 		return _ret ;
 	}
 	
@@ -231,22 +231,27 @@ struct Lexer {
 						( ; or } )  befor { , it should be a  pseudo
 						else it is a value ;
 					*/
-					char _term_char = eval_find( ';', '}', '{' ) ;
+					char _next_char = eval_find( ';', '}', '{' ) ;
 					
-					assert(false);
-					// pseudo left char
-					if( __ptr !is _ptr ){
-						auto _pre = _ptr - 1;
-						if( _pre[0] is ' ' && _pre[1] is '\t' ) {
+					if( _next_char is '{' ) {
+						// pseudo left char
+						assert(false);
+						if( __ptr !is _ptr ){
+							auto _pre = _ptr - 1;
+							if( _pre[0] is ' ' && _pre[1] is '\t' ) {
+								err("pseudo must around char");
+							}
+						} else {
+							err("pseudo cant by first path char");
+						}
+						if( _ptr >= _end || !( _ptr[1] >='a' && _ptr[1] <='z' || _ptr[1] >='A' && _ptr[1] <='Z'  ) && _ptr[1] !is '#'  ) {
 							err("pseudo must around char");
 						}
+						_ptr++ ;
 					} else {
-						err("pseudo cant by first path char");
+						assert( false ) ;
 					}
-					if( _ptr >= _end || !( _ptr[1] >='a' && _ptr[1] <='z' || _ptr[1] >='A' && _ptr[1] <='Z'  ) && _ptr[1] !is '#'  ) {
-						err("pseudo must around char");
-					}
-					_ptr++ ;
+	
 					break;
 					
 				case ',': // end one path, more to go
