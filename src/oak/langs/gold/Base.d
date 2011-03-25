@@ -42,18 +42,18 @@ struct CharSet {
 
 struct SymbolRule {
 	const ptrdiff_t	id ;
-	const ptrdiff_t	sym_id ;
+	const ptrdiff_t	symbol_id ;
 	const ptrdiff_t[]	symbols;
 }
 
 struct DFAEdge {
 	const ptrdiff_t	charset_id ;
-	const ptrdiff_t	dfa_id ;
+	const ptrdiff_t	target_dfa_state_id ;
 }
 
 struct DFAState {
 	const ptrdiff_t	id ;
-	const ptrdiff_t	sym_id ;
+	const ptrdiff_t	accept_symbol_id ;
 	const bool		accept ;
 	const DFAEdge[]	edges ;
 }
@@ -62,7 +62,7 @@ struct DFAState {
 struct LALRAction {
 	const ptrdiff_t	id ;
 	const LALRActionType	ty ;
-	const ptrdiff_t	sym_id;
+	const ptrdiff_t	symbol_id;
 	const ptrdiff_t	target ;
 }
 

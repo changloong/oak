@@ -7,7 +7,7 @@ template Gold_Lang_Engine(This) {
 	
 	static struct Tok {
 		ptrdiff_t	symbol_id ;
-		ptrdiff_t	lalr_id ;
+		ptrdiff_t	lalr_state_id ;
 		ptrdiff_t	rule_id ;
 		ptrdiff_t	ln ;
 		dchar[]	data ;
@@ -52,11 +52,11 @@ template Gold_Lang_Engine(This) {
 		bool		trim_reductions ;
 	}
 	
-	private Tok* NewTok(ptrdiff_t sym_id = -1 , ptrdiff_t lalr_id = -1 ){
+	private Tok* NewTok(ptrdiff_t symbol_id = -1 , ptrdiff_t lalr_state_id = -1 ){
 		Tok* tk	=  pool.New!(Tok) ;
 		
-		tk.symbol_id	= sym_id  ;
-		tk.lalr_id	= lalr_id  ;
+		tk.symbol_id		= symbol_id  ;
+		tk.lalr_state_id	= lalr_state_id  ;
 		
 		return tk ;
 	}
@@ -140,15 +140,18 @@ template Gold_Lang_Engine(This) {
 			auto _edge = dfa_find_edge(state, _ptr[len]) ;
 			
 			if( _edge !is null ) {
-				state	= cast(DFAState*) &DFATable[ _edge.dfa_id ] ;
+				state	= cast(DFAState*) &DFATable[ _edge.target_dfa_state_id ] ;
 				len++ ;
 			} else {
 				if( accept_state !is null ) {
-					tk = NewTok( accept_state.sym_id,  accept_state.id ) ;
-					tk.data	= _ptr[ 0 .. len + 1 ] ; 
+					tk = NewTok( accept_state.accept_symbol_id,  accept_state.id ) ;
+					tk.data	= _ptr[ 0 .. len  ] ; 
+					_ptr	+= len + 1 ;
+					Log("%d, len = %d   `%s` = `%s`", accept_len, len, tk.symbol,  tk.data );
 				} else {
 					tk = NewTok( ErrorSymbolID ) ;
 					tk.data	= _ptr[ 0 .. 1 ] ; 
+					assert(false);
 				}
 				isDone	= true ;
 			}
@@ -162,7 +165,7 @@ template Gold_Lang_Engine(This) {
 		static LALRAction* find_act(ptrdiff_t lalr_id, Tok* tk) {
 			for( ptrdiff_t i = 0; i < LALRTable[lalr_id].actions.length; i++ ) {
 				LALRAction* act = cast(LALRAction*) &LALRTable[lalr_id].actions[i] ;
-				if( act.sym_id is tk.symbol_id ) {
+				if( act.symbol_id is tk.symbol_id ) {
 					return act ;
 				}
 			}
@@ -171,6 +174,8 @@ template Gold_Lang_Engine(This) {
 		
 		LALRAction* act = find_act(_cur_lalr_id, tk) ;
 		if( act is null ) {
+			Log("_cur_lalr_id = %d , tok = %s: `%s` ", _cur_lalr_id, tk.symbol, tk.data);
+			assert(false);
 			return TokingRet.SyntaxError ;
 		}
 		
@@ -181,7 +186,7 @@ template Gold_Lang_Engine(This) {
 				break;
 			
 			case LALRActionType.Shift:
-				tk.lalr_id	= _cur_lalr_id ;
+				tk.lalr_state_id	= _cur_lalr_id ;
 				lalr_stack.push(tk);
 				_cur_lalr_id	= act.target ;
 				ret	= TokingRet.Shift ;
@@ -196,17 +201,18 @@ template Gold_Lang_Engine(This) {
 				if( trim_reductions ) {
 					
 					head	= lalr_stack.pop ;
-					assert( head.symbol_id is rule.sym_id);
+					assert( head.symbol_id is rule.symbol_id );
 					ret = TokingRet.ReduceTrimmed ;
 					
 				} else {
 					// Part 1.a: Pop the handle off the Token Stack and create a reduction.
 					
 					if( input_stack.length < sym_len ) {
+						Log(" %d = %d reduce_rule = %d ",input_stack.length,  sym_len, rule.id );
 						assert(false);
 					}
 					
-					Tok* reduced_tk = NewTok( rule.sym_id ) ;
+					Tok* reduced_tk = NewTok( rule.symbol_id ) ;
 					reduced_tk.rule_id = rule.id ;
 					
 					for( int i = sym_len; i--; ) {
@@ -229,7 +235,7 @@ template Gold_Lang_Engine(This) {
 				// GO TO THE NEXT STATE
 				
 				//Set Lookup-State = State property of the token on the top of the LALR-Token-Stack.
-				auto _lookup_state = lalr_stack.top.lalr_id ;
+				auto _lookup_state = lalr_stack.top.lalr_state_id ;
 				
 				// Set Current-LALR-State = State specified by the goto for Head in Lookup-State.
 				auto _act = find_act(_lookup_state, head);
@@ -243,7 +249,7 @@ template Gold_Lang_Engine(This) {
 				_cur_lalr_id = act.target ;
 				
 				// PART 3: PUSH THE NEW NONTERMINAL TOKEN
-				head.lalr_id	= _cur_lalr_id ;
+				head.lalr_state_id	= _cur_lalr_id ;
 				lalr_stack.push(head);
 
 				break;
@@ -290,19 +296,23 @@ template Gold_Lang_Engine(This) {
 						break ;
 				}
 			} else {
-				tk	= input_stack.pop ;
+				tk	= input_stack.top ;
 				
 				switch( tk.type ) {
 					case SymbolType.Whitespace :
 							// Discard the token from the front of the Input-Stack.
+							input_stack.pop();
 						break ;
 					case SymbolType.CommentEnd :
 							comment_level = 1 ;
 							// Discard the token from the front of the Token-Queue.
+							input_stack.pop();
 						break ;
 					case SymbolType.CommentLine :
 							// Discard the rest of the current line in Source.
+							assert(false); // mSource.readLine();
 							// Discard the token from the front of the Input-Stack.
+							input_stack.pop();
 						break ;
 					case SymbolType.Error :
 							ret	= ParsingRet.MessageLexicalError;
@@ -310,7 +320,8 @@ template Gold_Lang_Engine(This) {
 						break ;
 					default:
 						auto _parse_ret = ParseToken( tk ) ;
-						switch(_parse_ret){
+						Log("%d", _parse_ret);
+						switch(_parse_ret) {
 							case TokingRet.Accept :
 									ret	= ParsingRet.Accept;
 									isDone	= true ;
@@ -327,6 +338,7 @@ template Gold_Lang_Engine(This) {
 							
 							case TokingRet.Shift :
 									// Discard the token from the front of the Input-Stack.
+									input_stack.pop();
 								break;
 							
 							case TokingRet.SyntaxError :
@@ -337,7 +349,6 @@ template Gold_Lang_Engine(This) {
 								// Do nothing. This includes Shift and Trim-Reduced.
 								;
 						}
-						break ;
 				}
 			}
 		}
