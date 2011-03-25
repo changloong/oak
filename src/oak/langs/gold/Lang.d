@@ -145,8 +145,8 @@ template Gold_Lang_Engine(This) {
 			} else {
 				if( accept_state !is null ) {
 					tk = NewTok( accept_state.accept_symbol_id,  accept_state.id ) ;
-					tk.data	= _ptr[ 0 .. len  ] ; 
-					_ptr	+= len + 1 ;
+					tk.data	= _ptr[ 0 .. len   ] ; 
+					_ptr	+= len ;
 					Log("%d, len = %d   `%s` = `%s`", accept_len, len, tk.symbol,  tk.data );
 				} else {
 					tk = NewTok( ErrorSymbolID ) ;
@@ -174,7 +174,7 @@ template Gold_Lang_Engine(This) {
 		
 		auto act = find_act(_cur_lalr_id, tk) ;
 		if( act is null ) {
-			Log("_cur_lalr_id = %d , tok = %s: `%s` ", _cur_lalr_id, tk.symbol, tk.data);
+			Log("Error: _cur_lalr_id = %d , tok = %s: `%s` ", _cur_lalr_id, tk.symbol, tk.data);
 			assert(false);
 			return TokingRet.SyntaxError ;
 		}
@@ -200,7 +200,7 @@ template Gold_Lang_Engine(This) {
 				
 				Tok* head ;
 			
-				if( trim_reductions ) {
+				if( trim_reductions /* rule has one Terminal */ ) {
 					
 					head	= lalr_stack.pop ;
 					assert( head.symbol_id is rule.symbol_id );
@@ -209,7 +209,7 @@ template Gold_Lang_Engine(This) {
 				} else {
 					// Part 1.a: Pop the handle off the Token Stack and create a reduction.
 					
-					if( input_stack.length < sym_len ) {
+					if( lalr_stack.length < sym_len ) {
 						Log(" %d = %d reduce_rule = %d ",input_stack.length,  sym_len, rule.id );
 						assert(false);
 					}
@@ -218,20 +218,32 @@ template Gold_Lang_Engine(This) {
 					reduced_tk.rule_id = rule.id ;
 					
 					for( int i = sym_len; i--; ) {
-						reduced_tk.sub[i] = input_stack.pop ;
+						reduced_tk.sub[i] = lalr_stack.pop ;
 					}
-					
-					input_stack.push( reduced_tk ) ;
 					
 					for( int i = sym_len; i--; ) {
 						if( reduced_tk.sub[i].symbol_id !is rule.symbols[i] ) {
+							Log("Error: rule = %s, reduced_tk = `%s`:`%s`", rule.description , reduced_tk.symbol, reduced_tk.data);
+							foreach( int _i, sym_id;rule.symbols){
+								Log("index:%d rule :%d , input_stack: %s",_i, sym_id, reduced_tk.sub[_i].symbol );
+							}
+							
+							foreach(Tok* _tk;input_stack){
+								log("%s:%s", _tk.symbol, _tk.data );
+							}
+							log("-------------");
+							foreach(Tok* _tk; lalr_stack){
+								log("%s:%s", _tk.symbol, _tk.data );
+							}
 							assert(false);
 						}
 					}
 					
+					
 					// Part 2.b: Create a new token that will contain the nonterminal representing the reduced rule.
 					head	= reduced_tk ; 
 					ret	= TokingRet.Reduce ;
+					
 				}
 				
 				// GO TO THE NEXT STATE
@@ -249,7 +261,7 @@ template Gold_Lang_Engine(This) {
 					Log(">>>* Next Action: %s", LALRActionTypes[_act.ty] );
 					assert(false, "After reduction, found action type #%s instead of goto.") ;
 				}
-				_cur_lalr_id = act.target ;
+				_cur_lalr_id = _act.target ;
 				
 				// PART 3: PUSH THE NEW NONTERMINAL TOKEN
 				head.lalr_state_id	= _cur_lalr_id ;

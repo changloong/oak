@@ -47,6 +47,7 @@ struct SymbolRule {
 	const ptrdiff_t	id ;
 	const ptrdiff_t	symbol_id ;
 	const ptrdiff_t[]	symbols;
+	const string		description ;
 }
 
 struct DFAEdge {
