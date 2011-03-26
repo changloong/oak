@@ -84,7 +84,7 @@ void main(){
 		
 		std.file.write( out_file, ret);
 		
-		writefln("%s", ret.length > 1024 * 4 ? ret[0..1024*4] : ret );
+		writefln("%s", ret.length > 1024  ? ret[0..1024] : ret );
 	}
 	
 	bu("module oak.langs.gold.")(_file_name)(" ;\n");
@@ -208,6 +208,10 @@ string get_symbol_name(T)(T name) if( isSomeString!(T) ) {
 			
 			case '&':
 				_name	~= "_AND_";
+				break;
+			
+			case '#':
+				_name	~= "_Sharp_";
 				break;
 			
 			case '.':

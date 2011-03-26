@@ -11,38 +11,115 @@ http://sass-lang.com/
 "About"     = 'Sassy Cascading Style Sheets'
 
 
-"Case Sensitive" = True
-"Start Symbol"   = <Add Exp>
-
+"Case Sensitive"  = 'False'
+"Auto Whitespace" = 'False'
+"Start Symbol"    = <TagPaths>
 
 ! --------------------------------------------------------------- Terminals
 
 {ID Char}   = {AlphaNumeric} + [-]
 
 ID            = {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
+
+TagId         = '#' {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
 ClassID       = '.' {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
 
 Number        = {Digit}+ ('.' {Digit}+)?
 
-! --------------------------------------------------------------- Rules
+Space         = {Whitespace}+
+iSpace        = {Whitespace}*
 
-<Add Exp>     ::= <Add Exp> '+' <Mult Exp>
-               |  <Add Exp> '-' <Mult Exp>
-               |  <Mult Exp>
-
-<Mult Exp>    ::= <Mult Exp> '*' <Negate Exp>
-               |  <Mult Exp> '/' <Negate Exp>
-               |  <Negate Exp>
-
-<Negate Exp>  ::= '-' <NumberValue>
-               |  <NumberValue> 
-
+! --------------------------------------------------------------- Scss Script
 <Var>        ::= '$' ID
 
-<NumberValue>       ::= Number
+<iVar>       ::= '#{' <Var> '}'
+
+<iExp>       ::= <iVar>
+                 | '#{' <Add Exp> '}'
+
+<Id>         ::= ID
+                | <iVar> 
+                | ID <Id>
+                | <iVar> <Id>
+
+<iString>     ::=  ID
+                | <iExp> 
+                | ID <Id>
+                | <iExp> <Id>
+
+! --------------------------------------------------------------- Tag
+<TagName>    ::=  | 'html' | 'body' | 'div' | 'p' | 'pre' | 'center' 
+                  | 'object' | 'frame' | 'iframe' | 'marquee'
+                  | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'h7'
+                  | 'hr'| 'br'
+                  | 'table' | 'tbody' | 'thead' | 'tfoot' | 'tr' | 'th' | 'td' 
+                  | 'img' | 'area'
+                  | 'ul' | 'ol' | 'li'   | 'dd' | 'dt' | 'dl'
+                  | 'a' | 'b' | 'i' | 'u' | 's' | 'em' | 'span' | 'font' | 'small' | 'big' | 'strike' | 'strong'
+                  | 'form' | 'input' | 'select' | 'option' | 'optgroup' | 'textarea'
+                  | 'fieldset' | 'legend' | 'label'
+                  | '*'
+
+<TagID>       ::=   TagId
+                  | '#' <Id> 
+
+<ClassID>     ::=   ClassID
+                  | '.' <Id> 
+                  | ClassID <ClassID> 
+                  | '.' <Id> <ClassID> 
+
+<AttrValue>  ::=  <iString>
+
+<Attr>       ::= '[' iSpace <iString> iSpace ']'
+                  | '[' iSpace <iString> iSpace '=' iSpace <AttrValue> iSpace ']'
+                  | '[' iSpace <iString> iSpace '~=' iSpace <AttrValue> iSpace ']'
+                  | '[' iSpace <iString> iSpace '|=' iSpace <AttrValue> iSpace ']'
+
+<Attrs>      ::= <Attr> 
+                 | <Attr>  <Attrs>
+
+<Pseudo Class> 
+             ::= ':active' | ':visited'  | ':hover'  | ':link'
+                  | ':first-letter'  | ':first-line'
+                  | ':first-child' | ':left' | ':right'
+                  | ':focus'
+
+<TagNode>   ::=   <TagName> 
+                  | <TagID> 
+                  | <ClassID>
+                  | <TagName> <TagID>     
+                  | <TagName> <ClassID> 
+                  | <TagName> <TagID> <ClassID>  
+                  | <TagID> <ClassID> 
+                  | '&'
+                  | <TagNode> <Attrs> 
+                  | <TagNode> <Pseudo Class> 
+                  | <TagNode> <Attrs> <Pseudo Class> 
+
+<TagPath>   ::= <TagNode>
+                 | <TagNode> '>' <TagNode>
+                 | <TagNode> Space <TagNode>
+
+<TagPaths>   ::=  <TagPath>
+                 | <TagPath> ',' <TagPaths>
+
+! --------------------------------------------------------------- Expression
+
+<Add Exp>     ::= <Add Exp> iSpace '+' iSpace <Mult Exp>
+               |  <Add Exp> iSpace '-'  iSpace <Mult Exp>
+               |  <Mult Exp>
+
+<Mult Exp>    ::= <Mult Exp> iSpace '*' iSpace <Negate Exp>
+               |  <Mult Exp> iSpace '/' iSpace <Negate Exp>
+               |  <Negate Exp>
+
+<Negate Exp>  ::= '-' iSpace <Number>
+               |  <Number>
+
+<Number>       ::= Number
                | Number <Unit>
                | <Var>
-               |  '(' <Add Exp> ')'
+               | iSpace '(' iSpace <Add Exp> iSpace ')' iSpace
 
 <Unit>    ::= em    ! The height of the element's font.
             | ex    ! The height of the letter "x"
