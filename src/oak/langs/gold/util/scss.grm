@@ -13,7 +13,7 @@ http://sass-lang.com/
 
 "Case Sensitive"  = 'False'
 "Auto Whitespace" = 'False'
-"Start Symbol"    = <Node>
+"Start Symbol"    = <Nodes>
 
 ! --------------------------------------------------------------- Terminals
 
@@ -136,21 +136,21 @@ Space         = {Whitespace}+
 <text-underline-position-value> ::= 'below' | 'above' 
 <text-transform-value> ::= 'none' | 'capitalize' | 'uppercase' | 'lowercase' 
 
-<font-item> ::= 'size' <iSpace> ':' <iSpace>  <size-value>
-                 | 'style'  <iSpace> ':' <iSpace> <font-style-value>  
-                 | 'weight' <iSpace> ':' <iSpace> <font-weight-value>  
-                 | 'family' <iSpace> ':' <iSpace> <font-family-value>  
-                 | 'variant' <iSpace> ':' <iSpace> <font-variant-value>  
-                 | 'stretch' <iSpace> ':' <iSpace> <font-stretch-value>  
-                 | 'size-adjust' <iSpace> ':' <iSpace> <font-size-adjust-value>  
+<font-item> ::=  <iSpace> 'size' <iSpace> ':' <iSpace>  <size-value> <iSpace> ';' 
+                 |  <iSpace> 'style'  <iSpace> ':' <iSpace> <font-style-value> <iSpace> ';' 
+                 |  <iSpace> 'weight' <iSpace> ':' <iSpace> <font-weight-value> <iSpace> ';' 
+                 |  <iSpace> 'family' <iSpace> ':' <iSpace> <font-family-value> <iSpace> ';' 
+                 |  <iSpace> 'variant' <iSpace> ':' <iSpace> <font-variant-value> <iSpace> ';' 
+                 |  <iSpace> 'stretch' <iSpace> ':' <iSpace> <font-stretch-value> <iSpace> ';' 
+                 |  <iSpace> 'size-adjust' <iSpace> ':' <iSpace> <font-size-adjust-value> <iSpace> ';' 
 
-<font-item-value> ::= <font-item> | <font-item> ';' <font-item-value>
+<font-item-value> ::= <font-item>  <iSpace> | <font-item> <font-item-value>
 
 <font-item-size-value> ::=  <iNumber> 
-                  |  <iNumber>  <iSpace> '/'  <iSpace> <iNumber> 
+                  |  <iNumber>  <iSpace> '/' <iSpace> <iNumber> 
 
-<font-body>  ::=  '{' <iSpace>  <font-item-value>  <iSpace> '}'
-                 | <font-item-size-value> <iSpace>  '{' <iSpace> <font-item-value>  <iSpace> '}'
+<font-body>  ::=  '{' <font-item-value> '}'
+                 | <font-item-size-value> <iSpace>  '{' <font-item-value> '}'
                  | <font-item-size-value> 
                  | <font-style-value> Space <font-item-size-value> 
                  | <font-style-value> Space <font-variant-value> Space <font-weight-value> Space <font-item-size-value> 
@@ -175,10 +175,13 @@ Space         = {Whitespace}+
                  | <iSpace> 'text-transform' <iSpace> ':' <iSpace> <text-transform-value>  <iSpace> ';' 
 
 
-<Rules> ::=   <Rule> 
-             | <Rule> <iSpace> <Rules> 
+<Rules> ::=   <Rule> <iSpace>
+             | <Rule> <Rules> 
 
-<Node> ::= <TagPaths> <iSpace>  '{' <Rules> '}'
+<Node> ::=  <iSpace> <TagPaths> <iSpace>  '{' <Rules> '}' 
+
+<Nodes> ::= <Node> 
+           | <Node> <Nodes>
 
 ! --------------------------------------------------------------- Expression
 
