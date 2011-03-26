@@ -65,7 +65,7 @@ struct DFAState {
 
 struct LALRAction {
 	const ptrdiff_t	id ;
-	const LALRActionType	ty ;
+	const ptrdiff_t	ty ; // LALRActionType
 	const ptrdiff_t	symbol_id;
 	const ptrdiff_t	target ;
 }

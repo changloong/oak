@@ -429,7 +429,10 @@ void load_lalr(Language lang) {
 			(Tab)(" { ") (i) (", [")
 		;
 		foreach(int iAct, LALRAction action; state.actions) {
-			bu("{")(iAct)(", LALRActionType.")( actions[action.type])(",")( action.symbolId)(",")(action.target)("}, ");
+			bu("{")(iAct)
+				//(", LALRActionType.")( actions[action.type])
+				(",")( cast(ptrdiff_t) action.type)
+			(",")( action.symbolId)(",")(action.target)("}, ");
 		}
 		
 		bu("] },")

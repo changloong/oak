@@ -13,42 +13,29 @@ http://sass-lang.com/
 
 "Case Sensitive"  = 'False'
 "Auto Whitespace" = 'False'
-"Start Symbol"    = <TagPaths>
+"Start Symbol"    = <Node>
 
 ! --------------------------------------------------------------- Terminals
 
 {ID Char}   = {AlphaNumeric} + [-]
+{HexDigit}  = {Digit} + [abcdefABCDEF]
+{String Char} = {Printable Extended} - ["\]
+
+String        = '' ({String Char} | '\'{Printable})* '' | '"' ({String Char} | '\'{Printable})* '"'
 
 ID            = {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
-
+Var           = '$'  {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
+iVar          = '#{$' {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )* '}'
 TagId         = '#' {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
 ClassID       = '.' {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
 
 Number        = {Digit}+ ('.' {Digit}+)?
-
+ColorRGB      = '#' {HexDigit}{HexDigit}{HexDigit} | '#' {HexDigit}{HexDigit}{HexDigit}{HexDigit}{HexDigit}{HexDigit}
 Space         = {Whitespace}+
-iSpace        = {Whitespace}*
 
-! --------------------------------------------------------------- Scss Script
-<Var>        ::= '$' ID
+! -------------------------------------------------------------- Union
 
-<iVar>       ::= '#{' <Var> '}'
-
-<iExp>       ::= <iVar>
-                 | '#{' <Add Exp> '}'
-
-<Id>         ::= ID
-                | <iVar> 
-                | ID <Id>
-                | <iVar> <Id>
-
-<iString>     ::=  ID
-                | <iExp> 
-                | ID <Id>
-                | <iExp> <Id>
-
-! --------------------------------------------------------------- Tag
-<TagName>    ::=  | 'html' | 'body' | 'div' | 'p' | 'pre' | 'center' 
+<TagName>       ::=  'html' | 'body' | 'div' | 'p' | 'pre' | 'center' 
                   | 'object' | 'frame' | 'iframe' | 'marquee'
                   | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'h7'
                   | 'hr'| 'br'
@@ -58,31 +45,60 @@ iSpace        = {Whitespace}*
                   | 'a' | 'b' | 'i' | 'u' | 's' | 'em' | 'span' | 'font' | 'small' | 'big' | 'strike' | 'strong'
                   | 'form' | 'input' | 'select' | 'option' | 'optgroup' | 'textarea'
                   | 'fieldset' | 'legend' | 'label'
-                  | '*'
+                  | '&' | '*'
+
+<Pseudo>      ::= ':active' | ':visited'  | ':hover'  | ':link'
+                  | ':first-letter'  | ':first-line'
+                  | ':first-child' | ':left' | ':right'
+                  | ':focus'
+
+<Unit>       ::= 'em'    ! The height of the element's font.
+            | 'ex'    ! The height of the letter "x"
+            | 'px'    ! Pixels
+            | '%'   ! Percentage
+            | 'in'    ! Inches
+            | 'cm'    ! Centimeters
+            | 'mm'    ! Millimeters. 
+            | 'pt'    ! Points (72 points = 6 picas = 1 inch) 
+            | 'pc'    ! Picas (1 pica = 12 points)
+
+! --------------------------------------------------------------- Scss Script
+
+<iSpace>     ::= | Space
+
+<iExp>       ::= iVar
+                 | '#{' <Add Exp> '}'
+
+<Id>         ::= ID
+                | iVar 
+                | ID <Id>
+                | iVar <Id>
+
+<iString>     ::= ID
+                | <iExp>
+                | ID <Id>
+                | <iExp> <Id>
+
+<String>  ::=  <iString>
+                 | String
+
+! --------------------------------------------------------------- Tag
 
 <TagID>       ::=   TagId
-                  | '#' <Id> 
+                  | '#' <iString>
 
 <ClassID>     ::=   ClassID
                   | '.' <Id> 
                   | ClassID <ClassID> 
                   | '.' <Id> <ClassID> 
 
-<AttrValue>  ::=  <iString>
+<TagAttr>       ::= '[' <iString>  ']'
+                  | '[' <iString>  '='  <String> ']'
+                  | '[' <iString> '~=' <String> ']'
+                  | '[' <iString>  '|=' <String>  ']'
 
-<Attr>       ::= '[' iSpace <iString> iSpace ']'
-                  | '[' iSpace <iString> iSpace '=' iSpace <AttrValue> iSpace ']'
-                  | '[' iSpace <iString> iSpace '~=' iSpace <AttrValue> iSpace ']'
-                  | '[' iSpace <iString> iSpace '|=' iSpace <AttrValue> iSpace ']'
-
-<Attrs>      ::= <Attr> 
-                 | <Attr>  <Attrs>
-
-<Pseudo Class> 
-             ::= ':active' | ':visited'  | ':hover'  | ':link'
-                  | ':first-letter'  | ':first-line'
-                  | ':first-child' | ':left' | ':right'
-                  | ':focus'
+<TagAttrs>      ::= <TagAttr> 
+                 | <TagAttr> <TagAttrs> 
 
 <TagNode>   ::=   <TagName> 
                   | <TagID> 
@@ -91,10 +107,9 @@ iSpace        = {Whitespace}*
                   | <TagName> <ClassID> 
                   | <TagName> <TagID> <ClassID>  
                   | <TagID> <ClassID> 
-                  | '&'
-                  | <TagNode> <Attrs> 
-                  | <TagNode> <Pseudo Class> 
-                  | <TagNode> <Attrs> <Pseudo Class> 
+                  | <TagNode> <Pseudo> 
+                  | <TagNode> <TagAttrs> 
+                  | <TagNode> <TagAttrs> <Pseudo> 
 
 <TagPath>   ::= <TagNode>
                  | <TagNode> '>' <TagNode>
@@ -103,31 +118,88 @@ iSpace        = {Whitespace}*
 <TagPaths>   ::=  <TagPath>
                  | <TagPath> ',' <TagPaths>
 
+! --------------------------------------------------------------- Css Rule
+<size-value>     ::= 'normal' | 'medium' | <Number>
+<color>          ::= 'red' | 'blue' | 'green' | 'yellow' | 'white'
+                    | ColorRGB 
+                    | 'rgb(' <Number> <iSpace> ',' <Number> ',' <iSpace> <Number> ')'
+
+<font-style-value> ::= 'normal' | 'italic' | 'oblique'
+<font-variant-value> ::= 'normal' | 'small-caps'
+<font-weight-value>  ::= 'normal' | 'bold' | 'bolder' | 'lighter' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | Var
+<font-family-value-item> ::= ID | String 
+<font-family-value> ::= <font-family-value-item> | <font-family-value-item> <iSpace> ',' <iSpace> <font-family-value>
+<font-size-adjust-value> ::= 'none' | <Number>
+<font-stretch-value> ::= 'normal' | 'narrower' | 'wider' | 'ultra-condensed' | 'extra-condensed' | 'condensed' | 'semi-condensed' | 'semi-expanded' | 'expanded' | 'extra-expanded' | 'ultra-expanded'
+<text-decoration-value-item> ::= 'none' | 'underline' | 'blink' | 'overline' | 'line-through'  
+<text-decoration-value> ::= <text-decoration-value-item> | <text-decoration-value-item> Space <text-decoration-value>
+<text-underline-position-value> ::= 'below' | 'above' 
+<text-transform-value> ::= 'none' | 'capitalize' | 'uppercase' | 'lowercase' 
+
+<font-item> ::= 'size' <iSpace> ':' <iSpace>  <size-value>
+                 | 'style'  <iSpace> ':' <iSpace> <font-style-value>  
+                 | 'weight' <iSpace> ':' <iSpace> <font-weight-value>  
+                 | 'family' <iSpace> ':' <iSpace> <font-family-value>  
+                 | 'variant' <iSpace> ':' <iSpace> <font-variant-value>  
+                 | 'stretch' <iSpace> ':' <iSpace> <font-stretch-value>  
+                 | 'size-adjust' <iSpace> ':' <iSpace> <font-size-adjust-value>  
+
+<font-item-value> ::= <font-item> | <font-item> ';' <font-item-value>
+
+<font-item-size-value> ::=  <iNumber> 
+                  |  <iNumber>  <iSpace> '/'  <iSpace> <iNumber> 
+
+<font-body>  ::=  '{' <iSpace>  <font-item-value>  <iSpace> '}'
+                 | <font-item-size-value> <iSpace>  '{' <iSpace> <font-item-value>  <iSpace> '}'
+                 | <font-item-size-value> 
+                 | <font-style-value> Space <font-item-size-value> 
+                 | <font-style-value> Space <font-variant-value> Space <font-weight-value> Space <font-item-size-value> 
+                 | <font-style-value> Space <font-variant-value> Space <font-weight-value> Space <font-item-size-value> <font-family-value>
+
+<Rule>  ::=       <iSpace> 'font-style' <iSpace> ':' <iSpace> <font-style-value>   <iSpace> ';' 
+                 | <iSpace> 'font-variant' <iSpace> ':' <iSpace> <font-variant-value>  <iSpace> ';' 
+                 | <iSpace> 'font-weight' <iSpace> ':' <iSpace> <font-weight-value>  <iSpace> ';' 
+                 | <iSpace> 'font-size' <iSpace> ':' <iSpace> <size-value>  <iSpace> ';' 
+                 | <iSpace> 'font-family' <iSpace> ':' <iSpace> <font-family-value>  <iSpace> ';' 
+                 | <iSpace> 'font-size-adjust' <iSpace> ':' <iSpace> <font-size-adjust-value>  <iSpace> ';' 
+                 | <iSpace> 'font-stretch' <iSpace> ':' <iSpace> <font-stretch-value>  <iSpace> ';' 
+                 | <iSpace> 'font' <iSpace> ':' <iSpace> <font-body> 
+
+                 | <iSpace> 'line-height' <iSpace> ':' <iSpace> <size-value>  <iSpace> ';' 
+                 | <iSpace> 'letter-spacing'  <iSpace> ':' <iSpace> <size-value>  <iSpace> ';' 
+                 | <iSpace> 'word-spacing'  <iSpace> ':' <iSpace> <size-value>  <iSpace> ';' 
+                 | <iSpace> 'color'  <iSpace> ':' <iSpace> <color>  <iSpace> ';' 
+
+                 | <iSpace> 'text-decoration' <iSpace> ':' <iSpace> <text-decoration-value>  <iSpace> ';' 
+                 | <iSpace> 'text-underline-position' <iSpace> ':' <iSpace> <text-underline-position-value>  <iSpace> ';' 
+                 | <iSpace> 'text-transform' <iSpace> ':' <iSpace> <text-transform-value>  <iSpace> ';' 
+
+
+<Rules> ::=   <Rule> 
+             | <Rule> <iSpace> <Rules> 
+
+<Node> ::= <TagPaths> <iSpace>  '{' <Rules> '}'
+
 ! --------------------------------------------------------------- Expression
 
-<Add Exp>     ::= <Add Exp> iSpace '+' iSpace <Mult Exp>
-               |  <Add Exp> iSpace '-'  iSpace <Mult Exp>
+<Add Exp>     ::= <Add Exp>  '+' <Mult Exp>
+               |  <Add Exp>  '-'  <Mult Exp>
                |  <Mult Exp>
 
-<Mult Exp>    ::= <Mult Exp> iSpace '*' iSpace <Negate Exp>
-               |  <Mult Exp> iSpace '/' iSpace <Negate Exp>
+<Mult Exp>    ::=  <Mult Exp> '*' <Negate Exp>
+               |  <Mult Exp>  '/'  <Negate Exp>
+               |  <Mult Exp>  '%'  <Negate Exp>
                |  <Negate Exp>
 
-<Negate Exp>  ::= '-' iSpace <Number>
-               |  <Number>
+<Negate Exp>  ::=  <iSpace>  '-' <Number>
+               |   <iSpace> <Number> 
 
-<Number>       ::= Number
+<iNumber>     ::= Number
                | Number <Unit>
-               | <Var>
-               | iSpace '(' iSpace <Add Exp> iSpace ')' iSpace
+               | Var
+               | Var Space <Unit>
+               | <iExp>
 
-<Unit>    ::= em    ! The height of the element's font.
-            | ex    ! The height of the letter "x"
-            | px    ! Pixels
-            | '%'   ! Percentage
-            | in    ! Inches
-            | cm    ! Centimeters
-            | mm    ! Millimeters. 
-            | pt    ! Points (72 points = 6 picas = 1 inch) 
-            | pc    ! Picas (1 pica = 12 points)
+<Number>       ::= <iNumber>
+               |   <iSpace> '(' <Add Exp> ')'
 
