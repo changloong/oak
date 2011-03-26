@@ -2,6 +2,8 @@ module oak.langs.gold.Lang ;
 
 import std.conv ;
 
+alias wchar GCHAR ;
+
 
 template Gold_Lang_Engine(This) {
 	
@@ -10,7 +12,7 @@ template Gold_Lang_Engine(This) {
 		ptrdiff_t	lalr_state_id ;
 		ptrdiff_t	rule_id ;
 		ptrdiff_t	ln ;
-		dchar[]	data ;
+		GCHAR[]		data ;
 		
 		
 		Tok*[Max_Rule_Len]
@@ -44,7 +46,7 @@ template Gold_Lang_Engine(This) {
 				lalr_stack ,
 				input_stack ;
 		
-		dchar*		_start, _end, _ptr ;
+		GCHAR*		_start, _end, _ptr ;
 		ptrdiff_t	_cur_lalr_id ;
 		
 		Tok* delegate() GetToken ;
@@ -61,7 +63,7 @@ template Gold_Lang_Engine(This) {
 		return tk ;
 	}
 	
-	dchar[] input(){
+	GCHAR[] input(){
 		if( _start is null || _end is null || _start >= _end ) {
 			return null ;
 		}
@@ -77,11 +79,12 @@ template Gold_Lang_Engine(This) {
 		GetToken	= &RetrieveToken ;
 		
 		Clear();
-		_start	= cast(dchar*) pool.alloc( dchar.sizeof * _input.length ) ;
-		_end	= _start + _input.length ;
+		_start	= cast(GCHAR*) pool.alloc( GCHAR.sizeof * _input.length ) ;
+		_end	= _start ;
 		_ptr	= _start ;
-		foreach( int i, dchar c ; _input){
-			_ptr[i]	= c ;
+		foreach( int i, GCHAR c ; _input){
+			_end[0] = c ;
+			_end++;
 		}
 		
 		auto tk = NewTok(StartSymbolID, InitLALRID) ;
@@ -279,7 +282,7 @@ template Gold_Lang_Engine(This) {
 					isDone	= true ;
 				} 
 				
-				Log("`%s` = `%s` ", tk.symbol, tk.data);
+				// Log("`%s` = `%s` ", tk.symbol, tk.data);
 
 			} else if( comment_level > 0) {
 				tk	= input_stack.pop ;

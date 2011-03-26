@@ -9,8 +9,7 @@ http://sass-lang.com/
 "Version"   = 'SCSS1 - 2011'
 "Author"    = 'Chang Long'
 "About"     = 'Sassy Cascading Style Sheets'
-
-
+"Character Mapping" = 'Unicode'
 "Case Sensitive"  = 'False'
 "Auto Whitespace" = 'False'
 "Start Symbol"    = <Nodes>
@@ -19,15 +18,12 @@ http://sass-lang.com/
 
 {ID Char}   = {AlphaNumeric} + [-]
 {HexDigit}  = {Digit} + [abcdefABCDEF]
-{String Char} = {Printable Extended} - ["\]
+{String Char} = {All Valid} - ["\]
+{AttrKey}    =  {Printable} - [=.#'''"'] - {Whitespace} - {#93}
 
-String        = '' ({String Char} | '\'{Printable})* '' | '"' ({String Char} | '\'{Printable})* '"'
+String        = '' ({String Char} | '\'{All Valid})* '' | '"' ({String Char} | '\'{All Valid})* '"'
 
 ID            = {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
-Var           = '$'  {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
-iVar          = '#{$' {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )* '}'
-TagId         = '#' {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
-ClassID       = '.' {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
 
 Number        = {Digit}+ ('.' {Digit}+)?
 ColorRGB      = '#' {HexDigit}{HexDigit}{HexDigit} | '#' {HexDigit}{HexDigit}{HexDigit}{HexDigit}{HexDigit}{HexDigit}
@@ -66,36 +62,26 @@ Space         = {Whitespace}+
 
 <iSpace>     ::= | Space
 
-<iExp>       ::= iVar
+<iExp>       ::= '#{$' ID '}'
                  | '#{' <Add Exp> '}'
 
-<Id>         ::= ID
-                | iVar 
-                | ID <Id>
-                | iVar <Id>
+<IDString>   ::= ID  | <iExp> |  ID  
 
-<iString>     ::= ID
-                | <iExp>
-                | ID <Id>
-                | <iExp> <Id>
+<AttrKey> ::= <IDString> | String
 
-<String>  ::=  <iString>
-                 | String
+<String>  ::= <IDString> | String
 
 ! --------------------------------------------------------------- Tag
 
-<TagID>       ::=   TagId
-                  | '#' <iString>
+<TagID>       ::=  '#' <IDString>
 
-<ClassID>     ::=   ClassID
-                  | '.' <Id> 
-                  | ClassID <ClassID> 
-                  | '.' <Id> <ClassID> 
+<ClassID>     ::=  '.' <IDString> 
+                  | '.' <IDString> <ClassID> 
 
-<TagAttr>       ::= '[' <iString>  ']'
-                  | '[' <iString>  '='  <String> ']'
-                  | '[' <iString> '~=' <String> ']'
-                  | '[' <iString>  '|=' <String>  ']'
+<TagAttr>       ::= '[' <iSpace> <AttrKey> <iSpace> ']'
+                  | '[' <iSpace> <AttrKey> <iSpace> '=' <iSpace>  <String> <iSpace> ']'
+                  | '[' <iSpace> <AttrKey> <iSpace> '~=' <iSpace> <String> <iSpace> ']'
+                  | '[' <iSpace> <AttrKey> <iSpace> '|=' <iSpace> <String> <iSpace>  ']'
 
 <TagAttrs>      ::= <TagAttr> 
                  | <TagAttr> <TagAttrs> 
@@ -122,7 +108,7 @@ Space         = {Whitespace}+
 <size-value>     ::= 'normal' | 'medium' | <Number>
 <color>          ::= 'red' | 'blue' | 'green' | 'yellow' | 'white'
                     | ColorRGB 
-                    | 'rgb(' <Number> <iSpace> ',' <Number> ',' <iSpace> <Number> ')'
+                    | 'rgb(' <Number> <iSpace> ',' <Number> <iSpace> ','  <Number> <iSpace> ')'
 
 <font-style-value> ::= 'normal' | 'italic' | 'oblique'
 <font-variant-value> ::= 'normal' | 'small-caps'
@@ -185,13 +171,13 @@ Space         = {Whitespace}+
 
 ! --------------------------------------------------------------- Expression
 
-<Add Exp>     ::= <Add Exp>  '+' <Mult Exp>
-               |  <Add Exp>  '-'  <Mult Exp>
+<Add Exp>     ::= <Add Exp> <iSpace> '+' <Mult Exp>
+               |  <Add Exp> <iSpace> '-'  <Mult Exp>
                |  <Mult Exp>
 
-<Mult Exp>    ::=  <Mult Exp> '*' <Negate Exp>
-               |  <Mult Exp>  '/'  <Negate Exp>
-               |  <Mult Exp>  '%'  <Negate Exp>
+<Mult Exp>    ::=  <Mult Exp> <iSpace> '*' <Negate Exp>
+               |  <Mult Exp> <iSpace> '/'  <Negate Exp>
+               |  <Mult Exp>  <iSpace> '%'  <Negate Exp>
                |  <Negate Exp>
 
 <Negate Exp>  ::=  <iSpace>  '-' <Number>
@@ -199,9 +185,11 @@ Space         = {Whitespace}+
 
 <iNumber>     ::= Number
                | Number <Unit>
+               | Number Space <Unit>
                | Var
                | Var Space <Unit>
                | <iExp>
+               | <iExp> Space <Unit>
 
 <Number>       ::= <iNumber>
                |   <iSpace> '(' <Add Exp> ')'

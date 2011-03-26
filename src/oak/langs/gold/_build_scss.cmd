@@ -4,7 +4,7 @@
 cd %~p0
 set scss_dir=%cd%
 cd util
-e:\projects\goldie\bin\goldie-grmc.exe %scss_dir%\util\scss.grm 
+@rem e:\projects\goldie\bin\goldie-grmc.exe %scss_dir%\util\scss.grm 
 
 genx.exe
 

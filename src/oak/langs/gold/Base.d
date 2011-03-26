@@ -40,7 +40,7 @@ struct Symbol {
 
 struct CharSet {
 	const ptrdiff_t	id ;
-	const dchar[]		set ;
+	const GCHAR[]		set ;
 }
 
 struct SymbolRule {
