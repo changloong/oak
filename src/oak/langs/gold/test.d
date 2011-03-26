@@ -1,12 +1,11 @@
-import oak.langs.gold.css ;
+import oak.langs.gold.scss ;
 
 
 void main(){
-	Lang_css css ;
+	Lang_scss scss ;
 	
-	//css.Init("1111*2222 + ( 1- 3 *3 ) / (3-0*7+7788) ");
-	auto data = cast(string) std.file.read(`test.txt`);
-	css.Init( data);
+	auto data = cast(string) std.file.read(`../scss/example.scss`);
+	scss.Init( data);
 	
 	size_t coutn_i ;
 
@@ -15,7 +14,7 @@ void main(){
 	ParsingRet ret ;
 	bool isDone = false ;
 	while( !isDone ) {
-		ret = css.Parse ;
+		ret = scss.Parse ;
 		
 		switch( ret ) {
 			case ParsingRet.TokenRead:

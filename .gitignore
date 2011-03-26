@@ -2,3 +2,4 @@
 *.o
 *.cgt
 *.map
+/src/oak/langs/gold/scss.d

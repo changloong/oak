@@ -72,7 +72,7 @@ void asVar(T)(string name, T value){
 
 void main(){
 	bu	= new vBuffer(1024 * 16 , 1024 * 16);
-	auto file	= `../../scss/css.cgt` ;
+	auto file	= `./scss.cgt` ;
 	auto lang 	= Language.loadCGT(file);
 	auto _file_name = getName(basename(file));
 	
