@@ -180,7 +180,7 @@ Space         = {Whitespace}+
 
 <Node> ::=  <iSpace> <TagPaths> <iSpace>  '{' <Rules> '}' 
 
-<Nodes> ::= <Node> 
+<Nodes> ::= <Node> <iSpace> 
            | <Node> <Nodes>
 
 ! --------------------------------------------------------------- Expression
