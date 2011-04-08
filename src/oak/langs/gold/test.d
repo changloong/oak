@@ -29,9 +29,10 @@ void main(){
 				Log("%s", names[ret] );
 				isDone = true ;
 		}
-		assert( coutn_i++ < uint.max >> 1 );
+		coutn_i++;
+		assert( coutn_i < uint.max >> 1 );
 	}
 	
-	log("%dms", sw.peek.msecs);
+	log("%dms coutn_i=%d", sw.peek.msecs, coutn_i);
 }
 

@@ -16,20 +16,16 @@ void main(string[] args ){
 
 	StopWatch sw;
 	sw.start;
-	scope(exit){
-		sw.stop;
-		writefln("%d times use time = %dms", count, sw.peek.msecs );
-	}
-	
+
 	Compiler cc ;
-	
+	string code ;
 	for(ptrdiff_t i =0 ; i < count ; i++) {
 		cc.Init(file, data) ;
-		auto code	= cc.compile ;
-		if( i is 0  ){
-			 writefln(code);
-			// cc.parser.dump_tok ;
-		}
+		code	= cc.compile ;
 	}
 	
+	sw.stop;
+	writefln("%d times use time = %dms \n", count, sw.peek.msecs );
+
+	writefln(code);
 }

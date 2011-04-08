@@ -9,7 +9,7 @@ http://sass-lang.com/
 "Version"   = 'SCSS1 - 2011'
 "Author"    = 'Chang Long'
 "About"     = 'Sassy Cascading Style Sheets'
-"Character Mapping" = 'Unicode'
+! "Character Mapping" = 'Unicode'
 "Case Sensitive"  = 'False'
 "Auto Whitespace" = 'False'
 "Start Symbol"    = <Nodes>
@@ -18,10 +18,10 @@ http://sass-lang.com/
 
 {ID Char}   = {AlphaNumeric} + [-]
 {HexDigit}  = {Digit} + [abcdefABCDEF]
-{String Char} = {All Valid} - ["\]
+{String Char} = {Printable} - ["\]
 {AttrKey}    =  {Printable} - [=.#'''"'] - {Whitespace} - {#93}
 
-String        = '' ({String Char} | '\'{All Valid})* '' | '"' ({String Char} | '\'{All Valid})* '"'
+String        = '' ({String Char} | '\'{Printable})* '' | '"' ({String Char} | '\'{Printable})* '"'
 
 ID            = {Letter} ( {AlphaNumeric} | '-' {AlphaNumeric} )*
 
@@ -65,7 +65,7 @@ Space         = {Whitespace}+
 <iExp>       ::= '#{$' ID '}'
                  | '#{' <Add Exp> '}'
 
-<IDString>   ::= ID  | <iExp> |  ID  
+<IDString>   ::= ID  | <iExp> | ID  <iExp>
 
 <AttrKey> ::= <IDString> | String
 
