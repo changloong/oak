@@ -45,6 +45,7 @@ struct Pool {
 	~this(){
 		if( data !is null ) {
 			GC.free(data) ;
+			data	= null ;
 		}
 	}
 	
@@ -107,7 +108,6 @@ struct Pool {
 	}
 	
 	T New(T, A...)(A a) if( is(T==class) && !__traits(isAbstractClass, T) ) {
-		
 		
 		enum	size	= __traits(classInstanceSize, T) ;
 		auto	_ptr	= alloc( size ) ;
