@@ -2,6 +2,7 @@
 module oak.util.Pool ;
 
 import 
+	oak.util.Log,
 	std.c.string,
 	core.memory ,
 	std.traits ;
@@ -19,9 +20,11 @@ struct Pool {
 		size_t	size ;
 		size_t	step = _Min_Step ;
 		GC.BlkAttr attr ;
+		
+		enum  GC.BlkAttr default_attr	= cast(GC.BlkAttr) 0 ;
 	}
 	
-	void Init(size_t _step = _Def_Step , GC.BlkAttr _attr = GC.BlkAttr.NO_SCAN  | GC.BlkAttr.NO_MOVE ) {
+	void Init(size_t _step = _Def_Step , GC.BlkAttr _attr = default_attr /* GC.BlkAttr.NO_SCAN  | GC.BlkAttr.NO_MOVE */ ) {
 		if( _step >= _Min_Step && _step < _Max_Step ) {
 			step	= _step ;
 		} else {
@@ -104,21 +107,28 @@ struct Pool {
 	}
 	
 	T New(T, A...)(A a) if( is(T==class) && !__traits(isAbstractClass, T) ) {
-		T p = new(&this,  __traits(classInstanceSize, T) ) T(a) ;
-		static if( is(typeof(p.__dtor)) ){
+		
+		
+		enum	size	= __traits(classInstanceSize, T) ;
+		auto	_ptr	= alloc( size ) ;
+		auto	_init	= typeid(T).init[];
+		memcpy(_ptr, &_init[0], size) ;
+		
+		auto ptr = cast(T) _ptr ;
+		
+		static if( is(typeof(ptr.__dtor)) ){
 			static assert(false, T.stringof ~ ".__dtor is not implement with " ~ typeof(this).stringof );
 		}
-		return p;
-	}
-	
-	template Allocator() {
-		alias typeof(this) Pool_Alloc_This ;
-		static assert( is(Pool_Alloc_This==class), typeof(this).stringof ~ ".Allocator only for class" );
-		enum Pool_Alloc_Size	= __traits(classInstanceSize, Pool_Alloc_This) ;
-		static assert( is(Pool_Alloc_This==class) ) ;
-		final new(size_t size, Pool* pool, size_t _size) {
-			return pool.alloc(_size) ;
+		
+		// Call the ctor if any
+		static if (is(typeof(ptr.__ctor(a)))) {
+			ptr.__ctor(a);
+		} else {
+			static assert( a.length == 0 && !is(typeof(&T.__ctor)),
+				"Don't know how to initialize an object of type "
+				~ T.stringof ~ " with arguments " ~ A.stringof);
 		}
+		return ptr ;
 	}
 }
 

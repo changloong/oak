@@ -125,8 +125,7 @@ abstract class Node {
 		formattedWrite(a, " at file:`%s` line:%d", cc.filename, ln);
 		throw new Exception(a.data);
 	}
-	
-	mixin Pool.Allocator ;
+
 }
 
 

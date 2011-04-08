@@ -21,8 +21,8 @@ package __gshared dmd_export _G ;
 
 version (Windows) {
 	
-	import std.c.windows.windows;
-	import core.dll_helper;
+	import std.c.windows.windows ;
+	import core.sys.windows._dll ;
 
 	static __gshared HINSTANCE g_hInst;
 
