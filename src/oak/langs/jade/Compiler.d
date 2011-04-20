@@ -38,6 +38,7 @@ struct Compiler {
 	~this(){
 		if( pool !is null ) {
 			pool.__dtor ;
+			pool	= null ;
 		}
 	}
 	
