@@ -81,11 +81,6 @@ string[] ctfe_enum_array(T)() if(is(T==enum)){
 	return _names ;
 }
 
-
-
-
-
-
 string ctfe_typeof(T : V[K], K, V)() if( isAssociativeArray!(T) ) {
 	return ctfe_typeof!(K) ~ "[" ~ ctfe_typeof!(V) ~ "]" ; 
 }

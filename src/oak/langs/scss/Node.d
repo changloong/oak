@@ -11,7 +11,6 @@ abstract class Node {
 		
 	}
 	
-	mixin Pool.Allocator ;
 }
 
 
