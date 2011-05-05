@@ -1,0 +1,32 @@
+!!!
+html(lang={if user.admin("hi", 123)}en{/if} , id=home)
+  head
+    style
+      |.class1{
+      |  font-size:12px;
+      |}
+    script
+      |$(document.body).ready(function(){
+      |  alert(123);
+      |});
+    @css("test.css")
+    @js("test.js")
+    @css
+      .class1 {
+        font-size:12px;
+      }
+    @@js
+        alert( '${user.id}' )
+    @js
+      $(document.body).ready(function(){
+        alert( '${user.id}' )
+      });
+
+    @include("../../header.jade")
+
+    meta(name=Content-Type, \
+      {if user.login}content=text/html, {/if}\
+      charset=utf-8)
+    title ${page_title}
+  body
+    @block("body_content")
