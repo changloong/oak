@@ -146,9 +146,9 @@ struct Parser {
 			if( use_extend ) {
 				auto _filter = cast(Filter) node ;
 				if( _filter is null ) {
-					err("@extend template root child must be @block, but find %s at line %d", node.type() , node.ln );
+					err("`%s` with @extend root child must be @block, but find %s at line %d", filename, node.type() , node.ln );
 				} else if( !_filter.render_obj.is_block() && !_filter.render_obj.is_extend() ){
-					err("@extend template root child must be @block, but find @%s at line %d", _filter.render_obj.name , node.ln );
+					err("`%s` with @extend root child must be @block, but find @%s at line %d", filename, _filter.render_obj.name , node.ln );
 				}
 			}
 		}
@@ -657,12 +657,12 @@ struct Parser {
 		bool is_block_node	= false ;
 		if( tk.render_obj.is_extend ) {
 			if( !root.empty || _root_node_offset !is 0 ) {
-				err("@extend must be first node") ;
+				err("@extend must be first node in `%s` at line %d", filename, tk.ln ) ;
 			}
 			use_extend	= true ;
 		} else if( tk.render_obj.is_block ) {
 			if( use_extend && _root_node_offset !is 0 ) {
-				err("@block must be root node child") ;
+				err("@block must be root node child in `%s` at line %d", filename, tk.ln ) ;
 			}
 			is_block_node	= true ;
 		}
