@@ -3,9 +3,9 @@ html(lang=en)
   head
     meta(name=Content-Type, content=text/html, charset=utf-8)
     title ${page_title}
-    :css (href=/test.css)
-    :js (src=/test.js)
-    :include!"header.jade"
+    @css("test.css")
+    @js("test.js")
+    @include("header.jade")
   body
     #user_list.test1
       | test
@@ -20,7 +20,7 @@ html(lang=en)
       - else
         p please 
           a#login(href=/login) login
-      :text #test1(name=test1)
+      @text #test1
          test 123
          <a> test </a>
       // test

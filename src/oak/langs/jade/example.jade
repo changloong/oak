@@ -1,32 +1,9 @@
-!!!
-html(lang={if user.admin("hi", 123)}en{/if} , id=home)
-  head
-    style
-      |.class1{
-      |  font-size:12px;
-      |}
-    script
-      |$(document.body).ready(function(){
-      |  alert(123);
-      |});
-    :css
-      .class1 {
-        font-size:12px;
-      }
-    ::js
-        alert( ${user.id} )
-    :js
-      $(document.body).ready(function(){
-        alert( ${user.id} )
-      });
+@extend("layout.jade") 
 
-    :include!"../../header.jade"
-
-    meta(name=Content-Type, \
-      {if user.login}content=text/html, {/if}\
-      charset=utf-8)
-    title ${page_title}
-  body
+@block("test")
+    @text #test1(target=333)
+	
+    
     #header: #logo: img(src=/images/logo.gif)
     /- 123
       -- int i = 0 ;
@@ -51,10 +28,8 @@ html(lang={if user.admin("hi", 123)}en{/if} , id=home)
         p admin controll panel
       - else
         p please
-
           a#login login
-
-  :i18n!"user.intro"!"123" div:(id=test, onclick=(${test_fn}, doClick())) \
+  @i18n("user.intro","123") div:(id=test, onclick=(${test_fn}, doClick())) \
 	p#p1.c1.c2 \
 	[user_name=${user.name}] a#user_intro(href="/user/${user.id}") \
 	[message_number=${user.msgs}]span.red1

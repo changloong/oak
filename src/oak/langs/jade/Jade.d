@@ -4,6 +4,7 @@ module oak.langs.jade.Jade ;
 package import 
 	oak.util.Log,
 	oak.util.Pool,
+	oak.util.Stack,
 	oak.util.Pcre,
 	oak.util.Ctfe ,
 	oak.util.Buffer ;

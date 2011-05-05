@@ -8,50 +8,29 @@ import oak.langs.jade.Jade ;
 alias oak.langs.jade.node.Filter.Filter Filter ;
 
 void Jade_I18n_ChRoot_Filter(Compiler* cc, Filter  node) {
-	if( node.hasVar ) {
-		cc.err("i18n_chroot filter can't start with double colon, at line %d", node.ln);
+
+	if(   node.args.firstChild is null ) {
+		cc.err("i18n_chroot filter missing path in line %s", node.ln);
 	}
+
+	auto i18n_path	= cast(PureString) node.args.firstChild  ;
+	assert(i18n_path !is null);
+	string _i18n_path = i18n_path.value ;
 	
-	if( node.tag !is null ) {
-		cc.err("i18n_chroot filter  can't  have tag, at line %d", node.ln);
-	}
-	if( node.tag_args !is null ) {
-		cc.err("i18n_chroot filter  can't  have tag args, at line %d", node.ln);
-	}
-	if( !node.empty  ) {
-		cc.err("i18n_chroot filter  can't  have children, at line %d", node.ln);
-	}
-	string _i18n_path = null ;
-	for( auto arg =  node.args.firstChild; arg !is null ; arg = arg.next ) {
-		if( arg.firstChild  !is null ) {
-			auto val	= cast(PureString) arg.firstChild  ;
-			if( val !is null ) {
-				_i18n_path	= val.value ;
-				break;
-			}
-		}
-	}
-	if(  _i18n_path is null ) {
-		cc.err("i18n_chroot filter missing path", node.ln);
-	}
+	
 	cc.asLine(node.ln);
 	cc.asCode("i18n.chroot(`").asCode(_i18n_path).asCode("`);\n");
 }
 
 void Jade_I18n_Filter(Compiler* cc, Filter  node) {
-	string _i18n_path = null ;
-	for( auto arg =  node.args.firstChild; arg !is null ; arg = arg.next ) {
-		if( arg.firstChild  !is null ) {
-			auto val	= cast(PureString) arg.firstChild  ;
-			if( val !is null ) {
-				_i18n_path	= val.value ;
-				break;
-			}
-		}
+
+	if(   node.args.firstChild is null ) {
+		cc.err("i18n_chroot filter missing path in line %s", node.ln);
 	}
-	if(  _i18n_path is null ) {
-		cc.err("i18n filter missing path", node.ln);
-	}
+	auto i18n_path	= cast(PureString) node.args.firstChild  ;
+	assert(i18n_path !is null);
+	string _i18n_path = i18n_path.value ;
+	
 	string[] _tags ;
 	if( node.tag !is null ) {
 		Jade_I18n_Tag_Open(cc, node.tag, (string tag){

@@ -7,6 +7,7 @@ import oak.langs.jade.Jade ;
 
 void main(string[] args ){
 	string file = `example.jade`;
+	//string file = `../../example.jade`;
 	auto data = cast(string) std.file.read(file);
 	
 	ptrdiff_t count = 1 ;

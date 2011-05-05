@@ -12,8 +12,11 @@ struct Parser {
 	Lexer		lexer ;
 	Node		_last_node, root ;
 	Tok*		_last_tok ;
-	
-	alias 	_last_tok peek ;
+	size_t		_root_node_offset ;
+	Stack!(Filter,512)
+			_filters ;
+	bool		use_extend ;
+	alias 		_last_tok peek ;
 	
 	void Init(Compiler* cc) in {
 		assert( cc !is null);
@@ -21,6 +24,7 @@ struct Parser {
 		pool		= cc.pool ;
 		filename	= cc .filename ;
 		filedata	= cc .filedata ;
+		use_extend	= false ;
 		lexer.Init(cc) ;
 	}
 	
@@ -132,13 +136,21 @@ struct Parser {
 	void parse() {
 		lexer.parse ;
 		
-		// dump_tok(); assert(false);
 		_last_tok	= lexer._root_token ;
-		
 		root = NewNode!(Block)();
-		
+		use_extend	= false ;
+		_root_node_offset = 0 ;
 		for( auto node	= parseExpr(); node !is null; node = parseExpr()) {
 			root.pushChild(node);
+			_root_node_offset = 0 ;
+			if( use_extend ) {
+				auto _filter = cast(Filter) node ;
+				if( _filter is null ) {
+					err("@extend template root child must be @block, but find %s at line %d", node.type() , node.ln );
+				} else if( !_filter.render_obj.is_block() && !_filter.render_obj.is_extend() ){
+					err("@extend template root child must be @block, but find @%s at line %d", _filter.render_obj.name , node.ln );
+				}
+			}
 		}
 	}
 	
@@ -156,8 +168,8 @@ struct Parser {
 	}
 	
 	private N NewNode(N, string _file = __FILE__, ptrdiff_t _line = __LINE__, T... )(T t) if( is(N==class) && BaseClassesTuple!(N).length > 0 && is( BaseClassesTuple!(N)[0] == Node) ){
+		_root_node_offset++;
 		N node ;
-
 		static if( T.length > 0 && isPointer!(T[0]) && is(pointerTarget!(T)==Tok) ) {
 			static if( is(typeof(node.__ctor(t)))  )  {
 				node = pool.New!(N)(t) ;
@@ -203,10 +215,9 @@ struct Parser {
 				node	= parseTag() ;
 				break;
 			case Tok.Type.FilterType :
-				node	= parseFilter ;
+				node = parseFilter ;
 				break;
-			
-			
+
 			// move next node
 			case Tok.Type.String:
 				node	= NewNode!(PureString)( tk ) ;
@@ -643,9 +654,26 @@ struct Parser {
 	Filter parseFilter() {
 		Tok* tk	= expect(Tok.Type.FilterType) ;
 		assert(tk !is null);
-		auto node	=  NewNode!(Filter)( tk ) ;
+		bool is_block_node	= false ;
+		if( tk.render_obj.is_extend ) {
+			if( !root.empty || _root_node_offset !is 0 ) {
+				err("@extend must be first node") ;
+			}
+			use_extend	= true ;
+		} else if( tk.render_obj.is_block ) {
+			if( use_extend && _root_node_offset !is 0 ) {
+				err("@block must be root node child") ;
+			}
+			is_block_node	= true ;
+		}
+		
+		auto node	= NewNode!(Filter)( tk ) ;
 		auto _ln	= tk._ln ;
 		auto _tab	= tk.tabs ;
+		
+		if( is_block_node ) {
+			_filters.push( node ) ;
+		}
 		
 		// find filter arg
 		L1:
@@ -659,13 +687,22 @@ struct Parser {
 						node.args = NewNode!(FilterArgs)();
 					}
 					next();
-					auto _node	= parseMixString() ;
-					assert( _node !is null);
-					node.args.pushChild( _node );
-					// skip FilterArgEnd
+					if(  node.render_obj.with_args_mixed  ) {
+						auto _node	= parseMixString() ;
+						assert( _node !is null);
+						node.args.pushChild( _node );
+						// skip FilterArgEnd
+					} else {
+						tk	= peek ;
+						assert(tk !is null );
+						auto _node	= NewNode!(PureString)( tk ) ;
+						node.args.pushChild( _node );
+						next();
+					}
 					tk	= peek ;
 					assert(tk !is null );
 					assert( tk.ty is Tok.Type.FilterArgEnd);
+					
 					next();
 					break ;
 					
@@ -673,7 +710,7 @@ struct Parser {
 					break L1;
 			}
 		}
-		
+	
 		// find tag
 		L2:
 		for( tk = peek  ; tk !is null ; tk = peek ) {
@@ -728,8 +765,17 @@ struct Parser {
 			}
 			auto _node = parseExpr();
 			assert(_node !is null);
-			assert( _node.isVar || _node.isInlineIf || _node.isPureString) ;
-			node.pushChild(_node);
+			if( node.render_obj.with_text_children ) {
+				if( _node.isVar || _node.isInlineIf || _node.isPureString ) {
+					node.pushChild(_node);
+				} else {
+					err("@%s(line:%s) can't have html children at line %s", node.render_obj.name, node.ln , _node.ln );	
+				}
+			} else if( node.render_obj.with_html_children ) {
+				node.pushChild(_node);
+			} else {
+				err("@%s(line:%s) can't have children at line %s", node.render_obj.name, node.ln, _node.ln );
+			}
 		}
 		
 		if( tk !is null && tk.ty is Tok.Type.FilterArgStart  ) {

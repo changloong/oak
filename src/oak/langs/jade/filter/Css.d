@@ -9,11 +9,13 @@ alias oak.langs.jade.node.Filter.Filter Filter ;
 void Jade_Css_Filter(Compiler* cc, Filter  node){
 	
 	if( node.args !is null ) {
-		cc.err("css filter  can't  have args, at line %d", node.ln);
-	}
-	
-	if( node.tag_args !is null ) {
-		cc.err("css filter  can't  have tag args, at line %d", node.ln);
+		if( node.args.length is 1 ) {
+			cc.asString(`<link rel="stylesheet" type="text/css" media="all" href="`);
+			node.args.firstChild.asD(cc);
+			cc.asString(`" />`);
+			return ;
+		}
+		cc.err("css filter only can have one argument, at line %d", node.ln);
 	}
 	
 	if( node.tag is null ) {

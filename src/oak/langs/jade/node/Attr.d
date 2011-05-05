@@ -5,7 +5,7 @@ import oak.langs.jade.Jade ;
 
 final class Attr : Node {
 	
-	string 	key ;
+	string 		key ;
 	MixString	value ;
 	
 	this(Tok* tk) {

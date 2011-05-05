@@ -75,7 +75,7 @@ struct Lexer {
 					parseCode;
 					break;
 				// filter
-				case ':':
+				case '@':
 					parseFilter;
 					break;
 				// text
@@ -660,17 +660,17 @@ struct Lexer {
 		return tk ;
 	}
 	
-	Tok* parseTagWithIdClass(bool without_content= false ) {
+	Tok* parseTagWithIdClass(bool without_content= false , bool with_children = true) {
 		if( _ptr > _end ) {
 			err("expected tag");
 		}
 		if( _ptr[0] is '#' || _ptr[0] is '.'  ){
-			return parseTag( `*`, without_content) ;
+			return parseTag( `*`, without_content, with_children) ;
 		}
-		return parseTag( null, without_content) ;
+		return parseTag( null, without_content, with_children) ;
 	}
 
-	Tok* parseTag(string tag = null, bool without_content= false ) {
+	Tok* parseTag(string tag = null, bool without_content= false, bool with_children = true ) {
 		if( tag is null ) {
 			skip_space ;
 			tag	= skip_identifier ;
@@ -717,6 +717,9 @@ struct Lexer {
 		
 		bool is_embed_tag	= false ;
 		if(  _ptr <= _end  && _ptr[0] is ':' ) {
+			if( !with_children ) {
+				err("tag can't have children");
+			}
 			is_embed_tag	= true ;
 			_ptr++;
 		}
@@ -1222,14 +1225,13 @@ struct Lexer {
 	}
 	
 	Tok* parseFilter() {
-		if( _ptr >= _end || _ptr[0] !is ':' ) {
+		if( _ptr >= _end || _ptr[0] !is '@' ) {
 			err("filter error");
 		}
 		_ptr++;
 		
 		bool _search_code	= false ;
-		
-		if( _ptr <= _end && _ptr[0] is ':' ) {
+		if( _ptr <= _end && _ptr[0] is '@' ) {
 			_search_code	= true ;
 			_ptr++ ;
 		}
@@ -1238,39 +1240,67 @@ struct Lexer {
 		if( filter_type is null ) {
 			err("expected filter type");
 		}
-		Tok* tk	= NewTok(Tok.Type.FilterType, filter_type ) ;
+		auto _render	= Filter.getRender(filter_type) ;
+		if( _render is null ) {
+			err("filter type `%s` is not exists.", filter_type);
+		}
+		
+		Tok* tk	= NewTok(Tok.Type.FilterType) ;
+		tk.render_obj	= _render ;
 		
 		scope(exit){
 			tk.bool_value	= _search_code ;
-			parseTextBlock(tk, _search_code);
+			if( _render.with_text_children ){
+				parseTextBlock(tk, _search_code);
+			}
 		}
 		
-		// filter arg
-		while( _ptr <= _end ) {
-			if( _ptr[0] !is '!' ) {
-				break ;
-			}
+		// filter arg @include("header.jade")
+		if( _render.with_args ) if( _ptr <= _end &&  _ptr[0] is '(' ) {
 			_ptr++ ;
-			if( _ptr > _end || _ptr[0] is ' ' ||  _ptr[0] is '\t'  ||  _ptr[0] is '\r'  ||  _ptr[0] is '\n' ){
-				err("expected filter tag");
-			}
-			if( _ptr[0] !is '"' ) {
-				string filter_tag = skip_identifier() ;
-				if( filter_tag is null ) {
-					err("expected filter tag");
+			skip_space();
+			while( _ptr <= _end )  {
+				if( _ptr > _end ) {
+					err("expected `)` but find EOF");
+				} else if( _ptr[0] is '\r'  ||  _ptr[0] is '\n' ){
+					err("expected `)` but find new line.");
 				}
-				NewTok(Tok.Type.FilterArgStart) ;
-				NewTok(Tok.Type.String, filter_tag) ;
-				NewTok(Tok.Type.FilterArgEnd) ;
-				continue ;
+				// @include("header.jade") 
+				if( _ptr[0] is ')' ) {
+					_ptr++;
+					break ;
+				}
+				
+				if( _ptr[0] is '"' ) {
+					NewTok(Tok.Type.FilterArgStart) ;
+					if(  _render.with_args_mixed  ) {
+						_ptr++ ;
+						parseInlineString('"');
+					} else {
+						string _string_arg = skip_inline_qstring('"');
+						if( _string_arg is null || _string_arg.length < 2 || _string_arg[0] !is '"' || _string_arg[$-1] !is '"' ) {
+							err("expected qstring %s", line);
+						}
+						NewTok(Tok.Type.String, _string_arg[1..$-1]) ;
+					}
+					NewTok(Tok.Type.FilterArgEnd) ;
+				} else {
+					string filter_tag = skip_identifier() ;
+					if( filter_tag is null ) {
+						err("expected filter tag");
+					}
+					NewTok(Tok.Type.FilterArgStart) ;
+					NewTok(Tok.Type.String, filter_tag) ;
+					NewTok(Tok.Type.FilterArgEnd) ;
+					
+				}
+				skip_space();
+				// , 
+				if( _ptr <= _end && _ptr[0] is ',' ) {
+					_ptr++;
+					skip_space();
+				}
 			}
-			_ptr++ ;
-			if( _ptr > _end || _ptr[0] is ' ' ||  _ptr[0] is '\t'  ||  _ptr[0] is '\r'  ||  _ptr[0] is '\n' ){
-				err("expected filter tag");
-			}
-			NewTok(Tok.Type.FilterArgStart) ;
-			parseInlineString('"');
-			NewTok(Tok.Type.FilterArgEnd) ;
 		}
 	
 		if( !scan_skip_line ) {
@@ -1281,12 +1311,19 @@ struct Lexer {
 			return tk ;
 		}
 		
+		// wrapper
 		if( _ptr[0] !is '[' ) {
+			if( !_render.with_wrapper ){
+				err("filter %s can't have wrapper", _render.name );
+			}
 			_offset_tabs++ ;
 			if( _ptr[0] is '('  || _ptr[0] is '#' || _ptr[0] is '.'  ) {
-				parseTag("*", true) ;
+				parseTag("*", true, _render.with_wrapper_children ) ;
 			} else {
-				parseTagWithIdClass(true) ;
+				if( !_render.with_wrapper_tag ) {
+					err("filter %s can't have wrapper tag name", _render.name );
+				}
+				parseTagWithIdClass(true, _render.with_wrapper_children ) ;
 			}
 			_offset_tabs-- ;
 			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
@@ -1301,13 +1338,15 @@ struct Lexer {
 		}
 		
 		// filter tag
-		
 		while( _ptr <= _end ) {
 			if( _ptr[0] !is '[' ) {
 				if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {
 					return tk ;
 				}
 				err("expected filter tag start but find `%s`", line );
+			}
+			if( !_render.with_tag_args ){
+				err("filter %s can't have tag arguments", _render.name );
 			}
 			_ptr++;
 			if ( _ptr > _end || _ptr[0] is '\r' || _ptr[0] is '\n' ) {

@@ -23,6 +23,8 @@ final class Tag : Node {
 	TagClasses	classes ;
 	Attrs		attrs ;
 	
+	bool		find_name = false ;
+	
 	this(Tok* tk) {
 		assert(tk.ty is Tok.Type.Tag);
 		tag	= tk.string_value ;
@@ -46,7 +48,6 @@ final class Tag : Node {
 	}
 	
 	void asAttrs(Compiler* cc) {
-		
 		if( id !is null ) {
 			cc.asString(" id=\"").asString(id).asString("\"") ;
 		}
@@ -55,8 +56,23 @@ final class Tag : Node {
 			classes.asD(cc);
 		}
 		
+		bool has_name	= false ;
 		if( attrs !is null ) {
-			attrs.eachD(cc);
+			for(Node n = attrs.firstChild ; n !is null ; n = n.next ) {
+				n.asD(cc);
+				if( find_name ) {
+					auto _attr = cast (Attr) n;
+					if( _attr.key == "name" ) {
+						has_name	= true ;
+					}
+				}
+			}
+		}
+		if( find_name ){
+			if( !has_name && id !is null ){
+				cc.asString(" name=\"").asString(id).asString("\"") ;
+			}
 		}
 	}
+	
 }

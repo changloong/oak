@@ -58,8 +58,11 @@ struct Tok {
 	size_t	tabs ;
 	Tok*	next ;
 	Tok*	pre ;
-
-	string	string_value ;
+	
+	union {
+		string	string_value ;
+		Filter_Render*	render_obj ;
+	}
 	bool	bool_value ;
 	
 	

@@ -78,7 +78,7 @@ abstract class Node {
 	Type		ty ;
 	size_t	ln ;
 	Tok*		_tok ;
-	Node		next , firstChild , lastChild ;
+	Node		next , firstChild , lastChild, parentNode ;
 	
 	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
 		static const _ty = ctfe_indexof!(string)(cast( string[] ) Type_Name, name[2..$]);
@@ -92,6 +92,7 @@ abstract class Node {
 	}
 	
 	void pushChild(Node node) {
+		node.parentNode	= this ;
 		if( firstChild is null ) {
 			assert(lastChild is null) ;
 			firstChild	= node ;
@@ -118,6 +119,12 @@ abstract class Node {
 		}
 	}
 	
+	void each(scope void delegate(Node) dg) {
+		for(Node n = firstChild ; n !is null ; n = n.next ) {
+			dg(n);
+		}
+	}
+	
 	void err(size_t _line = __LINE__, T...)(Compiler* cc, string fmt,  T t){
 		auto a = appender!string() ;
 		formattedWrite(a, "(%s:%d) ", __FILE__, _line);
@@ -126,6 +133,13 @@ abstract class Node {
 		throw new Exception(a.data);
 	}
 
+	@property size_t length(){
+		size_t	len	= 0 ;
+		for(Node n = firstChild ; n !is null ; n = n.next ) {
+			len++;
+		}
+		return len ;
+	}
 }
 
 
