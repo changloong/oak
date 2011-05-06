@@ -20,6 +20,8 @@ final class Filter : Node {
 	Tag		tag ;
 	FilterTagArgs	tag_args ;
 	Filter_Render*	render_obj ;
+	string		filter_name ;
+	Filter		parent_filter ;
 	
 	this(Tok* tk) {
 		hasVar		= tk.bool_value ;
@@ -38,46 +40,109 @@ final class Filter : Node {
 		}
 		return null ;
 	}
+	
+	string get_arg( size_t offset = 0 ){
+		if( args is null || args.length is 0 ) {
+			return null ;
+		}
+		for( auto n = args.firstChild; n !is null; n = n.next ){
+			if( offset <= 0 ) {
+				auto _n = cast(PureString) n ;
+				return _n.value ;
+			}
+			offset--;
+		}
+		return null ;
+	}
 }
 
 
 
 struct Filter_Render {
 	private enum {
-		Args = 1 ,
-		Args_Mixed = 2 ,
-		Wrapper = 1 << 3 ,
-		Wrapper_Tag = 1 << 4 ,
-		Wrapper_Children = 1 << 5 ,
-		Tag_Args = 1 << 6 ,
-		Text_Children = 1 << 7 ,
-		HTML_Children = 1 << 8 ,
-		Extend_Filter  = 1 << 9 ,
-		Block_Filter  = 1 << 10 ,
+		None	= 0 ,
+		Args_Mixed = 1 ,
+		Wrapper = 1 << 2 ,
+		Wrapper_Tag = 1 << 3 ,
+		Wrapper_Children = 1 << 4 ,
+		Tag_Args = 1 << 5 ,
+		Text_Children = 1 << 6 ,
+		HTML_Children = 1 << 7 ,
 	}
-	const string name ;
+	enum Type {
+		Code ,
+		Js ,
+		Css ,
+		Text ,
+		I18n ,
+		Include ,
+		Block ,
+		Block_Parent,
+		Extend ,
+	}
+	static const string[] Type_Name = ctfe_enum_array!(Type) ;
+	
+	const string	name ;
+	const Type	ty ;
+	const size_t	args_min, args_max ;
 	const void function(Compiler* cc, Filter) fn ;
 	private const size_t _attr ;
 	
+	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
+		static const _ty = ctfe_indexof!(string)(cast( string[] ) Type_Name, name[2..$]);
+		static assert(_ty >=0 ,  typeof(this).stringof ~ "." ~ name ~ " is not exists");
+		return _ty is ty ;
+	}
 	
 	static __gshared Filter_Render[] Maps = [
-		{"code", &Jade_Code_Filter, Text_Children } ,
+		{"code", Type.Code, 0 , 0, 
+			&Jade_Code_Filter,
+			Text_Children ,
+			} ,
 		
-		{"js", &Jade_Js_Filter,	Args | Args_Mixed | Wrapper | Text_Children } ,
-		{"css", &Jade_Css_Filter, Args | Args_Mixed | Wrapper | Text_Children } ,
+		{"js", Type.Js, 0, 1, 
+			&Jade_Js_Filter,
+			Args_Mixed | Wrapper | Text_Children,
+			} ,
+		{"css", Type.Css, 0, 1, 
+			&Jade_Css_Filter, 
+			Args_Mixed | Wrapper | Text_Children ,
+			} ,
 		
-		{"text", &Jade_Text_Filter, Wrapper | Text_Children } ,
+		{"text", Type.Text, 0, 0 ,
+			&Jade_Text_Filter,
+			Wrapper | Text_Children,
+			} ,
 		
-		{"i18n",  &Jade_I18n_Filter  , Args | Wrapper | Wrapper_Tag | Wrapper_Children | Tag_Args } ,
-		{"i18n_chroot",  &Jade_I18n_ChRoot_Filter , Args } ,
+		{"i18n", Type.I18n, 1, 1, 
+			&Jade_I18n_Filter  ,
+			Wrapper | Wrapper_Tag | Wrapper_Children | Tag_Args ,
+			} ,
+		{"i18n_chroot", Type.I18n, 1, 1,
+			&Jade_I18n_ChRoot_Filter ,
+			None ,
+			} ,
 		
-		{"include", &Jade_Include_Filter , Args } ,
-		{"block",  &Jade_Block_Filter  , Args | HTML_Children | Block_Filter } ,
-		{"extend", &Jade_Extend_Filter  , Args | Extend_Filter } ,
+		{"include", Type.Include, 1, 1, 
+			&Jade_Include_Filter ,
+			None ,
+			} ,
+		{"block", Type.Block, 1, 2,
+			&Jade_Block_Filter  ,
+			HTML_Children ,
+			} ,
+		{"block_parent", Type.Block_Parent, 0, 0,
+			&Jade_Block_Parent_Filter  ,
+			None ,
+			} ,
+		{"extend", Type.Extend , 1, 1,
+			&Jade_Extend_Filter  ,
+			None ,
+			} ,
 	] ;
 	
 	bool with_args() {
-		return (_attr & Args) !is 0 ;
+		return args_max > 0  ;
 	}
 	
 	bool with_args_mixed() {
@@ -106,14 +171,6 @@ struct Filter_Render {
 
 	bool with_html_children(){
 		return (_attr & HTML_Children) !is 0 ;
-	}
-	
-	bool is_extend(){
-		return (_attr & Extend_Filter) !is 0 ;
-	}
-	
-	bool is_block(){
-		return (_attr & Block_Filter) !is 0 ;
 	}
 
 }

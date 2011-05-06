@@ -15,6 +15,7 @@ struct Parser {
 	size_t		_root_node_offset ;
 	Stack!(Filter,512)
 			_filters ;
+	Filter		_last_block_filter = null ;
 	bool		use_extend ;
 	alias 		_last_tok peek ;
 	
@@ -136,6 +137,7 @@ struct Parser {
 	void parse() {
 		lexer.parse ;
 		
+		_last_block_filter = null ;
 		_last_tok	= lexer._root_token ;
 		root = NewNode!(Block)();
 		use_extend	= false ;
@@ -147,7 +149,7 @@ struct Parser {
 				auto _filter = cast(Filter) node ;
 				if( _filter is null ) {
 					err("`%s` with @extend root child must be @block, but find %s at line %d", filename, node.type() , node.ln );
-				} else if( !_filter.render_obj.is_block() && !_filter.render_obj.is_extend() ){
+				} else if( !_filter.render_obj.isBlock() && !_filter.render_obj.isExtend() ){
 					err("`%s` with @extend root child must be @block, but find @%s at line %d", filename, _filter.render_obj.name , node.ln );
 				}
 			}
@@ -655,25 +657,51 @@ struct Parser {
 		Tok* tk	= expect(Tok.Type.FilterType) ;
 		assert(tk !is null);
 		bool is_block_node	= false ;
-		if( tk.render_obj.is_extend ) {
+		bool is_block_parent	= false ;
+		if( tk.render_obj.isExtend() ) {
 			if( !root.empty || _root_node_offset !is 0 ) {
 				err("@extend must be first node in `%s` at line %d", filename, tk.ln ) ;
 			}
 			use_extend	= true ;
-		} else if( tk.render_obj.is_block ) {
+		} else if( tk.render_obj.isBlock() ) {
+			/*
 			if( use_extend && _root_node_offset !is 0 ) {
 				err("@block must be root node child in `%s` at line %d", filename, tk.ln ) ;
 			}
+			*/
 			is_block_node	= true ;
+		} else if( tk.render_obj.isBlock_Parent() ){
+			if( !use_extend ) {
+				err("@block_parent must be use with @extend at %s:%d", filename, tk.ln ) ;
+			}
+			is_block_parent	= true ;
 		}
 		
 		auto node	= NewNode!(Filter)( tk ) ;
 		auto _ln	= tk._ln ;
 		auto _tab	= tk.tabs ;
 		
-		if( is_block_node ) {
-			_filters.push( node ) ;
+		if( is_block_node ){
+			if( _last_block_filter !is null ) {
+				node.parent_filter	= _last_block_filter ;
+			} else {
+				node.parent_filter	= null ;
+			}
+			_last_block_filter	= node ;
+		} else if( is_block_parent ) {
+			if( _last_block_filter is null ) {
+				err("@block_parent must in @block at %s:%d", filename, tk.ln );
+			}
+			node.parent_filter	= _last_block_filter ;
+		}			
+		
+		
+		scope (exit){
+			if( is_block_node ) {
+				_last_block_filter	= node.parent_filter ;
+			}
 		}
+	
 		
 		// find filter arg
 		L1:
@@ -785,6 +813,26 @@ struct Parser {
 		//assert(false) ;
 		version(JADE_DEBUG_PARSER) {
 			Log(" ==============> end filter ");
+		}
+		
+		
+		if( node.args ) {
+			if( node.args.length < node.render_obj.args_min ){
+				err("@%s at %s:%d is at leas need %d args",  node.render_obj.name , filename, node.ln , node.render_obj.args_min );
+			}
+			
+			if( node.args.length > node.render_obj.args_max ){
+				err("@%s at %s:%d is allows a maximum of %d args",  node.render_obj.name , filename, node.ln , node.render_obj.args_max );
+			}
+		}
+		
+		if( is_block_node ) {
+			node.filter_name	= node.get_arg() ;
+			auto _filter	= getFilter( node.filter_name ) ;
+			if( _filter !is null ) {
+				err("@block.%s:%d conflict with @block.%s:%d at file %s ", _filter.filter_name , _filter.ln, node.filter_name, node.ln , filename  );
+			}
+			_filters.push( node ) ;
 		}
 		
 		return node ;
@@ -1049,5 +1097,14 @@ struct Parser {
 		}
 		
 		return node ;
+	}
+	
+	Filter getFilter(string filter_name){
+		foreach(Filter _filter ;_filters) {
+			if( _filter.filter_name == filter_name ) {
+				return _filter ;
+			}
+		}
+		return null ;
 	}
 }

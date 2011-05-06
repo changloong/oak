@@ -1,11 +1,6 @@
-!!! 5
-html(lang=en)
-  head
-    meta(name=Content-Type, content=text/html, charset=utf-8)
-    title ${page_title}
-    @css("test.css")
-    @js("test.js")
-    @include("header.jade")
+@extend("layout.jade") 
+
+@block("body_content")
   body
     #user_list.test1
       | test

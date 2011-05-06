@@ -76,9 +76,10 @@ abstract class Node {
 	static const string[] Type_Name = ctfe_enum_array!(Type) ;
 	
 	Type		ty ;
-	size_t	ln ;
+	size_t		ln ;
 	Tok*		_tok ;
 	Node		next , firstChild , lastChild, parentNode ;
+	private size_t	 _length = 0 ;
 	
 	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
 		static const _ty = ctfe_indexof!(string)(cast( string[] ) Type_Name, name[2..$]);
@@ -102,6 +103,7 @@ abstract class Node {
 			lastChild.next	= node ;
 			lastChild	= node ;
 		}
+		_length++ ;
 	}
 	
 	bool empty() {
@@ -134,11 +136,7 @@ abstract class Node {
 	}
 
 	@property size_t length(){
-		size_t	len	= 0 ;
-		for(Node n = firstChild ; n !is null ; n = n.next ) {
-			len++;
-		}
-		return len ;
+		return _length ;
 	}
 }
 

@@ -30,6 +30,7 @@ struct Compiler {
 	string		filename ;
 	asType		_astype ;
 	ptrdiff_t	i18n_id ;
+	Compiler*	from_compiler, parent_compiler ;
 	
 	bool delegate(string, ref string, ref string) check_each_keyvalue ;
 	bool delegate(ref string) check_var_name ;
@@ -58,6 +59,8 @@ struct Compiler {
 			_ret_bu	= new vBuffer(1024, 1024) ;
 		}
 		i18n_id	= 0 ;
+		from_compiler	= null ;
+		parent_compiler	= null ;
 	}
 	
 	void err(size_t _line = __LINE__, T...)(string fmt, T t){
@@ -83,13 +86,12 @@ struct Compiler {
 	}
 	
 	void reuse_clear(){
-		
 		FinishLastOut() ;
-		
 		_str_bu	= null ;
 		_ret_bu	= null ;
 		pool	= null ;
-
+		from_compiler	= null ;
+		parent_compiler	= null ;
 	}
 	
 	string load_file(ref string file){
@@ -122,7 +124,16 @@ struct Compiler {
 			_ret_bu.clear;
 		}
 		
-		parser.root.asD( &this ) ;
+		if( parser.use_extend  ) {
+			assert( parser.root.firstChild  !is null);
+			auto _extend	= cast(Filter) parser.root.firstChild ;
+			assert(  _extend  !is null);
+			assert( _extend.render_obj !is null);
+			compiler_child(  _extend.get_arg ,  _extend.ln, true );
+		} else {
+			parser.root.asD( &this ) ;
+		}
+		
 		FinishLastOut;
 		return _ret_bu.toString ; 
 	}
@@ -144,7 +155,6 @@ struct Compiler {
 			default:
 				assert(false,type );
 		}
-		
 		_astype	=  asType.None ;
 	}
 	
@@ -195,4 +205,26 @@ struct Compiler {
 		return &this ;
 	}
 	
+	public void compiler_child(string file, size_t from_line, bool with_from = false){
+		
+		auto data = load_file( file );
+		if( data is null ) {
+			err(" include(%s) is not exists at line:%d ", file,  from_line);
+		}
+		
+		Compiler _cc ;
+		_cc.reuse( &this );
+		_cc.Init(file, data);
+		_cc.asCode("\n");
+		_cc.asLine(1);
+		auto _parent_compiler	= this.parent_compiler ;
+		if( with_from ) {
+			_cc.from_compiler = &this ;
+			this.parent_compiler = &_cc ;
+		}
+		_cc.compile(true) ;
+		_cc.reuse_clear ;
+		asLine(from_line);
+		this.parent_compiler	= _parent_compiler ;
+	}
 }

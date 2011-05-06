@@ -1,0 +1,20 @@
+!!!
+html
+  head
+    style
+      |.class1{
+      |  font-size:12px;
+      |}
+    script
+      |$(document.body).ready(function(){
+      |  alert(123);
+      |});
+
+    @include("header.jade")
+
+    meta(name=Content-Type, \
+      {if user.login}content=text/html, {/if}\
+      charset=utf-8)
+    title ${page_title}
+  body
+    @block("body_content")

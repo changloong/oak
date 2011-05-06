@@ -1,8 +1,12 @@
 @extend("layout.jade") 
 
-@block("test")
-    @text #test1(target=333)
-	
+
+@block("test1")
+	@block("hehe1")
+
+@block("body_content")
+    div.parent
+      @block_parent
     
     #header: #logo: img(src=/images/logo.gif)
     /- 123
@@ -29,7 +33,7 @@
       - else
         p please
           a#login login
-  @i18n("user.intro","123") div:(id=test, onclick=(${test_fn}, doClick())) \
+  @i18n("user.intro") div:(id=test, onclick=(${test_fn}, doClick())) \
 	p#p1.c1.c2 \
 	[user_name=${user.name}] a#user_intro(href="/user/${user.id}") \
 	[message_number=${user.msgs}]span.red1

@@ -117,5 +117,6 @@ void main() {
 	FCGI_Dispatch fcgi ;
 	fcgi.Listen(":1983\0");
 	fcgi.Dispatch!(MyApp);
+	log("FastcCGI Server 127.0.0.1:1983");
 	fcgi.Loop();
 }

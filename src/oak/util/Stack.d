@@ -110,7 +110,7 @@ struct Stack (V, int Size = 0,  size_t Step = 64 ) {
                 assert(false, to!string(line) ) ;
         }
 
-        ptrdiff_t opApply (ptrdiff_t delegate(ref V value) dg) {
+        ptrdiff_t opApply (scope ptrdiff_t delegate(ref V value) dg) {
 		ptrdiff_t result;
 
 		for (ptrdiff_t i=depth; i-- && result is 0;){
