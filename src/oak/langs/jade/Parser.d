@@ -824,6 +824,10 @@ struct Parser {
 			if( node.args.length > node.render_obj.args_max ){
 				err("@%s at %s:%d is allows a maximum of %d args",  node.render_obj.name , filename, node.ln , node.render_obj.args_max );
 			}
+		} else {
+			if( node.render_obj.args_min ){
+				err("@%s at %s:%d is at leas need %d args",  node.render_obj.name , filename, node.ln , node.render_obj.args_min );
+			}
 		}
 		
 		if( is_block_node ) {

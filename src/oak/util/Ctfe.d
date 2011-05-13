@@ -2,7 +2,6 @@
 module oak.util.Ctfe ;
 
 import 
-	std.bind,
 	std.algorithm,
 	std.array,
 	std.string,
