@@ -35,6 +35,7 @@ package import
 	oak.langs.jade.node.TagClasses ,
 	oak.langs.jade.node.Tag ;
 
+package alias oak.langs.jade.node.Filter.Filter Filter; 
 
 abstract class Node {
 	

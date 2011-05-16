@@ -3,6 +3,7 @@ module oak.langs.jade.Compiler ;
 
 import oak.langs.jade.Jade ;
 
+package alias oak.langs.jade.node.Filter.Filter Filter;
 
 struct Compiler {
 	alias typeof(this) This;

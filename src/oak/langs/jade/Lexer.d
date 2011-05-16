@@ -3,6 +3,8 @@ module oak.langs.jade.Lexer ;
 
 import oak.langs.jade.Jade ;
 
+package alias oak.langs.jade.node.Filter.Filter Filter;
+
 struct Lexer {
 	Pool*		pool ;
 	vBuffer	_str_bu ;
