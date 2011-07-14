@@ -27,7 +27,7 @@ version (Windows) {
 	static __gshared HINSTANCE g_hInst;
 
 	extern (Windows) BOOL DllMain(HINSTANCE hInstance, ULONG ulReason, LPVOID pvReserved) {
-	    switch (ulReason){
+	    final switch (ulReason){
 		case DLL_PROCESS_ATTACH:
 		    g_hInst = hInstance;
 		    dll_process_attach( hInstance, true );
