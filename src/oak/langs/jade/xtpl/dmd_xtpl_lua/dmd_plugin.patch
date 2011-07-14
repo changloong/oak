@@ -1,0 +1,67 @@
+diff --git a/src/win32.mak b/src/win32.mak
+index f7301a2..24de5cc 100644
+--- a/src/win32.mak
++++ b/src/win32.mak
+@@ -4,12 +4,12 @@
+ # All Rights Reserved
+ # Build dmd with Digital Mars C++ compiler
+ 
+-D=
++D=z:
+ DMDSVN=\svnproj\dmd\trunk\src
+ #DMDSVN=\svnproj\dmd\branches\dmd-1.x\src
+ SCROOT=$D\dm
+ INCLUDE=$(SCROOT)\include
+-CC=\dm\bin\dmc
++CC=z:\dm\bin\dmc
+ LIBNT=$(SCROOT)\lib
+ SNN=$(SCROOT)\lib\snn
+ DIR=\dmd2
+@@ -32,7 +32,7 @@ LFLAGS=
+ 
+ LINKN=$(SCROOT)\bin\link /de
+ 
+-CFLAGS=-I$(ROOT);$(INCLUDE) $(XFLG) $(OPT) $(DEBUG) -cpp
++CFLAGS=-I$(ROOT);$(INCLUDE) $(XFLG) $(OPT) $(DEBUG) -cpp -DLUA_WIN -DWITH_POPEN -I..\lua
+ MFLAGS=-I$C;$(TK) -DMARS -cpp $(DEBUG) -e -wx
+ 
+ # Makerules:
+@@ -47,9 +47,9 @@ defaulttarget: debdmd
+ ################ RELEASES #########################
+ 
+ release:
+-	$(MAKE) clean
+ 	$(MAKE) dmd
+-	$(MAKE) clean
++	copy dmd.exe Z:\dmd\bin\dmd2.exe
++	del dmd.exe
+ 
+ ################ NT COMMAND LINE RELEASE #########################
+ 
+@@ -57,7 +57,7 @@ trace:
+ 	$(MAKE) OPT=-o "DEBUG=-gt -Nc" LFLAGS=-L/ma/co/delexe dmd.exe
+ 
+ dmd:
+-	$(MAKE) OPT=-o "DEBUG=" LFLAGS=-L/delexe dmd.exe
++	$(MAKE) OPT=-o "DEBUG=" LFLAGS="-L/delexe lua.lib" dmd.exe
+ #	$(MAKE) OPT=-o "DEBUG=" LFLAGS=-L/ma/co/delexe dmd.exe
+ 
+ ################ NT COMMAND LINE DEBUG #########################
+@@ -81,7 +81,7 @@ OBJ1= mars.obj enum.obj struct.obj dsymbol.obj import.obj id.obj \
+ 	builtin.obj clone.obj libomf.obj arrayop.obj irstate.obj \
+ 	glue.obj msc.obj ph.obj tk.obj s2ir.obj todt.obj e2ir.obj tocsym.obj \
+ 	util.obj bit.obj eh.obj toobj.obj toctype.obj tocvdebug.obj toir.obj \
+-	json.obj unittests.obj imphint.obj argtypes.obj
++	json.obj unittests.obj imphint.obj argtypes.obj plugin.obj
+ 
+ # from C/C++ compiler optimizer and back end
+ 
+@@ -116,7 +116,7 @@ SRCS= mars.c enum.c struct.c dsymbol.c import.c idgen.c impcnvgen.c utf.h \
+ 	macro.h macro.c hdrgen.h hdrgen.c arraytypes.h \
+ 	delegatize.c toir.h toir.c interpret.c traits.c builtin.c \
+ 	clone.c lib.h libomf.c libelf.c libmach.c arrayop.c intrange.c \
+-	aliasthis.h aliasthis.c json.h json.c unittests.c imphint.c argtypes.c
++	aliasthis.h aliasthis.c json.h json.c unittests.c imphint.c argtypes.c plugin.c
+ 
+ # From C++ compiler
+ 
