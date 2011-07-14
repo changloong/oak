@@ -8,8 +8,8 @@ import
 	std.traits;
 
 string ctfe_i2a(ptrdiff_t i){
-    char[] digit	= cast(char[]) "0123456789";
-    char[] res		= cast(char[]) "";
+    string digit	= "0123456789";
+    char[] res	;
     if (i==0){
         return  "0" ;
     }
