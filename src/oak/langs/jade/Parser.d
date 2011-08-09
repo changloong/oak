@@ -11,7 +11,7 @@ struct Parser {
 	string		filedata ;
 	Lexer		lexer ;
 	Node		_last_node, root ;
-	Tok*		_last_tok ;
+	Tok		_last_tok ;
 	size_t		_root_node_offset ;
 	Stack!(Filter,512)
 			_filters ;
@@ -37,8 +37,8 @@ struct Parser {
 		throw new Exception( a.data );
 	}
 	
-	Tok* advance(ptrdiff_t pos = 0 ) {
-		Tok* tk = _last_tok  ;
+	Tok advance(ptrdiff_t pos = 0 ) {
+		Tok tk = _last_tok  ;
 		while( pos > 0 ) {
 			if( tk is null ) {
 				break ;
@@ -56,8 +56,8 @@ struct Parser {
 		return tk ;
 	}
 	
-	Tok* next(string _file = __FILE__, ptrdiff_t _line = __LINE__)() {
-		Tok* tk = _last_tok  ;
+	Tok next(string _file = __FILE__, ptrdiff_t _line = __LINE__)() {
+		Tok tk = _last_tok  ;
 		if( tk is null ) {
 			return tk ;
 		}
@@ -73,7 +73,7 @@ struct Parser {
 	}
 	
 	void dump_next(string _file = __FILE__, ptrdiff_t _line = __LINE__)(){
-		Tok* tk = _last_tok  ;
+		Tok tk = _last_tok  ;
 		if( tk is null ) {
 			version(JADE_DEBUG_PARSER)
 				Log!(_file, _line)("peek = null ");
@@ -90,7 +90,7 @@ struct Parser {
 			Log!(_file, _line)("next = %s ln:%d:%d tab=%d `%s`",  tk.type(), tk.ln, tk._ln, tk.tabs, tk.string_value ) ;
 	}
 	
-	Tok* peekSibling(Tok* tk = null) {
+	Tok peekSibling(Tok tk = null) {
 		if( tk is null ) {
 			tk = _last_tok  ;
 		}
@@ -120,8 +120,8 @@ struct Parser {
 		return tk ;
 	}
 	
-	Tok* expect(Tok.Type ty) {
-		Tok*	tk	= this.peek ;
+	Tok expect(Tok.Type ty) {
+		Tok	tk	= this.peek ;
 		if( tk is null  ){
 			err("expected %s, but got EOF",  Tok.sType(ty), this.filename ) ;
 		}
@@ -158,7 +158,7 @@ struct Parser {
 	
 	void dump_tok(string _file = __FILE__, ptrdiff_t _line = __LINE__)( bool from_last_tok = false ) {
 		writefln("\n--------- dump tok --------\n%s:%d", _file, _line);
-		Tok* tk	= lexer._root_token ;
+		Tok tk	= lexer._root_token ;
 		if( from_last_tok ) {
 			tk	= _last_tok ;
 		}
@@ -172,7 +172,7 @@ struct Parser {
 	private N NewNode(N, string _file = __FILE__, ptrdiff_t _line = __LINE__, T... )(T t) if( is(N==class) && BaseClassesTuple!(N).length > 0 && is( BaseClassesTuple!(N)[0] == Node) ){
 		_root_node_offset++;
 		N node ;
-		static if( T.length > 0 && isPointer!(T[0]) && is(pointerTarget!(T)==Tok) ) {
+		static if( T.length > 0 && is(T[0]==Tok) ) {
 			static if( is(typeof(node.__ctor(t)))  )  {
 				node = pool.New!(N)(t) ;
 			} else if( T.length is 0) {
@@ -200,7 +200,7 @@ struct Parser {
 	}
 	
 	private Node parseExpr(string _file = __FILE__, ptrdiff_t _line = __LINE__)() {
-		Tok* tk = peek ;
+		Tok tk = peek ;
 		if( tk is null ) {
 			return null ;
 		}
@@ -278,13 +278,13 @@ struct Parser {
 	}
 	
 	Node parseDocType(){
-		Tok* tk	= expect(Tok.Type.DocType) ;
+		Tok tk	= expect(Tok.Type.DocType) ;
 		assert(tk !is null);
 		return NewNode!(DocType)( tk ) ;
 	}
 	
 	Tag parseTag(){
-		Tok* tk	= expect(Tok.Type.Tag) ;
+		Tok tk	= expect(Tok.Type.Tag) ;
 		assert(tk !is null);
 		auto node 	= NewNode!(Tag)( tk ) ;
 		
@@ -359,7 +359,7 @@ struct Parser {
 	
 	
 	Attrs parseAttrs() {
-		Tok* tk	= expect(Tok.Type.AttrStart) ;
+		Tok tk	= expect(Tok.Type.AttrStart) ;
 		auto node 	= NewNode!(Attrs)( tk ) ;
 		auto _ln	= tk._ln ;
 		L1:
@@ -410,7 +410,7 @@ struct Parser {
 	
 	
 	Node parseAttrIfBlock() {
-		Tok* tk		= expect(Tok.Type.If) ;
+		Tok tk		= expect(Tok.Type.If) ;
 		auto node 	= NewNode!(InlineIf)( tk ) ;
 		
 		auto _ln	= tk._ln ;
@@ -471,7 +471,7 @@ struct Parser {
 	}
 	
 	Node parseAttr() {
-		Tok* tk	= expect(Tok.Type.AttrKey) ;
+		Tok tk	= expect(Tok.Type.AttrKey) ;
 		auto node 	= NewNode!(Attr)( tk ) ;
 		node.key	=  tk.string_value ;
 		auto _ln	= tk._ln ;
@@ -498,7 +498,7 @@ struct Parser {
 	}
 	
 	MixString parseAttrValue() {
-		Tok* tk	= expect(Tok.Type.AttrValueStart) ;
+		Tok tk	= expect(Tok.Type.AttrValueStart) ;
 		auto node 	= NewNode!(MixString)( tk ) ;
 		auto _ln	= tk._ln ;
 		L1:
@@ -546,7 +546,7 @@ struct Parser {
 	}
 	
 	Node parseInlineIf() {
-		Tok* tk		= expect(Tok.Type.If) ;
+		Tok tk		= expect(Tok.Type.If) ;
 		auto node 	= NewNode!(InlineIf)( tk ) ;
 		
 		auto _ln	= tk._ln ;
@@ -605,7 +605,7 @@ struct Parser {
 	}
 	
 	MixString parseMixString() {
-		Tok* tk		= peek ;
+		Tok tk		= peek ;
 		
 		auto node	= NewNode!(MixString)( tk ) ;
 	
@@ -654,7 +654,7 @@ struct Parser {
 	}
 	
 	Filter parseFilter() {
-		Tok* tk	= expect(Tok.Type.FilterType) ;
+		Tok tk	= expect(Tok.Type.FilterType) ;
 		assert(tk !is null);
 		bool is_block_node	= false ;
 		bool is_block_parent	= false ;
@@ -843,7 +843,7 @@ struct Parser {
 	}
 	
 	Node parseFilterTagArg(){
-		Tok* tk		= expect(Tok.Type.FilterTagKey) ;
+		Tok tk		= expect(Tok.Type.FilterTagKey) ;
 		assert(tk !is null);
 		auto node	=  NewNode!(FilterTagArg)( tk ) ;
 		auto _ln	= tk._ln ;
@@ -901,7 +901,7 @@ struct Parser {
 	}
 	
 	Node parseComment(){
-		Tok* tk	= expect(Tok.Type.CommentStart) ;
+		Tok tk	= expect(Tok.Type.CommentStart) ;
 		assert(tk !is null);
 		auto node	=  NewNode!(Comment)( tk ) ;
 		auto _ln	= tk._ln ;
@@ -920,7 +920,7 @@ struct Parser {
 	}
 	
 	Node parseIfCode(){
-		Tok* tk	= expect(Tok.Type.IfCode) ;
+		Tok tk	= expect(Tok.Type.IfCode) ;
 		assert(tk !is null);
 		auto node	=  NewNode!(IfCode)( tk ) ;
 		auto _ln	= tk._ln ;
@@ -954,7 +954,7 @@ struct Parser {
 	}
 	
 	ElseIfCode parseElseIfCode(){
-		Tok* tk	= expect(Tok.Type.ElseIfCode) ;
+		Tok tk	= expect(Tok.Type.ElseIfCode) ;
 		assert(tk !is null);
 		auto node	=  NewNode!(ElseIfCode)( tk ) ;
 		auto _ln	= tk._ln ;
@@ -988,7 +988,7 @@ struct Parser {
 	}
 	
 	ElseCode parseElseCode(){
-		Tok* tk	= expect(Tok.Type.ElseCode) ;
+		Tok tk	= expect(Tok.Type.ElseCode) ;
 		assert(tk !is null);
 		auto node	=  NewNode!(ElseCode)( tk ) ;
 		auto _ln	= tk._ln ;
@@ -1008,7 +1008,7 @@ struct Parser {
 	}
 	
 	Node parseCommentBlock(){
-		Tok* tk	= expect(Tok.Type.CommentBlock) ;
+		Tok tk	= expect(Tok.Type.CommentBlock) ;
 		assert(tk !is null);
 		auto node	=  NewNode!(CommentBlock)( tk ) ;
 		auto _ln	= tk._ln ;
@@ -1037,7 +1037,7 @@ struct Parser {
 	}
 	
 	Node parseEach(){
-		Tok* tk	= expect(Tok.Type.Each_Object) ;
+		Tok tk	= expect(Tok.Type.Each_Object) ;
 		assert(tk !is null);
 		auto node	=  NewNode!(Each)( tk ) ;
 		auto _ln	= tk._ln ;

@@ -25,7 +25,7 @@ final class Tag : Node {
 	
 	bool		find_name = false ;
 	
-	this(Tok* tk) {
+	this(Tok tk) {
 		assert(tk.ty is Tok.Type.Tag);
 		tag	= tk.string_value ;
 		isEmbed	= tk.bool_value ;

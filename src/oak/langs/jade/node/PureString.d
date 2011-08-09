@@ -7,7 +7,7 @@ final class PureString : Node {
 	string		value ;
 	bool		escape ;
 	
-	this(Tok* tk ) {
+	this(Tok tk ) {
 		value	= tk.string_value ;
 		escape	= tk.bool_value ;
 	}

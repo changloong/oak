@@ -7,7 +7,7 @@ final class InlineIf : Node {
 	
 	string		cond ;
 	
-	this(Tok* tk) {
+	this(Tok tk) {
 		cond	= tk.string_value ;
 	}
 	

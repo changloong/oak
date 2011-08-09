@@ -23,7 +23,7 @@ final class Filter : Node {
 	string		filter_name ;
 	Filter		parent_filter ;
 	
-	this(Tok* tk) {
+	this(Tok tk) {
 		hasVar		= tk.bool_value ;
 		render_obj	= tk.render_obj ;
 	}

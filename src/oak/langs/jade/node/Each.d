@@ -6,7 +6,7 @@ import oak.langs.jade.Jade ;
 final class Each : Node {
 	string type, key, value, value_type, obj ;
 	
-	this(Tok* tk){
+	this(Tok tk){
 		assert(tk !is null);
 		obj	= tk.string_value ;
 	}

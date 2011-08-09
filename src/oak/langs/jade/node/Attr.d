@@ -8,7 +8,7 @@ final class Attr : Node {
 	string 		key ;
 	MixString	value ;
 	
-	this(Tok* tk) {
+	this(Tok tk) {
 		assert(tk !is null);
 		key	= tk.string_value ;
 	}

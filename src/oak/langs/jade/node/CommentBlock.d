@@ -6,7 +6,7 @@ import oak.langs.jade.Jade ;
 final class CommentBlock : Node {
 	bool 	isHide ;
 	
-	this(Tok* tk) {
+	this(Tok tk) {
 		isHide	= tk.bool_value ;
 	}
 	

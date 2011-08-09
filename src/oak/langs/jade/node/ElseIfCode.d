@@ -10,7 +10,7 @@ final class ElseIfCode : Node {
 	ElseCode	elseBlock ;
 
 	
-	this(Tok* tk) {
+	this(Tok tk) {
 		assert(tk !is null);
 		cond	= tk.string_value ;
 	}

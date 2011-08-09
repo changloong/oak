@@ -2,7 +2,7 @@ module oak.langs.jade.Token;
 
 import oak.langs.jade.Jade ;
 
-struct Tok {
+final class Tok {
 	enum Type {
 		None ,
 		
@@ -56,8 +56,8 @@ struct Tok {
 	Type	ty ;
 	size_t	ln, _ln ;
 	size_t	tabs ;
-	Tok*	next ;
-	Tok*	pre ;
+	Tok	next ;
+	Tok	pre ;
 	
 	union {
 		string	string_value ;
@@ -66,19 +66,19 @@ struct Tok {
 	bool	bool_value ;
 	
 	
-	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
+	final bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
 		static const _ty = ctfe_indexof!(string)(Type_Name, name[2..$]);
 		static assert(_ty >=0 ,  typeof(this).stringof ~ "." ~ name ~ " is not exists");
 		return _ty is ty ;
 	}
 	
-	string type(string _file = __FILE__, ptrdiff_t _line = __LINE__)(){
+	final string type(string _file = __FILE__, ptrdiff_t _line = __LINE__)(){
 		// Log!(_file, _line)("this=%x", cast(void*) &this);
 		assert( ty < Type_Name.length && ty >= 0 );
 		return Type_Name[ty] ;
 	}
 	
-	void dump(string _file = __FILE__, ptrdiff_t _line = __LINE__)(){
+	final void dump(string _file = __FILE__, ptrdiff_t _line = __LINE__)(){
 		Log!(_file,_line)("%s ln:%d tab:%d  `%s`", type(), ln, tabs, string_value );
 	}
 	

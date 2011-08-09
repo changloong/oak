@@ -14,8 +14,8 @@ struct Lexer {
 	const(char)*	_end ;
 	const(char)*	_start ;
 	
-	Tok*		_root_token ;
-	Tok*		_last_token ;
+	Tok		_root_token ;
+	Tok		_last_token ;
 	
 	size_t	ln, _ln, _last_indent_size, _offset_tabs ;
 	
@@ -49,7 +49,7 @@ struct Lexer {
 	
 	void dump_tok(string _file = __FILE__, ptrdiff_t _line = __LINE__)( bool from_last_tok = false ) {
 		writefln("\n--------- dump tok --------\n%s:%d", _file, _line);
-		Tok* tk	= _root_token ;
+		Tok tk	= _root_token ;
 		if( from_last_tok ) {
 			tk	= _last_token ;
 		}
@@ -112,8 +112,8 @@ struct Lexer {
 		_last_token = _root_token ;
 	}
 	
-	private Tok* NewTok(string _file = __FILE__, ptrdiff_t _line = __LINE__)(Tok.Type ty, string val = null ) {
-		Tok* tk ;
+	private Tok NewTok(string _file = __FILE__, ptrdiff_t _line = __LINE__)(Tok.Type ty, string val = null ) {
+		Tok tk ;
 		
 		tk	= pool.New!(Tok)() ;
 
@@ -277,7 +277,7 @@ struct Lexer {
 	}
 		
 	
-	Tok* parseInlineCode( Tok.Type _tmp_ty = Tok.Type.None ){
+	Tok parseInlineCode( Tok.Type _tmp_ty = Tok.Type.None ){
 		int lcurly  , paren ;
 		
 		auto __ptr = _ptr ;
@@ -296,7 +296,7 @@ struct Lexer {
 						_ptr++ ;
 						auto val	= __ptr[ 0 .. _ptr - __ptr -1 ] ;
 						if( _tmp_ty is Tok.Type.Var ) {
-							Tok* tk	= NewTok(Tok.Type.Var, cast(string) val);
+							Tok tk	= NewTok(Tok.Type.Var, cast(string) val);
 							// make var escape
 							tk.bool_value	= true ;
 							return tk ;
@@ -368,15 +368,15 @@ struct Lexer {
 	}
 	
 
-	Tok*  parseInlineString( char _stop_char = 0 ) {
+	Tok  parseInlineString( char _stop_char = 0 ) {
 		assert( _ptr <= _end) ;
 		assert( _ptr[0] !is '\n' &&  _ptr[0] !is '\r' ) ;
 
-		Tok*	_ret_tk ;
+		Tok	_ret_tk ;
 		
 		auto _str_pos = _str_bu.length ;
 		
-		void push_tk(Tok* tk) {
+		void push_tk(Tok tk) {
 			if( _ret_tk is null ) {
 				_ret_tk	= tk ;
 			}
@@ -384,7 +384,7 @@ struct Lexer {
 		
 		void save_string() {
 			if(  _str_bu.length > _str_pos ) {
-				Tok* _tk	= NewTok(Tok.Type.String, cast(string) _str_bu.slice[ _str_pos ..$ ] );
+				Tok _tk	= NewTok(Tok.Type.String, cast(string) _str_bu.slice[ _str_pos ..$ ] );
 				_str_pos	=  _str_bu.length ;
 				push_tk(_tk);
 			}
@@ -529,7 +529,7 @@ struct Lexer {
 						save_string() ;
 						// paser var name 
 						_ptr += 2 ;
-						Tok* _tk = parseInlineCode(Tok.Type.Var) ;
+						Tok _tk = parseInlineCode(Tok.Type.Var) ;
 						assert(_tk !is null);
 						 push_tk(_tk) ;
 					} else {
@@ -542,7 +542,7 @@ struct Lexer {
 						// save old string
 						save_string() ;
 						_ptr += 1 ;
-						Tok* _tk = parseInlineCode() ;
+						Tok _tk = parseInlineCode() ;
 						assert(_tk !is null) ;
 					} else {
 						_ptr++;
@@ -593,7 +593,7 @@ struct Lexer {
 		return null ;
 	}
 	
-	void parseTextBlock(Tok* tk, bool _search_code = false) {
+	void parseTextBlock(Tok tk, bool _search_code = false) {
 		if( _ptr > _end ) {
 			return ;
 		}
@@ -627,7 +627,7 @@ struct Lexer {
 		}
 	}
 	
-	Tok*  parseString(bool _search_code = true ) {
+	Tok  parseString(bool _search_code = true ) {
 		if( _ptr > _end ) {
 			return null ;
 		}
@@ -642,7 +642,7 @@ struct Lexer {
 			if( _search_code ) {
 				return parseInlineString() ;
 			} else {
-				Tok* tk = NewTok(Tok.Type.String, cast(string) _ptr[0..i] ) ;
+				Tok tk = NewTok(Tok.Type.String, cast(string) _ptr[0..i] ) ;
 				_ptr	+= i ;
 				return tk ;
 			}
@@ -650,7 +650,7 @@ struct Lexer {
 		return null ;
 	}
 	
-	Tok* parseDocType() {
+	Tok parseDocType() {
 		assert(_ptr[0] is '!' ) ;
 		ptrdiff_t len = _end - _ptr ;
 		if(  len < 3 || _ptr[1] !is '!' || _ptr[2] !is '!' ){
@@ -658,11 +658,11 @@ struct Lexer {
 		}
 		_ptr	+= 3 ;
 		skip_space() ;
-		Tok* tk	= NewTok(Tok.Type.DocType, parseLineString) ;
+		Tok tk	= NewTok(Tok.Type.DocType, parseLineString) ;
 		return tk ;
 	}
 	
-	Tok* parseTagWithIdClass(bool without_content= false , bool with_children = true) {
+	Tok parseTagWithIdClass(bool without_content= false , bool with_children = true) {
 		if( _ptr > _end ) {
 			err("expected tag");
 		}
@@ -672,7 +672,7 @@ struct Lexer {
 		return parseTag( null, without_content, with_children) ;
 	}
 
-	Tok* parseTag(string tag = null, bool without_content= false, bool with_children = true ) {
+	Tok parseTag(string tag = null, bool without_content= false, bool with_children = true ) {
 		if( tag is null ) {
 			skip_space ;
 			tag	= skip_identifier ;
@@ -685,7 +685,7 @@ struct Lexer {
 			}
 		}
 		
-		Tok* _tk	= NewTok(Tok.Type.Tag, tag);
+		Tok _tk	= NewTok(Tok.Type.Tag, tag);
 		
 		while(true) {
 			if( _ptr >= _end ) {
@@ -701,7 +701,7 @@ struct Lexer {
 				if( value is null ) {
 					err("expected tag.id");
 				}
-				Tok* _tk_id		= NewTok(Tok.Type.Id, value) ;
+				Tok _tk_id		= NewTok(Tok.Type.Id, value) ;
 				continue ;
 			}
 			
@@ -711,7 +711,7 @@ struct Lexer {
 				if( value is null ) {
 					err("expected tag.class");
 				}
-				Tok* _tk_class		= NewTok(Tok.Type.Class, value) ;
+				Tok _tk_class		= NewTok(Tok.Type.Class, value) ;
 				continue ;
 			}
 			err("tag err `%s`", line);
@@ -733,7 +733,7 @@ struct Lexer {
 		
 		skip_space ;
 		if( _ptr <= _end && _ptr[0] is '(' ) {
-			Tok* _tk_attrs	= parseAttrs() ;
+			Tok _tk_attrs	= parseAttrs() ;
 			if( _ptr <= _end && _ptr[0] !is '\r' && _ptr[0] !is '\n' && _ptr[0] !is '\t' && _ptr[0] !is ' ' ) {
 				err("missing space after attributes  _ptr=%s line=`%s`", _ptr[0], line);
 			}
@@ -767,7 +767,7 @@ struct Lexer {
 		return _tk ;
 	}
 	
-	Tok* parseAttrs() {
+	Tok parseAttrs() {
 		if( _ptr >=_end ) {
 			err("expected attrs");
 		}
@@ -895,7 +895,7 @@ struct Lexer {
 					}
 				}
 				
-				Tok*	_tk_left,	_tk_right  = null ;
+				Tok	_tk_left,	_tk_right  = null ;
 				string _val_left,  _val_right  = null ;
 		
 				for( auto _qtk = __tk.next; _qtk !is null; _qtk = _qtk.next ) {
@@ -960,13 +960,13 @@ struct Lexer {
 		return null ;
 	}
 	
-	Tok* parseComment(){
+	Tok parseComment(){
 		assert(_ptr[0] is '/' );
 		_ptr++;
 		if( _ptr >= _end ) {
 			err("expected Comment");
 		}
-		Tok* tk	= null ;
+		Tok tk	= null ;
 		if( _ptr[0] is '/' ) {
 			// inline Common
 			_ptr++;
@@ -1009,8 +1009,8 @@ struct Lexer {
 		return tk ;
 	}
 	
-	Tok* parseCode(){
-		Tok* tk ;
+	Tok parseCode(){
+		Tok tk ;
 		assert(_ptr[0] is '-' );
 		_ptr++;
 		if( _ptr >= _end ) {
@@ -1226,7 +1226,7 @@ struct Lexer {
 		return tk ;
 	}
 	
-	Tok* parseFilter() {
+	Tok parseFilter() {
 		if( _ptr >= _end || _ptr[0] !is '@' ) {
 			err("filter error");
 		}
@@ -1247,7 +1247,7 @@ struct Lexer {
 			err("filter type `%s` is not exists.", filter_type);
 		}
 		
-		Tok* tk	= NewTok(Tok.Type.FilterType) ;
+		Tok tk	= NewTok(Tok.Type.FilterType) ;
 		tk.render_obj	= _render ;
 		
 		scope(exit){
@@ -1381,7 +1381,7 @@ struct Lexer {
 					err("expected filter tag value" );
 				}
 				NewTok(Tok.Type.FilterTagValueStart) ;
-				Tok* _tag_val	= parseInlineString(']');
+				Tok _tag_val	= parseInlineString(']');
 				if( _tag_val is null ) {
 					err("expected filter tag value" );
 				}
@@ -1400,7 +1400,7 @@ struct Lexer {
 			// find filter tag
 			if( _ptr[0] !is '[' ) {
 				NewTok(Tok.Type.FilterTagArgStart) ;
-				Tok* _tk	= parseTagWithIdClass(true);
+				Tok _tk	= parseTagWithIdClass(true);
 				if( _tk is null ) {
 					err("expected filter tag" );
 				}

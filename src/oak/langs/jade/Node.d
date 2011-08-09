@@ -78,7 +78,7 @@ abstract class Node {
 	
 	Type		ty ;
 	size_t		ln ;
-	Tok*		_tok ;
+	Tok		_tok ;
 	Node		next , firstChild , lastChild, parentNode ;
 	private size_t	 _length = 0 ;
 	

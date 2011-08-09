@@ -10,7 +10,7 @@ final class FilterTagArg : Node {
 	
 	Tag		tag ;
 	
-	this(Tok* tk) {
+	this(Tok tk) {
 		key	= tk.string_value ;
 	}
 }

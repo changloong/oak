@@ -5,7 +5,7 @@ import oak.langs.jade.Jade ;
 
 final class TagClass : Node {
 	string		value ;
-	this(Tok* tk) {
+	this(Tok tk) {
 		value	= tk.string_value ;
 	}
 	

@@ -7,7 +7,7 @@ final class Var : Node {
 	string		value ;
 	bool		unQuota ;
 	
-	this(Tok* tk) {
+	this(Tok tk) {
 		value	= tk.string_value ;
 		unQuota = tk.bool_value ;
 	}

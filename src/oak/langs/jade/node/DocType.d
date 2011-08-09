@@ -24,7 +24,7 @@ final class DocType : Node {
 	
 	string type ;
 	
-	this(Tok* tk) {
+	this(Tok tk) {
 		type	= tk.string_value ;
 	}
 	

@@ -6,7 +6,7 @@ import oak.langs.jade.Jade ;
 final class InlineElseIf : Node {
 	string		cond ;
 	
-	this(Tok* tk) {
+	this(Tok tk) {
 		cond	= tk.string_value ;
 	}
 	
