@@ -1,10 +1,83 @@
+diff --git a/src/backend/cgobj.c b/src/backend/cgobj.c
+index 2e26a43..fc5b563 100644
+--- a/src/backend/cgobj.c
++++ b/src/backend/cgobj.c
+@@ -1201,7 +1201,7 @@ void obj_wkext(Symbol *s1,Symbol *s2)
+     int i;
+     int x2;
+ 
+-    printf("obj_wkext(%s)\n", s1->Sident);
++    //dbg_printf("obj_wkext(%s)\n", s1->Sident);
+     if (s2)
+         x2 = s2->Sxtrnnum;
+     else
+diff --git a/src/expression.c b/src/expression.c
+index 6a3dc7e..1dbc41b 100644
+--- a/src/expression.c
++++ b/src/expression.c
+@@ -46,7 +46,7 @@ extern "C" char * __cdecl __locale_decpoint;
+ #include "parse.h"
+ #include "doc.h"
+ 
+-
++size_t plugin_import(char*, char**, void**);
+ Expression *createTypeInfoArray(Scope *sc, Expression *args[], unsigned dim);
+ Expression *expandVar(int result, VarDeclaration *v);
+ 
+@@ -5937,6 +5937,18 @@ Expression *FileExp::semantic(Scope *sc)
+         goto Lerror;
+     }
+ 
++    size_t plugin_len;
++    char* plugin_error;
++    void* plugin_buffer ;
++    plugin_len	= plugin_import(name, &plugin_error, &plugin_buffer);
++    if( plugin_error ) {
++        error("%s", plugin_error);
++        goto Lerror; 
++    } else if( plugin_len!= 0 ) {
++        se = new StringExp(loc, plugin_buffer, plugin_len);
++        return se->semantic(sc);
++    }
++
+     /* Be wary of CWE-22: Improper Limitation of a Pathname to a Restricted Directory
+      * ('Path Traversal') attacks.
+      * http://cwe.mitre.org/data/definitions/22.html
+diff --git a/src/module.c b/src/module.c
+index fb7d6a3..22a2aaf 100644
+--- a/src/module.c
++++ b/src/module.c
+@@ -237,6 +237,10 @@ void Module::setHdrfile()
+     {   error("Source file and 'header' file have same name '%s'", srcfile->name->str);
+         fatal();
+     }
++    
++	if( !global.params.hdrdir  && !global.params.hdrname ) {
++		hdrfilename = FileName::forceExt(srcfile->toChars() , global.hdr_ext);
++	}
+ 
+     hdrfile = new File(hdrfilename);
+ }
+diff --git a/src/toobj.c b/src/toobj.c
+index 3ec05a6..c652a36 100644
+--- a/src/toobj.c
++++ b/src/toobj.c
+@@ -150,7 +150,7 @@ void Module::genmoduleinfo()
+                  * they resolve to 0 if not pulled in by something else.
+                  * Don't pull in a module just because it was imported.
+                  */
+-#if !OMFOBJ // Optlink crashes with weak symbols at EIP 41AFE7, 402000
++#if 1 || !OMFOBJ // Optlink crashes with weak symbols at EIP 41AFE7, 402000
+                 s->Sflags |= SFLweak;
+ #endif
+                 dtxoff(&dt, s, 0, TYnptr);
 diff --git a/src/win32.mak b/src/win32.mak
-index f7301a2..24de5cc 100644
+index d74ae6c..2791ccc 100644
 --- a/src/win32.mak
 +++ b/src/win32.mak
-@@ -4,12 +4,12 @@
- # All Rights Reserved
- # Build dmd with Digital Mars C++ compiler
+@@ -8,12 +8,12 @@
+ #   http://www.digitalmars.com/ctg/make.html
+ # which should be in \dm\bin or in \dmd\windows\bin 
  
 -D=
 +D=z:
@@ -17,7 +90,7 @@ index f7301a2..24de5cc 100644
  LIBNT=$(SCROOT)\lib
  SNN=$(SCROOT)\lib\snn
  DIR=\dmd2
-@@ -32,7 +32,7 @@ LFLAGS=
+@@ -36,7 +36,7 @@ LFLAGS=
  
  LINKN=$(SCROOT)\bin\link /de
  
@@ -26,19 +99,17 @@ index f7301a2..24de5cc 100644
  MFLAGS=-I$C;$(TK) -DMARS -cpp $(DEBUG) -e -wx
  
  # Makerules:
-@@ -47,9 +47,9 @@ defaulttarget: debdmd
+@@ -51,9 +51,7 @@ defaulttarget: debdmd
  ################ RELEASES #########################
  
  release:
 -	$(MAKE) clean
  	$(MAKE) dmd
 -	$(MAKE) clean
-+	copy dmd.exe Z:\dmd\bin\dmd2.exe
-+	del dmd.exe
  
  ################ NT COMMAND LINE RELEASE #########################
  
-@@ -57,7 +57,7 @@ trace:
+@@ -61,7 +59,7 @@ trace:
  	$(MAKE) OPT=-o "DEBUG=-gt -Nc" LFLAGS=-L/ma/co/delexe dmd.exe
  
  dmd:
@@ -47,16 +118,16 @@ index f7301a2..24de5cc 100644
  #	$(MAKE) OPT=-o "DEBUG=" LFLAGS=-L/ma/co/delexe dmd.exe
  
  ################ NT COMMAND LINE DEBUG #########################
-@@ -81,7 +81,7 @@ OBJ1= mars.obj enum.obj struct.obj dsymbol.obj import.obj id.obj \
+@@ -85,7 +83,7 @@ OBJ1= mars.obj enum.obj struct.obj dsymbol.obj import.obj id.obj \
  	builtin.obj clone.obj libomf.obj arrayop.obj irstate.obj \
  	glue.obj msc.obj ph.obj tk.obj s2ir.obj todt.obj e2ir.obj tocsym.obj \
- 	util.obj bit.obj eh.obj toobj.obj toctype.obj tocvdebug.obj toir.obj \
+ 	util.obj eh.obj toobj.obj toctype.obj tocvdebug.obj toir.obj \
 -	json.obj unittests.obj imphint.obj argtypes.obj
 +	json.obj unittests.obj imphint.obj argtypes.obj plugin.obj
  
  # from C/C++ compiler optimizer and back end
  
-@@ -116,7 +116,7 @@ SRCS= mars.c enum.c struct.c dsymbol.c import.c idgen.c impcnvgen.c utf.h \
+@@ -120,7 +118,7 @@ SRCS= mars.c enum.c struct.c dsymbol.c import.c idgen.c impcnvgen.c utf.h \
  	macro.h macro.c hdrgen.h hdrgen.c arraytypes.h \
  	delegatize.c toir.h toir.c interpret.c traits.c builtin.c \
  	clone.c lib.h libomf.c libelf.c libmach.c arrayop.c intrange.c \
