@@ -90,7 +90,7 @@ struct Filter_Render {
 	
 	bool opDispatch(string name)() if( name.length > 2 && name[0..2] == "is" ) {
 		static const _ty = ctfe_indexof!(string)(cast( string[] ) Type_Name, name[2..$]);
-		static assert(_ty >=0 ,  typeof(this).stringof ~ "." ~ name ~ " is not exists");
+		static assert(_ty >=0 ,  typeof(this).stringof ~ "." ~ name ~ " is not exists, index=" ~ ctfe_i2a(_ty) );
 		return _ty is ty ;
 	}
 	

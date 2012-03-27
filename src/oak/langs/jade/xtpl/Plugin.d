@@ -69,12 +69,12 @@ __gshared ubyte[1024 * 512 ] _tpl_global_buffer ;
 
 void tpl_print(string _file = __FILE__, size_t _line = __LINE__, T...)(string fmt, T t) {
 	scope bu =  new vBuffer(_tpl_global_buffer) ;
-	formattedWrite(bu, " *) %s#%d ", _file[0..$-2], _line);
+	formattedWrite(bu, " *) %s#%d "c, _file[0..$-2], _line);
 	static if(T.length > 0 ) {
 		formattedWrite(bu, fmt, t);
-		bu("\n\0");
+		bu("\n\0"c);
 	} else {
-		bu("Error\n\0");
+		bu("Error\n\0"c);
 	}
 	_G.fprintf(_G.stdout , cast(char*) _tpl_global_buffer.ptr );
 	_G.fflush(_G.stdout);
@@ -83,12 +83,12 @@ void tpl_print(string _file = __FILE__, size_t _line = __LINE__, T...)(string fm
 
 void tpl_error(string _file = __FILE__, size_t _line = __LINE__, T...)(string fmt, T t) {
 	scope bu =  new vBuffer(_tpl_global_buffer) ;
-	formattedWrite(bu, "%s#%d ", _file[0..$-2], _line);
+	formattedWrite(bu, "%s#%d "c, _file[0..$-2], _line);
 	static if(T.length > 0 ) {
 		formattedWrite(bu, fmt, t);
-		bu("\n\0");
+		bu("\n\0"c);
 	} else {
-		bu("Error\n\0");
+		bu("Error\n\0"c);
 	}
 	throw new Exception( bu.toString ) ;
 }

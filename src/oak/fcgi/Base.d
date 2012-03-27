@@ -315,7 +315,7 @@ struct FCGX_Stream {
  * An environment (as defined by environ(7)): A NULL-terminated array
  * of strings, each string having the form name=value.
  **/
-typedef char** FCGX_ParamArray;
+alias char** FCGX_ParamArray;
 
 /**
  * FCGX_Request State associated with a request.

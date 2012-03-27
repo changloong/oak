@@ -1,48 +1,32 @@
-Index: backend/cgobj.c
-===================================================================
---- backend/cgobj.c	(版本 804)
-+++ backend/cgobj.c	(工作副本)
-@@ -1190,7 +1190,7 @@
+diff --git a/src/backend/cgobj.c b/src/backend/cgobj.c
+index 2590904..1d7e180 100644
+--- a/src/backend/cgobj.c
++++ b/src/backend/cgobj.c
+@@ -1178,7 +1178,7 @@ void obj_wkext(Symbol *s1,Symbol *s2)
      int i;
      int x2;
  
 -    printf("obj_wkext(%s)\n", s1->Sident);
-+    //dbg_printf("obj_wkext(%s)\n", s1->Sident);
++    dbg_printf("obj_wkext(%s)\n", s1->Sident);
      if (s2)
          x2 = s2->Sxtrnnum;
      else
-Index: toobj.c
-===================================================================
---- toobj.c	(版本 804)
-+++ toobj.c	(工作副本)
-@@ -151,7 +151,7 @@
-                  * they resolve to 0 if not pulled in by something else.
-                  * Don't pull in a module just because it was imported.
-                  */
--#if !OMFOBJ // Optlink crashes with weak symbols at EIP 41AFE7, 402000
-+#if 1 || !OMFOBJ // Optlink crashes with weak symbols at EIP 41AFE7, 402000
-                 s->Sflags |= SFLweak;
- #endif
-                 dtxoff(&dt, s, 0, TYnptr);
-Index: expression.c
-===================================================================
---- expression.c	(版本 804)
-+++ expression.c	(工作副本)
-@@ -44,7 +44,7 @@
- #include "hdrgen.h"
+diff --git a/src/expression.c b/src/expression.c
+index e0be13c..84096d5 100644
+--- a/src/expression.c
++++ b/src/expression.c
+@@ -46,6 +46,7 @@ extern "C" char * __cdecl __locale_decpoint;
  #include "parse.h"
+ #include "doc.h"
  
--
 +size_t plugin_import(char*, char**, void**);
- Expression *createTypeInfoArray(Scope *sc, Expression *args[], int dim);
- Expression *expandVar(int result, VarDeclaration *v);
  
-@@ -5659,7 +5659,19 @@
-     {   error("need -Jpath switch to import text file %s", name);
+ Expression *createTypeInfoArray(Scope *sc, Expression *args[], unsigned dim);
+ Expression *expandVar(int result, VarDeclaration *v);
+@@ -6142,6 +6143,18 @@ Expression *FileExp::semantic(Scope *sc)
          goto Lerror;
      }
--
-+    
+ 
 +    size_t plugin_len;
 +    char* plugin_error;
 +    void* plugin_buffer ;
@@ -52,47 +36,54 @@ Index: expression.c
 +        goto Lerror; 
 +    } else if( plugin_len!= 0 ) {
 +        se = new StringExp(loc, plugin_buffer, plugin_len);
-+        goto Lret;
++        return se->semantic(sc);
 +    }
-+    
++
      /* Be wary of CWE-22: Improper Limitation of a Pathname to a Restricted Directory
       * ('Path Traversal') attacks.
       * http://cwe.mitre.org/data/definitions/22.html
-Index: module.c
-===================================================================
---- module.c	(版本 804)
-+++ module.c	(工作副本)
-@@ -239,7 +239,9 @@
-     {   error("Source file and 'header' file have same name '%s'", srcfile->name->str);
+diff --git a/src/module.c b/src/module.c
+index 3074e15..c048970 100644
+--- a/src/module.c
++++ b/src/module.c
+@@ -209,6 +209,10 @@ void Module::setDocfile()
+     {   error("Source file and documentation file have same name '%s'", srcfile->name->str);
          fatal();
      }
--
++    
 +	if( !global.params.hdrdir  && !global.params.hdrname ) {
-+		hdrfilename = FileName::forceExt(srcfile->toChars() , global.hdr_ext);
++		docfilename = FileName::forceExt(srcfile->toChars() , global.hdr_ext);
 +	}
-     hdrfile = new File(hdrfilename);
- }
  
-Index: win32.mak
-===================================================================
---- win32.mak	(版本 804)
-+++ win32.mak	(工作副本)
-@@ -4,12 +4,12 @@
- # All Rights Reserved
- # Build dmd with Digital Mars C++ compiler
+     docfile = new File(docfilename);
+ }
+diff --git a/src/toobj.c b/src/toobj.c
+index a8071e8..213e7a8 100644
+--- a/src/toobj.c
++++ b/src/toobj.c
+@@ -150,7 +150,7 @@ void Module::genmoduleinfo()
+                  * they resolve to 0 if not pulled in by something else.
+                  * Don't pull in a module just because it was imported.
+                  */
+-#if !OMFOBJ // Optlink crashes with weak symbols at EIP 41AFE7, 402000
++#if 1 || !OMFOBJ // Optlink crashes with weak symbols at EIP 41AFE7, 402000
+                 s->Sflags |= SFLweak;
+ #endif
+                 dtxoff(&dt, s, 0, TYnptr);
+diff --git a/src/win32.mak b/src/win32.mak
+index 1a8fd19..8429b9d 100644
+--- a/src/win32.mak
++++ b/src/win32.mak
+@@ -8,7 +8,7 @@
+ #   http://www.digitalmars.com/ctg/make.html
+ # which should be in \dm\bin or in \dmd\windows\bin 
  
 -D=
-+D=Z:
++D=z:
  DMDSVN=\svnproj\dmd\trunk\src
  #DMDSVN=\svnproj\dmd\branches\dmd-1.x\src
  SCROOT=$D\dm
- INCLUDE=$(SCROOT)\include
--CC=\dm\bin\dmc
-+CC=Z:\dm\bin\dmc
- LIBNT=$(SCROOT)\lib
- SNN=$(SCROOT)\lib\snn
- DIR=\dmd2
-@@ -47,9 +47,9 @@
+@@ -51,9 +51,9 @@ defaulttarget: debdmd
  ################ RELEASES #########################
  
  release:
@@ -104,20 +95,21 @@ Index: win32.mak
  
  ################ NT COMMAND LINE RELEASE #########################
  
-@@ -81,7 +81,7 @@
- 	builtin.obj clone.obj libomf.obj arrayop.obj irstate.obj \
+@@ -86,7 +86,7 @@ OBJ1= mars.obj enum.obj struct.obj dsymbol.obj import.obj id.obj \
  	glue.obj msc.obj ph.obj tk.obj s2ir.obj todt.obj e2ir.obj tocsym.obj \
- 	util.obj bit.obj eh.obj toobj.obj toctype.obj tocvdebug.obj toir.obj \
--	json.obj unittests.obj imphint.obj argtypes.obj
-+	json.obj unittests.obj imphint.obj argtypes.obj plugin.obj
+ 	util.obj eh.obj toobj.obj toctype.obj tocvdebug.obj toir.obj \
+ 	json.obj unittests.obj imphint.obj argtypes.obj apply.obj canthrow.obj \
+-	sideeffect.obj
++	sideeffect.obj plugin.obj
  
  # from C/C++ compiler optimizer and back end
  
-@@ -115,7 +115,7 @@
- 	macro.h macro.c hdrgen.h hdrgen.c arraytypes.h \
+@@ -126,7 +126,7 @@ SRCS= mars.c enum.c struct.c dsymbol.c import.c idgen.c impcnvgen.c utf.h \
  	delegatize.c toir.h toir.c interpret.c traits.c builtin.c \
- 	clone.c lib.h libomf.c libelf.c libmach.c arrayop.c \
--	aliasthis.h aliasthis.c json.h json.c unittests.c imphint.c argtypes.c
-+	aliasthis.h aliasthis.c json.h json.c unittests.c imphint.c argtypes.c  plugin.c
+ 	clone.c lib.h libomf.c libelf.c libmach.c arrayop.c intrange.c \
+ 	aliasthis.h aliasthis.c json.h json.c unittests.c imphint.c argtypes.c \
+-	apply.c canthrow.c sideeffect.c
++	apply.c canthrow.c sideeffect.c plugin.c
  
  # From C++ compiler
+ 

@@ -121,7 +121,7 @@ void plugin_export_dmd_data(){
 	}
 	
 	// global.params.isX86_64
-	plugin_lib_export(4, (void*) global.params.isX86_64 ) ;
+	plugin_lib_export(4, (void*) 1 /* global.params.isX86_64 */) ; 
 }
 
 size_t plugin_import(/* in */char* name, /* out */ char** dname, /* out */ void** d_source){

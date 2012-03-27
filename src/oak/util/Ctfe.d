@@ -72,10 +72,9 @@ string[] ctfe_split(string s, char c){
 }
 
 string[] ctfe_enum_array(T)() if(is(T==enum)){
-	alias traits_allMembers!(T) names;
 	string[] _names;
-	foreach(int i, name; names){
-		_names	~= names[i].stringof[1..$-1] ;
+	foreach(int i, name; __traits(allMembers, T)){
+		_names	~= name ;
 	}
 	return _names ;
 }

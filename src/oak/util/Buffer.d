@@ -3,6 +3,7 @@ module oak.util.Buffer ;
 
 
 import 
+	core.stdc.string,
 	std.format,
 	std.range,
 	std.algorithm,
@@ -180,11 +181,22 @@ final class vBuffer  :  OutputRange!(char)  {
 		pos	+=      1 ;
 	}
 	
+	final void put(dchar val){
+		expand(4) ;
+		//data[pos] = val ;
+		pos	+=      4 ;
+	}
+	
 	final void put(string val){
 		opCall(val);
 	}
 	
 	final void put(char[] val){
+		opCall(val);
+	}
+	
+	
+	final void put(const(char)[] val){
 		opCall(val);
 	}
 	
